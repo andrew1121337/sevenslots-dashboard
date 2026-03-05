@@ -13,7 +13,11 @@ templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "t
 
 @app.on_event("startup")
 def startup():
-    db.init_db()
+    try:
+        db.init_db()
+        print("[STARTUP] DB initialized OK")
+    except Exception as e:
+        print(f"[STARTUP] DB init failed: {e}")
     # Copy client secret if needed
     src = os.path.expanduser(
         "~/Downloads/client_secret_936904037043-a20308c78j5nnhuv08q94tq16ecr00fl.apps.googleusercontent.com.json"

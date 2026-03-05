@@ -9,11 +9,16 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 def get_conn():
     if DATABASE_URL:
         import pg8000.native
+        import ssl
         p = urlparse(DATABASE_URL)
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
         conn = pg8000.native.Connection(
             user=p.username, password=p.password,
             host=p.hostname, port=p.port or 5432,
             database=p.path.lstrip("/"),
+            ssl_context=ssl_ctx,
         )
         return conn
     conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), "sevenslots.db"))
