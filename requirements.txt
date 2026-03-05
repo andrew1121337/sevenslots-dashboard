@@ -5,4 +5,4 @@ google-auth
 google-auth-oauthlib
 google-api-python-client
 python-multipart
-psycopg2-binary
+pg8000

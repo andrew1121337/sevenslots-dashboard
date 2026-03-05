@@ -1,17 +1,20 @@
 """Database for SevenSlots Dashboard. Uses PostgreSQL if DATABASE_URL is set, else SQLite."""
 import os
 import sqlite3
+from urllib.parse import urlparse
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-
-if DATABASE_URL:
-    import psycopg2
-    import psycopg2.extras
 
 
 def get_conn():
     if DATABASE_URL:
-        conn = psycopg2.connect(DATABASE_URL)
+        import pg8000.native
+        p = urlparse(DATABASE_URL)
+        conn = pg8000.native.Connection(
+            user=p.username, password=p.password,
+            host=p.hostname, port=p.port or 5432,
+            database=p.path.lstrip("/"),
+        )
         return conn
     conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), "sevenslots.db"))
     conn.row_factory = sqlite3.Row
@@ -19,246 +22,202 @@ def get_conn():
     return conn
 
 
-def _dict_row(cur):
-    """Convert cursor row to dict (works for both sqlite and psycopg2)."""
-    if DATABASE_URL:
-        cols = [d[0] for d in cur.description]
-        return [dict(zip(cols, row)) for row in cur.fetchall()]
-    return [dict(r) for r in cur.fetchall()]
+def _pg_run(conn, sql, params=None):
+    """Run SQL on pg8000 native connection."""
+    return conn.run(sql, **({"parameters": params} if params else {}))
+
+
+def _pg_columns(conn):
+    """Get column names from last query."""
+    return [d["name"] for d in conn.columns] if conn.columns else []
 
 
 def init_db():
-    conn = get_conn()
-    cur = conn.cursor()
     if DATABASE_URL:
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS oauth_tokens (
-                id INTEGER PRIMARY KEY CHECK (id = 1),
-                token_json TEXT NOT NULL,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS sessions (
-                id SERIAL PRIMARY KEY,
-                streamer TEXT NOT NULL,
-                date TEXT NOT NULL,
-                title TEXT DEFAULT '',
-                link TEXT DEFAULT '',
-                duration TEXT DEFAULT '',
-                views INTEGER DEFAULT 0,
-                unique_viewers INTEGER DEFAULT 0,
-                avg_duration TEXT DEFAULT '',
-                peak_concurrent INTEGER DEFAULT 0,
-                likes INTEGER DEFAULT 0,
-                avg_viewers INTEGER DEFAULT 0,
-                new_subs INTEGER DEFAULT 0,
-                discord INTEGER DEFAULT 0,
-                casino TEXT DEFAULT '',
-                provider TEXT DEFAULT '',
-                video_id TEXT DEFAULT '',
-                note TEXT DEFAULT '',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS programs (
-                year INTEGER NOT NULL,
-                month INTEGER NOT NULL,
-                day INTEGER NOT NULL,
-                streamer TEXT NOT NULL DEFAULT '',
-                casino TEXT DEFAULT '',
-                provider TEXT DEFAULT '',
-                PRIMARY KEY (year, month, day, streamer)
-            )
-        """)
-        cur.execute("""
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video
-                ON sessions(video_id) WHERE video_id != ''
-        """)
+        conn = get_conn()
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS oauth_tokens (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            token_json TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS sessions (
+            id SERIAL PRIMARY KEY,
+            streamer TEXT NOT NULL, date TEXT NOT NULL, title TEXT DEFAULT '',
+            link TEXT DEFAULT '', duration TEXT DEFAULT '', views INTEGER DEFAULT 0,
+            unique_viewers INTEGER DEFAULT 0, avg_duration TEXT DEFAULT '',
+            peak_concurrent INTEGER DEFAULT 0, likes INTEGER DEFAULT 0,
+            avg_viewers INTEGER DEFAULT 0, new_subs INTEGER DEFAULT 0,
+            discord INTEGER DEFAULT 0, casino TEXT DEFAULT '', provider TEXT DEFAULT '',
+            video_id TEXT DEFAULT '', note TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS programs (
+            year INTEGER NOT NULL, month INTEGER NOT NULL, day INTEGER NOT NULL,
+            streamer TEXT NOT NULL DEFAULT '', casino TEXT DEFAULT '', provider TEXT DEFAULT '',
+            PRIMARY KEY (year, month, day, streamer))""")
+        _pg_run(conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video ON sessions(video_id) WHERE video_id != ''")
+        conn.close()
     else:
-        cur.executescript("""
+        conn = get_conn()
+        conn.executescript("""
             CREATE TABLE IF NOT EXISTS oauth_tokens (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
                 token_json TEXT NOT NULL,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             CREATE TABLE IF NOT EXISTS sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                streamer TEXT NOT NULL,
-                date TEXT NOT NULL,
-                title TEXT DEFAULT '',
-                link TEXT DEFAULT '',
-                duration TEXT DEFAULT '',
-                views INTEGER DEFAULT 0,
-                unique_viewers INTEGER DEFAULT 0,
-                avg_duration TEXT DEFAULT '',
-                peak_concurrent INTEGER DEFAULT 0,
-                likes INTEGER DEFAULT 0,
-                avg_viewers INTEGER DEFAULT 0,
-                new_subs INTEGER DEFAULT 0,
-                discord INTEGER DEFAULT 0,
-                casino TEXT DEFAULT '',
-                provider TEXT DEFAULT '',
-                video_id TEXT DEFAULT '',
-                note TEXT DEFAULT '',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
+                streamer TEXT NOT NULL, date TEXT NOT NULL, title TEXT DEFAULT '',
+                link TEXT DEFAULT '', duration TEXT DEFAULT '', views INTEGER DEFAULT 0,
+                unique_viewers INTEGER DEFAULT 0, avg_duration TEXT DEFAULT '',
+                peak_concurrent INTEGER DEFAULT 0, likes INTEGER DEFAULT 0,
+                avg_viewers INTEGER DEFAULT 0, new_subs INTEGER DEFAULT 0,
+                discord INTEGER DEFAULT 0, casino TEXT DEFAULT '', provider TEXT DEFAULT '',
+                video_id TEXT DEFAULT '', note TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             CREATE TABLE IF NOT EXISTS programs (
-                year INTEGER NOT NULL,
-                month INTEGER NOT NULL,
-                day INTEGER NOT NULL,
-                streamer TEXT NOT NULL DEFAULT '',
-                casino TEXT DEFAULT '',
-                provider TEXT DEFAULT '',
-                PRIMARY KEY (year, month, day, streamer)
-            );
+                year INTEGER NOT NULL, month INTEGER NOT NULL, day INTEGER NOT NULL,
+                streamer TEXT NOT NULL DEFAULT '', casino TEXT DEFAULT '', provider TEXT DEFAULT '',
+                PRIMARY KEY (year, month, day, streamer));
             CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video
                 ON sessions(video_id) WHERE video_id != '';
         """)
-    conn.commit()
-    cur.close()
-    conn.close()
+        conn.commit()
+        conn.close()
 
 
 # ── Token storage ──
 
 def save_token(token_json: str):
-    conn = get_conn()
-    cur = conn.cursor()
     if DATABASE_URL:
-        cur.execute(
-            "INSERT INTO oauth_tokens (id, token_json, updated_at) VALUES (1, %s, CURRENT_TIMESTAMP) "
-            "ON CONFLICT (id) DO UPDATE SET token_json = %s, updated_at = CURRENT_TIMESTAMP",
-            (token_json, token_json),
-        )
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM oauth_tokens WHERE id = 1")
+        _pg_run(conn, "INSERT INTO oauth_tokens (id, token_json) VALUES (1, :tj)", {"tj": token_json})
+        conn.close()
     else:
-        cur.execute(
-            "INSERT OR REPLACE INTO oauth_tokens (id, token_json, updated_at) VALUES (1, ?, CURRENT_TIMESTAMP)",
-            (token_json,),
-        )
-    conn.commit()
-    cur.close()
-    conn.close()
+        conn = get_conn()
+        conn.execute("INSERT OR REPLACE INTO oauth_tokens (id, token_json, updated_at) VALUES (1, ?, CURRENT_TIMESTAMP)", (token_json,))
+        conn.commit()
+        conn.close()
 
 
 def get_token() -> str | None:
-    conn = get_conn()
-    cur = conn.cursor()
     if DATABASE_URL:
-        cur.execute("SELECT token_json FROM oauth_tokens WHERE id = 1")
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT token_json FROM oauth_tokens WHERE id = 1")
+        conn.close()
+        return rows[0][0] if rows else None
     else:
-        cur.execute("SELECT token_json FROM oauth_tokens WHERE id = 1")
-    row = cur.fetchone()
-    cur.close()
-    conn.close()
-    if not row:
-        return None
-    return row[0] if DATABASE_URL else row["token_json"]
+        conn = get_conn()
+        row = conn.execute("SELECT token_json FROM oauth_tokens WHERE id = 1").fetchone()
+        conn.close()
+        return row["token_json"] if row else None
 
 
 # ── Sessions ──
 
 def add_session(data: dict) -> int:
-    conn = get_conn()
-    cur = conn.cursor()
-    cols = ["streamer", "date", "title", "link", "duration", "views", "unique_viewers",
-            "avg_duration", "peak_concurrent", "likes", "avg_viewers", "new_subs",
-            "discord", "casino", "provider", "video_id", "note"]
-    vals = [data[c] for c in cols]
+    cols = ["streamer","date","title","link","duration","views","unique_viewers",
+            "avg_duration","peak_concurrent","likes","avg_viewers","new_subs",
+            "discord","casino","provider","video_id","note"]
     if DATABASE_URL:
-        placeholders = ", ".join(["%s"] * len(cols))
-        cur.execute(
-            f"INSERT INTO sessions ({', '.join(cols)}) VALUES ({placeholders}) RETURNING id",
-            vals,
-        )
-        sid = cur.fetchone()[0]
+        conn = get_conn()
+        placeholders = ", ".join(f":{c}" for c in cols)
+        params = {c: data[c] for c in cols}
+        rows = _pg_run(conn, f"INSERT INTO sessions ({','.join(cols)}) VALUES ({placeholders}) RETURNING id", params)
+        sid = rows[0][0]
+        conn.close()
+        return sid
     else:
-        placeholders = ", ".join(["?"] * len(cols))
-        cur.execute(
-            f"INSERT INTO sessions ({', '.join(cols)}) VALUES ({placeholders})",
-            vals,
-        )
+        conn = get_conn()
+        vals = [data[c] for c in cols]
+        cur = conn.execute(f"INSERT INTO sessions ({','.join(cols)}) VALUES ({','.join(['?']*len(cols))})", vals)
+        conn.commit()
         sid = cur.lastrowid
-    conn.commit()
-    cur.close()
-    conn.close()
-    return sid
+        conn.close()
+        return sid
 
 
 def get_sessions(streamer: str = None) -> list[dict]:
-    conn = get_conn()
-    cur = conn.cursor()
-    ph = "%s" if DATABASE_URL else "?"
-    if streamer:
-        cur.execute(f"SELECT * FROM sessions WHERE streamer = {ph} ORDER BY date DESC", (streamer,))
+    cols = ["id","streamer","date","title","link","duration","views","unique_viewers",
+            "avg_duration","peak_concurrent","likes","avg_viewers","new_subs",
+            "discord","casino","provider","video_id","note","created_at"]
+    if DATABASE_URL:
+        conn = get_conn()
+        if streamer:
+            rows = _pg_run(conn, "SELECT * FROM sessions WHERE streamer = :s ORDER BY date DESC", {"s": streamer})
+        else:
+            rows = _pg_run(conn, "SELECT * FROM sessions ORDER BY date DESC")
+        result_cols = _pg_columns(conn)
+        conn.close()
+        return [dict(zip(result_cols, r)) for r in rows] if result_cols else [dict(zip(cols, r)) for r in rows]
     else:
-        cur.execute("SELECT * FROM sessions ORDER BY date DESC")
-    rows = _dict_row(cur)
-    cur.close()
-    conn.close()
-    return rows
+        conn = get_conn()
+        if streamer:
+            rows = conn.execute("SELECT * FROM sessions WHERE streamer = ? ORDER BY date DESC", (streamer,)).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM sessions ORDER BY date DESC").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
 
 
 def delete_session(sid: int):
-    conn = get_conn()
-    cur = conn.cursor()
-    ph = "%s" if DATABASE_URL else "?"
-    cur.execute(f"DELETE FROM sessions WHERE id = {ph}", (sid,))
-    conn.commit()
-    cur.close()
-    conn.close()
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM sessions WHERE id = :id", {"id": sid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM sessions WHERE id = ?", (sid,))
+        conn.commit()
+        conn.close()
 
 
 def session_exists_by_video_id(video_id: str) -> bool:
-    conn = get_conn()
-    cur = conn.cursor()
-    ph = "%s" if DATABASE_URL else "?"
-    cur.execute(f"SELECT 1 FROM sessions WHERE video_id = {ph}", (video_id,))
-    row = cur.fetchone()
-    cur.close()
-    conn.close()
-    return row is not None
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT 1 FROM sessions WHERE video_id = :v", {"v": video_id})
+        conn.close()
+        return len(rows) > 0
+    else:
+        conn = get_conn()
+        row = conn.execute("SELECT 1 FROM sessions WHERE video_id = ?", (video_id,)).fetchone()
+        conn.close()
+        return row is not None
 
 
 # ── Programs ──
 
 def save_program_day(year: int, month: int, day: int, streamer: str, casino: str, provider: str):
-    conn = get_conn()
-    cur = conn.cursor()
     if DATABASE_URL:
-        cur.execute(
-            "INSERT INTO programs (year, month, day, streamer, casino, provider) "
-            "VALUES (%s, %s, %s, %s, %s, %s) "
-            "ON CONFLICT (year, month, day, streamer) DO UPDATE SET casino = %s, provider = %s",
-            (year, month, day, streamer, casino, provider, casino, provider),
-        )
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM programs WHERE year=:y AND month=:m AND day=:d AND streamer=:s",
+                {"y": year, "m": month, "d": day, "s": streamer})
+        _pg_run(conn, "INSERT INTO programs (year,month,day,streamer,casino,provider) VALUES (:y,:m,:d,:s,:c,:p)",
+                {"y": year, "m": month, "d": day, "s": streamer, "c": casino, "p": provider})
+        conn.close()
     else:
-        cur.execute(
-            "INSERT OR REPLACE INTO programs (year, month, day, streamer, casino, provider) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (year, month, day, streamer, casino, provider),
-        )
-    conn.commit()
-    cur.close()
-    conn.close()
+        conn = get_conn()
+        conn.execute("INSERT OR REPLACE INTO programs (year,month,day,streamer,casino,provider) VALUES (?,?,?,?,?,?)",
+                     (year, month, day, streamer, casino, provider))
+        conn.commit()
+        conn.close()
 
 
 def get_program(year: int, month: int, streamer: str = None) -> dict:
-    conn = get_conn()
-    cur = conn.cursor()
-    ph = "%s" if DATABASE_URL else "?"
-    if streamer:
-        cur.execute(
-            f"SELECT * FROM programs WHERE year = {ph} AND month = {ph} AND streamer = {ph}",
-            (year, month, streamer),
-        )
+    if DATABASE_URL:
+        conn = get_conn()
+        if streamer:
+            rows = _pg_run(conn, "SELECT * FROM programs WHERE year=:y AND month=:m AND streamer=:s",
+                          {"y": year, "m": month, "s": streamer})
+        else:
+            rows = _pg_run(conn, "SELECT * FROM programs WHERE year=:y AND month=:m", {"y": year, "m": month})
+        result_cols = _pg_columns(conn)
+        conn.close()
+        dicts = [dict(zip(result_cols, r)) for r in rows] if result_cols else []
+        return {r["day"]: r for r in dicts}
     else:
-        cur.execute(
-            f"SELECT * FROM programs WHERE year = {ph} AND month = {ph}",
-            (year, month),
-        )
-    rows = _dict_row(cur)
-    cur.close()
-    conn.close()
-    return {r["day"]: r for r in rows}
+        conn = get_conn()
+        if streamer:
+            rows = conn.execute("SELECT * FROM programs WHERE year=? AND month=? AND streamer=?", (year, month, streamer)).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM programs WHERE year=? AND month=?", (year, month)).fetchall()
+        conn.close()
+        return {dict(r)["day"]: dict(r) for r in rows}
