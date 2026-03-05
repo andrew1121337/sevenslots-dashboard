@@ -32,13 +32,17 @@ def startup():
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    sessions = db.get_sessions()
-    authenticated = yt.is_authenticated()
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "sessions": sessions,
-        "authenticated": authenticated,
-    })
+    try:
+        sessions = db.get_sessions()
+        authenticated = yt.is_authenticated()
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "sessions": sessions,
+            "authenticated": authenticated,
+        })
+    except Exception as e:
+        import traceback
+        return JSONResponse({"error": str(e), "trace": traceback.format_exc()}, status_code=500)
 
 
 # ── OAuth ──
