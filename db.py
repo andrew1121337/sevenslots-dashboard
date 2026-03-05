@@ -33,7 +33,9 @@ def get_conn():
 
 def _pg_run(conn, sql, params=None):
     """Run SQL on pg8000 native connection."""
-    return conn.run(sql, **({"parameters": params} if params else {}))
+    if params:
+        return conn.run(sql, **params)
+    return conn.run(sql)
 
 
 def _pg_columns(conn):
