@@ -77,7 +77,7 @@ header::after {
 .logo-name { font-size:18px; font-weight:900; color:#fff; line-height:1; }
 .logo-name span { color: var(--purple2); }
 
-/* Month nav - global */
+/* Month nav */
 .month-nav {
   display:flex; align-items:center; gap:8px;
   margin: 0 auto;
@@ -200,33 +200,113 @@ header::after {
 .kcard.kc-purple .kc-v { color:var(--purple2); }
 .kc-s { font-size:10px; color:var(--dim); }
 
-/* ─── CHARTS (CSS) ─── */
-.charts-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; }
-.chart-box {
+/* ─── SVG LINE CHARTS ─── */
+.graf-2col { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px; }
+.span2 { grid-column:1/-1; }
+.chart-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:0; }
+.cc-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+.cc-title { font-size:13px; font-weight:800; color:var(--text2); }
+.cc-sub { font-size:11px; color:var(--dim); margin-top:2px; }
+.cc-legend { display:flex; align-items:center; gap:8px; }
+.leg-lbl { font-size:10px; font-weight:600; color:var(--dim); }
+
+/* ─── DONUTS + BREAKDOWN ─── */
+.breakdown-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; margin-bottom:22px; }
+.bd-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:18px; }
+.bd-head { font-size:12px; font-weight:800; color:var(--text2); margin-bottom:14px; letter-spacing:.2px; }
+.donut-svg { overflow:visible; }
+.dleg { margin-top:4px; }
+.dleg-item { display:flex; align-items:center; gap:7px; padding:4px 0; border-bottom:1px solid var(--border); }
+.dleg-item:last-child { border-bottom:none; }
+.dleg-dot { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+.dleg-name { font-size:10px; font-weight:700; color:var(--text2); flex:1; }
+.dleg-val { font-size:10px; font-weight:800; color:var(--dim); font-family:'Roboto Mono',monospace; }
+
+/* Rank bars */
+.rb-item { margin-bottom:11px; }
+.rb-item:last-child { margin-bottom:0; }
+.rb-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.rb-name { font-size:11px; font-weight:700; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:58%; }
+.rb-val { font-size:11px; font-weight:800; color:var(--purple2); font-family:'Roboto Mono',monospace; }
+.rb-track { height:5px; background:var(--bg4); border-radius:3px; overflow:hidden; }
+.rb-fill { height:100%; border-radius:3px; transition:width .9s cubic-bezier(.22,.68,0,1.1); }
+
+/* Top lists */
+.top-item { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); }
+.top-item:last-child { border-bottom:none; }
+.top-rank { width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; color:#000; }
+.top-rank.r1 { background:var(--gold); box-shadow:0 0 10px rgba(245,197,24,.4); }
+.top-rank.r2 { background:#c0c0c0; }
+.top-rank.r3 { background:#cd7f32; }
+.top-rank.r4,.top-rank.r5 { background:var(--bg4); color:var(--dim); }
+.top-info { flex:1; min-width:0; }
+.top-title { font-size:10px; font-weight:700; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.top-meta { font-size:9px; color:var(--dim); margin-top:1px; }
+.top-val { font-size:13px; font-weight:900; color:var(--green2); font-family:'Roboto Mono',monospace; flex-shrink:0; }
+
+/* DOW heatmap */
+.dow-wrap { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; height:100%; align-items:flex-end; }
+.dow-col { display:flex; flex-direction:column; align-items:center; gap:5px; height:100%; justify-content:flex-end; }
+.dow-bar { width:100%; border-radius:5px 5px 0 0; min-height:4px; transition:height .8s cubic-bezier(.22,.68,0,1.1); position:relative; cursor:default; }
+.dow-bar:hover .bc-tip { opacity:1; transform:translateX(-50%) translateY(0); }
+.dow-lbl { font-size:10px; font-weight:800; color:var(--dim); }
+.dow-val { font-size:9px; color:var(--dim2); font-family:'Roboto Mono',monospace; }
+.bc-tip { position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%) translateY(4px); background:var(--bg4); border:1px solid var(--border2); border-radius:8px; padding:5px 9px; font-size:10px; font-weight:700; color:var(--text); white-space:nowrap; z-index:20; opacity:0; transition:.15s; pointer-events:none; }
+
+/* ─── MONTH COMPARISON ─── */
+.cmp-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-bottom:16px; }
+.cmp-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 14px;
+  position:relative; overflow:hidden;
+}
+.cmp-label { font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
+.cmp-vals { display:flex; align-items:baseline; gap:10px; }
+.cmp-cur { font-size:22px; font-weight:900; color:var(--text); }
+.cmp-prev { font-size:12px; color:var(--dim); font-weight:600; }
+.cmp-pct {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:10px; font-weight:800; margin-top:4px;
+  padding:2px 8px; border-radius:999px;
+}
+.cmp-pct.up { color:var(--green2); background:rgba(16,185,129,.12); }
+.cmp-pct.dn { color:var(--red); background:rgba(239,68,68,.12); }
+.cmp-pct.eq { color:var(--dim); background:var(--bg3); }
+.cmp-filters { display:flex; gap:6px; margin-bottom:14px; }
+.cmp-chip {
+  padding:5px 14px; border-radius:999px;
   background:var(--bg2); border:1px solid var(--border);
-  border-radius:12px; padding:16px 18px; min-height:180px;
+  color:var(--dim); font-size:11px; font-weight:700;
+  cursor:pointer; transition:.15s;
 }
-.chart-title {
-  font-size:9px; font-weight:800; letter-spacing:2px;
-  text-transform:uppercase; color:var(--dim); margin-bottom:14px;
-}
-.bar-chart { display:flex; align-items:flex-end; gap:3px; height:120px; }
-.bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
-.bar-fill {
-  width:100%; border-radius:3px 3px 0 0;
-  transition: height .8s cubic-bezier(.22,.68,0,1.2);
-  min-height:2px; position:relative;
-}
-.bar-fill.bf-purple { background: linear-gradient(180deg, var(--purple2), var(--purple3)); }
-.bar-fill.bf-cyan { background: linear-gradient(180deg, var(--cyan2), var(--cyan)); }
-.bar-fill.bf-gold { background: linear-gradient(180deg, var(--gold2), var(--gold)); }
-.bar-label { font-size:8px; color:var(--dim2); font-weight:700; }
-.bar-val {
-  position:absolute; top:-16px; left:50%; transform:translateX(-50%);
-  font-size:8px; color:var(--dim); font-weight:700; white-space:nowrap;
-  opacity:0; transition:.15s;
-}
-.bar-col:hover .bar-val { opacity:1; }
+.cmp-chip:hover { border-color:var(--border2); color:var(--text2); }
+.cmp-chip.on { border-color:var(--purple2); color:var(--purple2); background:var(--purple-dim); }
+
+/* ─── CALENDAR ─── */
+.view-toggle { display:flex; background:var(--bg3); border:1px solid var(--border); border-radius:999px; padding:3px; gap:2px; }
+.vtb { padding:6px 16px; border-radius:999px; border:none; background:transparent; color:var(--dim); font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:.18s; }
+.vtb:hover { color:var(--text2); }
+.vtb.on { background:var(--purple); color:#fff; box-shadow:0 0 14px var(--purple-glow); }
+.cal-dow-row { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
+.cal-dow { text-align:center; font-size:10px; font-weight:800; letter-spacing:2px; color:var(--dim); text-transform:uppercase; padding:6px 0; }
+.cal-body { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-cell { background:var(--bg2); border:1px solid rgba(147,51,234,.18); border-radius:10px; min-height:100px; padding:10px 10px 8px; position:relative; transition:.15s; overflow:hidden; }
+.cal-cell:hover:not(.empty) { border-color:rgba(147,51,234,.45); background:var(--bg3); }
+.cal-cell.empty { background:transparent; border-color:transparent; pointer-events:none; }
+.cal-cell.today { border-color:var(--purple2); box-shadow:inset 0 0 0 1px var(--purple2),0 0 20px rgba(168,85,247,.1); }
+.cal-cell.has-seven { border-color:rgba(245,197,24,.4); background:linear-gradient(160deg,rgba(245,197,24,.07) 0%,var(--bg2) 60%); }
+.cal-cell.has-prof { border-color:rgba(6,182,212,.4); background:linear-gradient(160deg,rgba(6,182,212,.07) 0%,var(--bg2) 60%); }
+.cal-cell.weekend:not(.has-seven):not(.has-prof) { opacity:.4; }
+.cal-num { font-size:14px; font-weight:800; color:rgba(255,255,255,.25); line-height:1; margin-bottom:6px; }
+.cal-cell.has-seven .cal-num { color:var(--gold); }
+.cal-cell.has-prof .cal-num { color:var(--cyan); }
+.cal-cell.today .cal-num { color:var(--purple2); }
+.cal-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:999px; font-size:9px; font-weight:800; margin-bottom:4px; }
+.cal-badge-s { background:rgba(245,197,24,.15); color:var(--gold); border:1px solid rgba(245,197,24,.3); }
+.cal-badge-p { background:rgba(6,182,212,.12); color:var(--cyan); border:1px solid rgba(6,182,212,.25); }
+.cal-info { font-size:9px; color:var(--dim); font-weight:600; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cal-sess { margin-top:5px; padding-top:5px; border-top:1px solid rgba(147,51,234,.15); }
+.cal-views { font-size:11px; font-weight:900; font-family:'Roboto Mono',monospace; color:var(--green2); }
+.cal-peak { font-size:9px; color:var(--dim); font-weight:600; }
 
 /* ─── TABLE ─── */
 .tw { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
@@ -262,7 +342,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .lnk:hover { color:var(--cyan2); }
 .delbtn { color:var(--dim2); cursor:pointer; transition:.12s; font-size:12px; background:none; border:none; }
 .delbtn:hover { color:var(--red); }
-
 .ndb { text-align:center; padding:50px 20px; color:var(--dim); }
 .ndb .ico { font-size:40px; margin-bottom:10px; opacity:.3; }
 .ndb p { font-size:11px; letter-spacing:1px; margin-bottom:16px; text-transform:uppercase; font-weight:700; }
@@ -284,17 +363,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .prog-row:hover { background:var(--bg3); border-color:var(--border2); }
 .prog-row.rs { border-left-color:var(--gold); }
 .prog-row.rp { border-left-color:var(--cyan); }
-.prog-row.r-free {
-  border-left-color: var(--gold);
-  background: rgba(245,197,24,0.06);
-}
+.prog-row.r-free { border-left-color: var(--gold); background: rgba(245,197,24,0.06); }
 .prog-row.r-free .pday { color: var(--gold); }
 .prog-row.r-free .pday span { color: var(--gold); opacity:.7; }
-.prog-row.r-free .psel { color: var(--gold); }
-/* Program tabs */
-.prog-tabs {
-  display:flex; gap:6px; margin-bottom:18px;
-}
+.prog-tabs { display:flex; gap:6px; margin-bottom:18px; }
 .prog-tab {
   padding:10px 28px; border-radius:10px;
   border:1px solid var(--border);
@@ -314,7 +386,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 }
 .prog-panel { display:none; animation:fadeIn .22s ease; }
 .prog-panel.on { display:block; }
-
 .pday { font-size:22px; font-weight:900; color:var(--dim2); line-height:1; }
 .pday span { font-size:9px; display:block; font-weight:600; color:var(--dim2); }
 .psel {
@@ -326,14 +397,12 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .psel:focus { outline:none; border-color:var(--purple2); }
 .psel option { background:#1a0e2e; }
 
-/* ─── IMPORT PAGE ─── */
+/* ─── IMPORT ─── */
 .import-card {
   background:var(--bg2); border:1px solid var(--border);
   border-radius:14px; padding:24px; margin-bottom:20px;
 }
-.import-card h3 {
-  font-size:16px; font-weight:900; margin-bottom:4px;
-}
+.import-card h3 { font-size:16px; font-weight:900; margin-bottom:4px; }
 .import-card h3 span { color:var(--purple2); }
 .import-card .ic-sub { font-size:12px; color:var(--dim); margin-bottom:18px; }
 .import-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
@@ -352,9 +421,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 }
 .import-btn:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(239,68,68,0.3); }
 .import-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-.import-status {
-  font-size:12px; color:var(--dim); font-weight:600;
-}
+.import-status { font-size:12px; color:var(--dim); font-weight:600; }
 
 /* ─── ADD FORM ─── */
 .stog { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
@@ -380,7 +447,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .scard.sc-s .sc-nm { color:var(--gold); }
 .scard.sc-p .sc-nm { color:var(--cyan); }
 .sc-sub { font-size:10px; color:var(--dim); margin-top:2px; }
-
 .fg { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-bottom:20px; }
 .ff { grid-column:1/-1; }
 .fg-grp { display:flex; flex-direction:column; gap:4px; }
@@ -412,43 +478,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 }
 .cancbtn:hover { border-color:var(--text2); color:var(--text2); }
 
-/* ─── VERSUS ─── */
-.vs-wrap {
-  display:grid; grid-template-columns:1fr 50px 1fr;
-  border:1px solid var(--border); background:var(--bg2);
-  border-radius:14px; overflow:hidden; margin-bottom:20px;
-}
-.vs-side { padding:22px 20px; }
-.vs-side:first-child { border-right:1px solid var(--border); }
-.vs-mid {
-  display:flex; align-items:center; justify-content:center;
-  background:var(--bg3);
-  font-size:12px; font-weight:900; letter-spacing:3px;
-  color:var(--purple2); writing-mode:vertical-rl; text-transform:uppercase;
-}
-.vs-nm { font-size:20px; font-weight:900; margin-bottom:14px; }
-.vs-nm.sn { color:var(--gold); }
-.vs-nm.pn { color:var(--cyan); }
-.vrow {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:7px 0; border-bottom:1px solid var(--border);
-}
-.vrow:last-child { border-bottom:none; }
-.vrow-l { font-size:10px; color:var(--dim); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
-.vrow-v { font-size:17px; font-weight:900; color:var(--text); }
-.bsec { margin-top:4px; }
-.bitem { margin-bottom:18px; }
-.bmeta { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
-.btitle { font-size:10px; color:var(--dim); font-weight:800; letter-spacing:1px; text-transform:uppercase; }
-.bvs { font-size:14px; font-weight:900; color:var(--gold); }
-.bvp { font-size:14px; font-weight:900; color:var(--cyan); }
-.dbar { display:grid; grid-template-columns:1fr 3px 1fr; height:6px; border-radius:3px; overflow:hidden; }
-.blt { background:var(--bg3); display:flex; justify-content:flex-end; }
-.blf { height:100%; background:linear-gradient(270deg,var(--gold),var(--gold2)); transition:width 1.1s cubic-bezier(.22,.68,0,1.2); }
-.bct { background:var(--bg); }
-.brt { background:var(--bg3); }
-.brf { height:100%; background:linear-gradient(90deg,var(--cyan),var(--cyan2)); transition:width 1.1s cubic-bezier(.22,.68,0,1.2); }
-
 /* ─── TOAST ─── */
 .toast {
   position:fixed; bottom:20px; right:20px; z-index:9999;
@@ -467,12 +496,14 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   .main { margin-left:0; }
   header { padding:0 12px; }
   .logo { width:auto; }
-  .charts-row { grid-template-columns:1fr; }
-  .vs-wrap { grid-template-columns:1fr; }
-  .vs-mid { display:none; }
-  .vs-side:first-child { border-right:none; border-bottom:1px solid var(--border); }
+  .graf-2col { grid-template-columns:1fr; }
+  .breakdown-4 { grid-template-columns:1fr 1fr; }
   .prog-hdr,.prog-row { grid-template-columns:44px 1fr 1fr; }
-  .prog-row>*:last-child { display:none; }
+  .cal-cell { min-height:70px; padding:6px; }
+  .cal-badge,.cal-info,.cal-sess { display:none; }
+}
+@media(max-width:1100px){
+  .breakdown-4 { grid-template-columns:1fr 1fr; }
 }
 </style>
 </head>
@@ -536,17 +567,91 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <div class="page on" id="pg-overview">
     <div class="sh"><div class="dot"></div>Overview<div class="ln"></div></div>
     <div class="krow" id="ov-kpi"></div>
-    <div class="charts-row">
-      <div class="chart-box">
-        <div class="chart-title">Views per Live</div>
-        <div class="bar-chart" id="chart-views"></div>
+
+    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+    <div class="graf-2col" id="ov-charts">
+      <div class="chart-card span2">
+        <div class="cc-head">
+          <div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="ov-lbl-views"></div></div>
+        </div>
+        <div id="ov-line-views" style="width:100%;height:160px;"></div>
       </div>
-      <div class="chart-box">
-        <div class="chart-title">Peak Concurrent Viewers</div>
-        <div class="bar-chart" id="chart-peak"></div>
+      <div class="chart-card">
+        <div class="cc-head">
+          <div><div class="cc-title">Peak Live</div><div class="cc-sub" id="ov-lbl-peak"></div></div>
+        </div>
+        <div id="ov-line-peak" style="width:100%;height:120px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head">
+          <div><div class="cc-title">Likes</div><div class="cc-sub" id="ov-lbl-likes"></div></div>
+        </div>
+        <div id="ov-line-likes" style="width:100%;height:120px;"></div>
       </div>
     </div>
-    <div class="sh"><div class="dot"></div>Ultimele Sesiuni<div class="ln"></div></div>
+
+    <!-- Month Comparison -->
+    <div class="sh"><div class="dot"></div>Comparare Luna<div class="ln"></div></div>
+    <div class="cmp-filters" id="cmp-chips">
+      <button class="cmp-chip on" onclick="setCmpMetric('views',this)">Views</button>
+      <button class="cmp-chip" onclick="setCmpMetric('peak_concurrent',this)">Peak</button>
+      <button class="cmp-chip" onclick="setCmpMetric('likes',this)">Likes</button>
+    </div>
+    <div class="cmp-row" id="cmp-kpis"></div>
+    <div class="chart-card" style="margin-bottom:22px;">
+      <div class="cc-head">
+        <div><div class="cc-title" id="cmp-chart-title">Views: Luna Curenta vs Anterioara</div><div class="cc-sub" id="cmp-chart-sub"></div></div>
+        <div class="cc-legend">
+          <span style="display:inline-block;width:16px;height:3px;background:var(--purple2);border-radius:2px;"></span>
+          <span class="leg-lbl" id="cmp-leg-cur">Curenta</span>
+          <span style="display:inline-block;width:16px;height:3px;background:var(--dim);border-radius:2px;border:1px dashed var(--dim);"></span>
+          <span class="leg-lbl" id="cmp-leg-prev">Anterioara</span>
+        </div>
+      </div>
+      <div id="cmp-chart" style="width:100%;height:140px;"></div>
+    </div>
+
+    <!-- Donuts + breakdown -->
+    <div class="sh"><div class="dot"></div>Distributie Cazino & Provider<div class="ln"></div></div>
+    <div class="breakdown-4" style="margin-bottom:22px;">
+      <div class="bd-card">
+        <div class="bd-head">Sesiuni per Cazino</div>
+        <div id="ov-donut-casino" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+        <div id="ov-casino-legend"></div>
+      </div>
+      <div class="bd-card">
+        <div class="bd-head">Sesiuni per Provider</div>
+        <div id="ov-donut-prov" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+        <div id="ov-prov-legend"></div>
+      </div>
+      <div class="bd-card">
+        <div class="bd-head">Medie Views per Cazino</div>
+        <div id="ov-casino-bars"></div>
+      </div>
+      <div class="bd-card">
+        <div class="bd-head">Medie Views per Provider</div>
+        <div id="ov-prov-bars"></div>
+      </div>
+    </div>
+
+    <!-- Top 5 -->
+    <div class="sh"><div class="dot"></div>Top Sesiuni<div class="ln"></div></div>
+    <div class="breakdown-4" style="margin-bottom:22px;">
+      <div class="bd-card"><div class="bd-head">Top 5 Views</div><div id="ov-top-views"></div></div>
+      <div class="bd-card"><div class="bd-head">Top 5 Peak</div><div id="ov-top-peak"></div></div>
+      <div class="bd-card"><div class="bd-head">Top 5 Likes</div><div id="ov-top-likes"></div></div>
+      <div class="bd-card"><div class="bd-head">Top 5 Durata</div><div id="ov-top-dur"></div></div>
+    </div>
+
+    <!-- DOW heatmap -->
+    <div class="sh"><div class="dot"></div>Activitate per Zi<div class="ln"></div></div>
+    <div class="chart-card" style="margin-bottom:22px;">
+      <div class="cc-head"><div class="cc-title">Views Mediu per Zi</div><div class="cc-sub" id="ov-lbl-dow"></div></div>
+      <div id="ov-chart-dow" style="width:100%;height:100px;"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="sh"><div class="dot"></div>Toate Sesiunile<div class="ln"></div></div>
     <div class="tw">
       <table><thead><tr>
         <th>Data</th><th>Streamer</th><th>Titlu</th><th>Link</th><th>Views</th><th>Peak</th><th>Unici</th><th>D.Medie</th><th>Likes</th>
@@ -574,22 +679,39 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <div class="page" id="pg-seven">
     <div class="sh"><div class="dot"></div>Seven &mdash; Statistici<div class="ln"></div></div>
     <div class="krow" id="seven-kpi"></div>
-    <div class="charts-row">
-      <div class="chart-box">
-        <div class="chart-title">Views per Live</div>
-        <div class="bar-chart" id="chart-seven-views"></div>
+
+    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+    <div class="graf-2col" id="seven-charts">
+      <div class="chart-card span2">
+        <div class="cc-head"><div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="seven-lbl-views"></div></div></div>
+        <div id="seven-line-views" style="width:100%;height:160px;"></div>
       </div>
-      <div class="chart-box">
-        <div class="chart-title">Peak Concurrent</div>
-        <div class="bar-chart" id="chart-seven-peak"></div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Peak Live</div><div class="cc-sub" id="seven-lbl-peak"></div></div></div>
+        <div id="seven-line-peak" style="width:100%;height:120px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="seven-lbl-likes"></div></div></div>
+        <div id="seven-line-likes" style="width:100%;height:120px;"></div>
       </div>
     </div>
-    <div class="sh"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
-    <div class="tw">
-      <table><thead><tr>
-        <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
-        <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-      </tr></thead><tbody id="seven-table"></tbody></table>
+
+    <!-- Calendar / List toggle -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
+      <div class="view-toggle">
+        <button class="vtb on" onclick="setStrView('seven','cal',this)">Calendar</button>
+        <button class="vtb" onclick="setStrView('seven','list',this)">Lista</button>
+      </div>
+    </div>
+    <div id="seven-cal-view"></div>
+    <div id="seven-list-view">
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
+          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+        </tr></thead><tbody id="seven-table"></tbody></table>
+      </div>
     </div>
   </div>
 
@@ -597,25 +719,41 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <div class="page" id="pg-profesor">
     <div class="sh"><div class="dot"></div>El Profesor &mdash; Statistici<div class="ln"></div></div>
     <div class="krow" id="prof-kpi"></div>
-    <div class="charts-row">
-      <div class="chart-box">
-        <div class="chart-title">Views per Live</div>
-        <div class="bar-chart" id="chart-prof-views"></div>
+
+    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+    <div class="graf-2col" id="prof-charts">
+      <div class="chart-card span2">
+        <div class="cc-head"><div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="prof-lbl-views"></div></div></div>
+        <div id="prof-line-views" style="width:100%;height:160px;"></div>
       </div>
-      <div class="chart-box">
-        <div class="chart-title">Peak Concurrent</div>
-        <div class="bar-chart" id="chart-prof-peak"></div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Peak Live</div><div class="cc-sub" id="prof-lbl-peak"></div></div></div>
+        <div id="prof-line-peak" style="width:100%;height:120px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="prof-lbl-likes"></div></div></div>
+        <div id="prof-line-likes" style="width:100%;height:120px;"></div>
       </div>
     </div>
-    <div class="sh"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
-    <div class="tw">
-      <table><thead><tr>
-        <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
-        <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-      </tr></thead><tbody id="prof-table"></tbody></table>
+
+    <!-- Calendar / List toggle -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
+      <div class="view-toggle">
+        <button class="vtb on" onclick="setStrView('prof','cal',this)">Calendar</button>
+        <button class="vtb" onclick="setStrView('prof','list',this)">Lista</button>
+      </div>
+    </div>
+    <div id="prof-cal-view"></div>
+    <div id="prof-list-view">
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
+          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+        </tr></thead><tbody id="prof-table"></tbody></table>
+      </div>
     </div>
   </div>
-
 
   <!-- IMPORT -->
   <div class="page" id="pg-import">
@@ -690,16 +828,20 @@ setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=[
 
 const MO=['IANUARIE','FEBRUARIE','MARTIE','APRILIE','MAI','IUNIE','IULIE','AUGUST','SEPTEMBRIE','OCTOMBRIE','NOIEMBRIE','DECEMBRIE'];
 const DAYS=['Dum','Lun','Mar','Mie','Joi','Vin','Sam'];
+const DOW_LBL=['LUN','MAR','MIE','JOI','VIN','SAM','DUM'];
 const CAS=['—','Betano','MrBit','Joker','Superbet','TopBet','GetsBet','Win2','Cazino Live','NETBET'];
 const PRO=['—','Pragmatic','Win2','NetEnt','Evolution','Push Gaming','Nolimit City','Hacksaw','PatePlay'];
+const DONUT_COLORS=['#9333ea','#f5c518','#06b6d4','#10b981','#ef4444','#f59e0b','#8b5cf6','#22d3ee','#34d399','#fb7185'];
 
 let ALL_SESSIONS = {{ sessions | tojson }};
 let curMonth = new Date().getMonth();
 let curYear = new Date().getFullYear();
 let selStreamer = 'Seven';
 let curPage = 'overview';
+let cmpMetric = 'views';
+let strView = { seven:'cal', prof:'cal' };
 
-// ── Month nav (global) ──
+// ── Month nav ──
 function updateMonthLabel() {
   document.getElementById('month-label').textContent = MO[curMonth] + ' ' + curYear;
 }
@@ -723,31 +865,224 @@ function refreshPage() {
   if(curPage==='program') renderP();
   if(curPage==='seven') renderStreamer('Seven');
   if(curPage==='profesor') renderStreamer('El Profesor');
-  if(curPage==='versus') renderC();
 }
 
 // ── Helpers ──
 function fmt(n) { return n ? Number(n).toLocaleString('ro-RO') : '0'; }
-function kC(l,v,s,cls) { return `<div class="kcard ${cls}"><div class="kc-l">${l}</div><div class="kc-v">${v}</div>${s?`<div class="kc-s">${s}</div>`:''}</div>`; }
+function fmtK(n) { if(!n) return '0'; if(n>=1000000) return (n/1000000).toFixed(1)+'M'; if(n>=1000) return (n/1000).toFixed(1)+'K'; return String(n); }
+function kC(l,v,s,cls,extra) { return `<div class="kcard ${cls}"><div class="kc-l">${l}</div><div class="kc-v">${v}</div>${extra||''}${s?`<div class="kc-s">${s}</div>`:''}</div>`; }
 function sessMonth(s) {
   const d = s.date.split('-');
   return parseInt(d[0])===curYear && parseInt(d[1])===(curMonth+1);
 }
+function sessMonthOf(s, m, y) {
+  const d = s.date.split('-');
+  return parseInt(d[0])===y && parseInt(d[1])===(m+1);
+}
+function durToMin(d) { if(!d) return 0; const p=d.split(':').map(Number); if(p.length===3) return p[0]*60+p[1]+p[2]/60; if(p.length===2) return p[0]+p[1]/60; return 0; }
+function minToStr(m) { if(!m) return '—'; return Math.floor(m/60)+'h '+Math.round(m%60)+'m'; }
 function toast(msg,t) {
   const el=document.getElementById('toast');
   el.textContent=msg; el.className='toast '+(t==='ok'?'ok':'');
   el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2600);
 }
 
-// ── Build bar chart ──
-function buildChart(container, data, colorClass) {
-  const el = document.getElementById(container);
-  if(!data.length) { el.innerHTML='<div style="color:var(--dim);font-size:11px;padding:40px 0;text-align:center;">Fara date</div>'; return; }
-  const mx = Math.max(...data.map(d=>d.val), 1);
-  el.innerHTML = data.map(d => {
-    const h = Math.max((d.val/mx)*110, 2);
-    return `<div class="bar-col"><div class="bar-fill ${colorClass}" style="height:${h}px"><span class="bar-val">${fmt(d.val)}</span></div><div class="bar-label">${d.label}</div></div>`;
+// ── SVG Line Chart ──
+function svgLine(cid, dataArr, color, gradId, lblId, height) {
+  height = height || 160;
+  const el = document.getElementById(cid); if(!el) return;
+  if(!dataArr.length) { el.innerHTML='<div style="color:var(--dim);font-size:11px;padding:40px 0;text-align:center;">Fara date</div>'; return; }
+  const W = el.parentElement ? el.parentElement.clientWidth || 600 : 600;
+  const H = height;
+  const pad = {t:18, r:10, b:22, l:44};
+  const vals = dataArr.map(d=>d.v);
+  const maxVal = Math.max(...vals, 1), minVal = 0;
+  const range = maxVal - minVal || 1;
+  const xScale = (i) => pad.l + (i/(vals.length-1||1)) * (W-pad.l-pad.r);
+  const yScale = (v) => pad.t + (1-(v-minVal)/range) * (H-pad.t-pad.b);
+  if(lblId) { const l=document.getElementById(lblId); if(l) l.textContent='Medie: '+fmt(Math.round(vals.reduce((a,v)=>a+v,0)/vals.length))+' · Max: '+fmt(Math.max(...vals)); }
+
+  const yTicks = 4;
+  let gridLines = '', yLabels = '';
+  for(let i=0; i<=yTicks; i++) {
+    const v = minVal + (range/yTicks)*i;
+    const y = yScale(v);
+    gridLines += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
+    yLabels += `<text x="${pad.l-6}" y="${y+4}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.3)" font-family="Roboto Mono,monospace">${fmtK(Math.round(v))}</text>`;
+  }
+  const avgYVal = vals.reduce((a,v)=>a+v,0)/vals.length;
+  const avgY = yScale(avgYVal);
+  const avgLine = `<line x1="${pad.l}" x2="${W-pad.r}" y1="${avgY}" y2="${avgY}" stroke="${color}" stroke-width="1" stroke-dasharray="4,4" opacity=".5"/>
+    <text x="${W-pad.r+2}" y="${avgY+4}" font-size="9" fill="${color}" opacity=".7" font-family="Roboto Mono,monospace">avg</text>`;
+
+  const pts = dataArr.map((d,i)=>({x:xScale(i), y:yScale(d.v), v:d.v, lbl:d.lbl}));
+  const linePath = 'M' + pts.map(p=>`${p.x},${p.y}`).join('L');
+  const areaPath = `M${pts[0].x},${H-pad.b} L` + pts.map(p=>`${p.x},${p.y}`).join('L') + ` L${pts[pts.length-1].x},${H-pad.b} Z`;
+  const maxI = vals.indexOf(Math.max(...vals));
+  const dots = pts.map((p,i)=>`
+    <g style="cursor:pointer;">
+      <circle cx="${p.x}" cy="${p.y}" r="8" fill="transparent"/>
+      <circle cx="${p.x}" cy="${p.y}" r="${i===maxI?5:3}" fill="${color}" stroke="var(--bg2)" stroke-width="2"
+        style="${i===maxI?'filter:drop-shadow(0 0 6px '+color+')':''}"/>
+      <title>${p.lbl}: ${fmt(p.v)}</title>
+    </g>`).join('');
+
+  const step = Math.ceil(pts.length/10);
+  const xLbls = pts.filter((_,i)=>i%step===0||i===pts.length-1).map(p=>
+    `<text x="${p.x}" y="${H-pad.b+14}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.3)" font-family="Nunito,sans-serif">${p.lbl.slice(5)}</text>`
+  ).join('');
+
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+    <defs><linearGradient id="${gradId}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${gridLines}${yLabels}
+    <path d="${areaPath}" fill="url(#${gradId})"/>
+    <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${avgLine}${dots}${xLbls}
+  </svg>`;
+}
+
+// ── SVG Comparison Chart (overlay two lines) ──
+function svgCompare(cid, curData, prevData, curColor, prevColor, height) {
+  height = height || 140;
+  const el = document.getElementById(cid); if(!el) return;
+  if(!curData.length && !prevData.length) { el.innerHTML='<div style="color:var(--dim);font-size:11px;padding:30px 0;text-align:center;">Fara date</div>'; return; }
+  const W = el.parentElement ? el.parentElement.clientWidth || 600 : 600;
+  const H = height;
+  const pad = {t:14, r:10, b:22, l:44};
+  const allVals = [...curData.map(d=>d.v), ...prevData.map(d=>d.v)];
+  const maxVal = Math.max(...allVals, 1);
+  const maxLen = Math.max(curData.length, prevData.length, 1);
+  const xScale = (i) => pad.l + (i/(maxLen-1||1)) * (W-pad.l-pad.r);
+  const yScale = (v) => pad.t + (1-v/maxVal) * (H-pad.t-pad.b);
+
+  let gridLines = '';
+  for(let i=0; i<=3; i++) {
+    const v = (maxVal/3)*i;
+    const y = yScale(v);
+    gridLines += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.05)"/>`;
+    gridLines += `<text x="${pad.l-6}" y="${y+4}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.3)" font-family="Roboto Mono,monospace">${fmtK(Math.round(v))}</text>`;
+  }
+
+  function makeLine(data, color, dashed) {
+    if(!data.length) return '';
+    const pts = data.map((d,i)=>({x:xScale(i), y:yScale(d.v), v:d.v, lbl:d.lbl}));
+    const path = 'M' + pts.map(p=>`${p.x},${p.y}`).join('L');
+    const dashAttr = dashed ? ' stroke-dasharray="6,4"' : '';
+    let svg = `<path d="${path}" fill="none" stroke="${color}" stroke-width="2"${dashAttr} stroke-linejoin="round" stroke-linecap="round" opacity="${dashed?.5:1}"/>`;
+    pts.forEach(p => { svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${color}" opacity="${dashed?.4:1}"><title>${p.lbl}: ${fmt(p.v)}</title></circle>`; });
+    return svg;
+  }
+
+  const xLbls = curData.length ? curData.filter((_,i)=>i%(Math.ceil(curData.length/8))===0||i===curData.length-1).map((d,i,arr)=>{
+    const idx = curData.indexOf(d);
+    return `<text x="${xScale(idx)}" y="${H-pad.b+14}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.3)">${d.lbl.slice(8)}</text>`;
+  }).join('') : '';
+
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible">
+    ${gridLines}
+    ${makeLine(prevData, prevColor, true)}
+    ${makeLine(curData, curColor, false)}
+    ${xLbls}
+  </svg>`;
+}
+
+// ── Donut ──
+function donut(cid, legendId, data, total) {
+  const el = document.getElementById(cid); const leg = document.getElementById(legendId);
+  if(!el) return;
+  if(!data.length) { el.innerHTML='<div style="color:var(--dim);font-size:10px;">—</div>'; if(leg) leg.innerHTML=''; return; }
+  const R=50, cx=60, cy=60, stroke=14;
+  const circ = 2*Math.PI*R;
+  let offset = 0;
+  const slices = data.map((d,i) => {
+    const pct = d.v/total;
+    const dash = circ*pct;
+    const sl = `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${DONUT_COLORS[i%DONUT_COLORS.length]}" stroke-width="${stroke}"
+      stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${circ*0.25-offset}"
+      style="transition:stroke-dasharray .9s ease;cursor:default;">
+      <title>${d.k}: ${d.v} (${Math.round(pct*100)}%)</title></circle>`;
+    offset += dash;
+    return sl;
   }).join('');
+  el.innerHTML = `<svg width="120" height="120" viewBox="0 0 120 120" class="donut-svg">
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--bg4)" stroke-width="${stroke}"/>
+    ${slices}
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="13" font-weight="900" fill="white" font-family="Nunito,sans-serif">${total}</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)">sesiuni</text>
+  </svg>`;
+  if(leg) leg.innerHTML = '<div class="dleg">' + data.map((d,i)=>`<div class="dleg-item">
+    <div class="dleg-dot" style="background:${DONUT_COLORS[i%DONUT_COLORS.length]};"></div>
+    <div class="dleg-name">${d.k}</div>
+    <div class="dleg-val">${d.v} · ${Math.round(d.v/total*100)}%</div>
+  </div>`).join('') + '</div>';
+}
+
+// ── Top List ──
+function topList(cid, items, fmtFn) {
+  const el = document.getElementById(cid); if(!el) return;
+  if(!items.length) { el.innerHTML='<div style="color:var(--dim);font-size:10px;">—</div>'; return; }
+  el.innerHTML = items.map((s,i) => `<div class="top-item">
+    <div class="top-rank r${i+1}">${i+1}</div>
+    <div class="top-info">
+      <div class="top-title">${s.title||s.date}</div>
+      <div class="top-meta">${s.date}${s.casino&&s.casino!=='—'?' · '+s.casino:''}</div>
+    </div>
+    <div class="top-val">${fmtFn(s)}</div>
+  </div>`).join('');
+}
+
+// ── Rank Bars ──
+function avgBars(cid, data, color) {
+  const el = document.getElementById(cid); if(!el) return;
+  if(!data.length) { el.innerHTML='<div style="color:var(--dim);font-size:10px;">—</div>'; return; }
+  const maxV = Math.max(...data.map(d=>d.v), 1);
+  el.innerHTML = data.map((d,i) => `<div class="rb-item">
+    <div class="rb-meta"><div class="rb-name">${d.k}</div><div class="rb-val">${fmtK(d.v)}</div></div>
+    <div class="rb-track"><div class="rb-fill" data-w="${Math.round(d.v/maxV*100)}" style="width:0%;background:${color};opacity:${1-i*.1};"></div></div>
+  </div>`).join('');
+}
+
+// ── DOW Heatmap ──
+function renderDOW(cid, lblId, sess, color) {
+  const DOW_NAMES = ['Dum','Lun','Mar','Mie','Joi','Vin','Sam'];
+  const dowSum = Array(7).fill(0), dowCnt = Array(7).fill(0);
+  sess.forEach(s => { const d=new Date(s.date).getDay(); dowSum[d]+=(s.views||0); dowCnt[d]++; });
+  const dowAvg = dowSum.map((v,i)=>dowCnt[i]?Math.round(v/dowCnt[i]):0);
+  const dowMax = Math.max(...dowAvg, 1);
+  const el = document.getElementById(cid);
+  const lbl = document.getElementById(lblId);
+  if(lbl) { const best=DOW_NAMES[dowAvg.indexOf(Math.max(...dowAvg))]; lbl.textContent='Cea mai buna zi: '+best; }
+  if(el) {
+    el.innerHTML = '<div class="dow-wrap">' + DOW_NAMES.map((name,i) => {
+      const h = Math.max(Math.round(dowAvg[i]/dowMax*100), 2);
+      const alpha = 0.3 + 0.7*(dowAvg[i]/dowMax);
+      return `<div class="dow-col">
+        <div class="dow-val">${dowAvg[i]?fmtK(dowAvg[i]):''}</div>
+        <div class="dow-bar" style="height:${h}%;background:${color};opacity:${alpha};">
+          <div class="bc-tip">${name}<br>${fmt(dowAvg[i])} views med<br>${dowCnt[i]} live-uri</div>
+        </div>
+        <div class="dow-lbl">${name}</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+}
+
+// ── Grouping helpers ──
+function groupBy(arr, key) {
+  const m = {};
+  arr.filter(s=>s[key]&&s[key]!=='—'&&s[key]!=='').forEach(s => { m[s[key]] = (m[s[key]]||0)+1; });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>({k,v}));
+}
+function groupAvg(arr, groupKey, valKey) {
+  const sum={}, cnt={};
+  arr.filter(s=>s[groupKey]&&s[groupKey]!=='—'&&s[groupKey]!==''&&(s[valKey]||0)>0).forEach(s => {
+    sum[s[groupKey]] = (sum[s[groupKey]]||0) + (s[valKey]||0);
+    cnt[s[groupKey]] = (cnt[s[groupKey]]||0) + 1;
+  });
+  return Object.entries(sum).map(([k,v])=>({k, v:Math.round(v/cnt[k])})).sort((a,b)=>b.v-a.v).slice(0,7);
 }
 
 // ── Session table row ──
@@ -768,20 +1103,24 @@ function sessRow(s, showStreamer) {
   </tr>`;
 }
 
-// ── OVERVIEW ──
+// ═══════════════════════════════
+//  OVERVIEW
+// ═══════════════════════════════
 function renderOverview() {
   const sess = ALL_SESSIONS.filter(sessMonth);
-  sess.sort((a,b)=>a.date.localeCompare(b.date));
+  sess.sort((a,b) => a.date.localeCompare(b.date));
   const n = sess.length;
-
   const kg = document.getElementById('ov-kpi');
+  const chartsEl = document.getElementById('ov-charts');
+
   if(!n) {
     kg.innerHTML = kC('Sesiuni Luna','0','','kc-purple');
+    chartsEl.style.display = 'none';
     document.getElementById('ov-table').innerHTML = '';
-    buildChart('chart-views',[],'bf-purple');
-    buildChart('chart-peak',[],'bf-cyan');
+    renderComparison();
     return;
   }
+  chartsEl.style.display = 'grid';
 
   const tv = sess.reduce((a,s)=>a+(s.views||0),0);
   const pv = sess.filter(s=>s.peak_concurrent>0);
@@ -791,8 +1130,6 @@ function renderOverview() {
   const al = lv.length ? Math.round(lv.reduce((a,s)=>a+s.likes,0)/lv.length) : 0;
   const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
   const mv = Math.max(...sess.map(s=>s.views||0));
-  const ss = sess.filter(s=>s.streamer==='Seven').length;
-  const sp = sess.filter(s=>s.streamer==='El Profesor').length;
 
   kg.innerHTML =
     kC('Sesiuni',n,'luna curenta','kc-purple') +
@@ -804,60 +1141,250 @@ function renderOverview() {
     kC('Record Views',fmt(mv),'best live','kc-gold') +
     kC('Abonati Noi',fmt(ts),'total luna','kc-green');
 
-  // Charts
-  const chartData = sess.map(s=>({ label: s.date.split('-')[2], val: s.views||0 }));
-  const peakData = sess.map(s=>({ label: s.date.split('-')[2], val: s.peak_concurrent||0 }));
-  buildChart('chart-views', chartData, 'bf-purple');
-  buildChart('chart-peak', peakData, 'bf-cyan');
+  // SVG line charts
+  setTimeout(() => {
+    svgLine('ov-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#a855f7', 'gOvV', 'ov-lbl-views', 160);
+    svgLine('ov-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), '#06b6d4', 'gOvP', 'ov-lbl-peak', 120);
+    svgLine('ov-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#f5c518', 'gOvL', 'ov-lbl-likes', 120);
+  }, 50);
 
-  // Table - latest 10
-  const latest = [...sess].reverse().slice(0,10);
+  // Donuts
+  const casDist = groupBy(sess, 'casino');
+  const provDist = groupBy(sess, 'provider');
+  donut('ov-donut-casino', 'ov-casino-legend', casDist, casDist.reduce((a,d)=>a+d.v,0)||n);
+  donut('ov-donut-prov', 'ov-prov-legend', provDist, provDist.reduce((a,d)=>a+d.v,0)||n);
+  avgBars('ov-casino-bars', groupAvg(sess,'casino','views'), 'var(--gold)');
+  avgBars('ov-prov-bars', groupAvg(sess,'provider','views'), 'var(--purple2)');
+
+  // Top 5
+  topList('ov-top-views', [...sess].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5), s=>fmt(s.views));
+  topList('ov-top-peak', [...sess].filter(s=>s.peak_concurrent>0).sort((a,b)=>b.peak_concurrent-a.peak_concurrent).slice(0,5), s=>fmt(s.peak_concurrent));
+  topList('ov-top-likes', [...sess].filter(s=>s.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,5), s=>fmt(s.likes));
+  topList('ov-top-dur', [...sess].filter(s=>durToMin(s.duration)>0).sort((a,b)=>durToMin(b.duration)-durToMin(a.duration)).slice(0,5), s=>s.duration);
+
+  // DOW
+  renderDOW('ov-chart-dow', 'ov-lbl-dow', sess, 'var(--purple2)');
+
+  // Comparison
+  renderComparison();
+
+  // Table
+  const latest = [...sess].reverse();
   document.getElementById('ov-table').innerHTML = latest.map(s=>sessRow(s,true)).join('');
+
+  // Animate bars
+  setTimeout(()=>document.querySelectorAll('[data-w]').forEach(e=>{e.style.width=e.dataset.w+'%';}),120);
 }
 
-// ── STREAMER PAGE ──
+// ═══════════════════════════════
+//  MONTH COMPARISON
+// ═══════════════════════════════
+function setCmpMetric(m, btn) {
+  cmpMetric = m;
+  document.querySelectorAll('#cmp-chips .cmp-chip').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  renderComparison();
+}
+
+function renderComparison() {
+  const pm = curMonth===0 ? 11 : curMonth-1;
+  const py = curMonth===0 ? curYear-1 : curYear;
+  const curSess = ALL_SESSIONS.filter(s=>sessMonthOf(s, curMonth, curYear)).sort((a,b)=>a.date.localeCompare(b.date));
+  const prevSess = ALL_SESSIONS.filter(s=>sessMonthOf(s, pm, py)).sort((a,b)=>a.date.localeCompare(b.date));
+
+  const curMoName = MO[curMonth].slice(0,3);
+  const prevMoName = MO[pm].slice(0,3);
+  document.getElementById('cmp-leg-cur').textContent = curMoName + ' ' + curYear;
+  document.getElementById('cmp-leg-prev').textContent = prevMoName + ' ' + py;
+
+  const metricLabel = cmpMetric==='views' ? 'Views' : cmpMetric==='peak_concurrent' ? 'Peak' : 'Likes';
+  document.getElementById('cmp-chart-title').textContent = metricLabel + ': ' + curMoName + ' vs ' + prevMoName;
+
+  function calcKpis(sess) {
+    const n = sess.length;
+    if(!n) return {n:0, tv:0, av:0, ap:0, al:0};
+    return {
+      n,
+      tv: sess.reduce((a,s)=>a+(s.views||0),0),
+      av: Math.round(sess.reduce((a,s)=>a+(s.views||0),0)/n),
+      ap: Math.round(sess.filter(s=>s.peak_concurrent>0).reduce((a,s)=>a+s.peak_concurrent,0)/(sess.filter(s=>s.peak_concurrent>0).length||1)),
+      al: Math.round(sess.filter(s=>s.likes>0).reduce((a,s)=>a+s.likes,0)/(sess.filter(s=>s.likes>0).length||1)),
+    };
+  }
+  const cur = calcKpis(curSess);
+  const prev = calcKpis(prevSess);
+
+  function pctBadge(curV, prevV) {
+    if(!prevV) return '<span class="cmp-pct eq">N/A</span>';
+    const pct = Math.round((curV-prevV)/prevV*100);
+    if(pct===0) return '<span class="cmp-pct eq">= 0%</span>';
+    return pct>0
+      ? `<span class="cmp-pct up">&#9650; +${pct}%</span>`
+      : `<span class="cmp-pct dn">&#9660; ${pct}%</span>`;
+  }
+
+  const kpis = document.getElementById('cmp-kpis');
+  kpis.innerHTML = [
+    {l:'Sesiuni', c:cur.n, p:prev.n},
+    {l:'Total Views', c:cur.tv, p:prev.tv},
+    {l:'Views Mediu', c:cur.av, p:prev.av},
+    {l:'Peak Mediu', c:cur.ap, p:prev.ap},
+    {l:'Likes Mediu', c:cur.al, p:prev.al},
+  ].map(m => `<div class="cmp-card">
+    <div class="cmp-label">${m.l}</div>
+    <div class="cmp-vals"><span class="cmp-cur">${fmt(m.c)}</span><span class="cmp-prev">vs ${fmt(m.p)}</span></div>
+    ${pctBadge(m.c, m.p)}
+  </div>`).join('');
+
+  // Overlay chart
+  const curChartData = curSess.map(s=>({v:s[cmpMetric]||0, lbl:s.date}));
+  const prevChartData = prevSess.map(s=>({v:s[cmpMetric]||0, lbl:s.date}));
+  const sub = document.getElementById('cmp-chart-sub');
+  if(sub) sub.textContent = curSess.length + ' vs ' + prevSess.length + ' sesiuni';
+  setTimeout(() => svgCompare('cmp-chart', curChartData, prevChartData, '#a855f7', '#4a3d6b', 140), 60);
+}
+
+// ═══════════════════════════════
+//  STREAMER PAGE
+// ═══════════════════════════════
+function setStrView(prefix, view, btn) {
+  strView[prefix] = view;
+  const parent = btn.closest('.view-toggle');
+  parent.querySelectorAll('.vtb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(prefix+'-cal-view').style.display = view==='cal' ? 'block' : 'none';
+  document.getElementById(prefix+'-list-view').style.display = view==='list' ? 'block' : 'none';
+}
+
 function renderStreamer(name) {
   const prefix = name==='Seven' ? 'seven' : 'prof';
+  const isS = name==='Seven';
+  const AC = isS ? 'var(--gold)' : 'var(--cyan)';
+  const lineColor = isS ? '#f5c518' : '#06b6d4';
   const sess = ALL_SESSIONS.filter(s=>s.streamer===name && sessMonth(s));
-  sess.sort((a,b)=>a.date.localeCompare(b.date));
+  sess.sort((a,b) => a.date.localeCompare(b.date));
   const n = sess.length;
 
   const kg = document.getElementById(prefix+'-kpi');
+  const chartsEl = document.getElementById(prefix+'-charts');
+
   if(!n) {
     kg.innerHTML = kC('Sesiuni','0','','kc-purple');
+    if(chartsEl) chartsEl.style.display = 'none';
     document.getElementById(prefix+'-table').innerHTML = '';
-    buildChart('chart-'+prefix+'-views',[],'bf-purple');
-    buildChart('chart-'+prefix+'-peak',[],'bf-cyan');
+    renderStreamerCal(prefix, name, []);
     return;
   }
+  if(chartsEl) chartsEl.style.display = 'grid';
 
   const tv = sess.reduce((a,s)=>a+(s.views||0),0);
   const pv = sess.filter(s=>s.peak_concurrent>0);
   const ap = pv.length ? Math.round(pv.reduce((a,s)=>a+s.peak_concurrent,0)/pv.length) : 0;
+  const mp = Math.max(...sess.map(s=>s.peak_concurrent||0));
   const lv = sess.filter(s=>s.likes>0);
   const al = lv.length ? Math.round(lv.reduce((a,s)=>a+s.likes,0)/lv.length) : 0;
+  const ml = lv.length ? Math.max(...lv.map(s=>s.likes)) : 0;
   const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
   const uv = sess.filter(s=>s.unique_viewers>0);
   const au = uv.length ? Math.round(uv.reduce((a,s)=>a+s.unique_viewers,0)/uv.length) : 0;
+  const dArr = sess.filter(s=>durToMin(s.duration)>0).map(s=>durToMin(s.duration));
+  const avgDur = dArr.length ? minToStr(dArr.reduce((a,v)=>a+v,0)/dArr.length) : '—';
+  const er = sess.filter(s=>s.views>0&&s.likes>0);
+  const erPct = er.length ? ((er.reduce((a,s)=>a+(s.likes/s.views*100),0)/er.length)).toFixed(1)+'%' : '—';
 
   kg.innerHTML =
-    kC('Sesiuni',n,'','kc-purple') +
-    kC('Total Views',fmt(tv),'','kc-gold') +
+    kC('Sesiuni',n,'luna curenta', isS?'kc-gold':'kc-cyan') +
+    kC('Total Views',fmt(tv),'cumulat', isS?'kc-gold':'kc-cyan') +
     kC('Views Mediu',fmt(Math.round(tv/n)),'per live','') +
-    kC('Peak Mediu',fmt(ap),'','kc-cyan') +
-    kC('Unici Mediu',fmt(au),'per live','') +
+    kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
+    kC('Record Peak',fmt(mp),'max','kc-cyan') +
     kC('Likes Mediu',fmt(al),'per live','') +
+    kC('Unici Mediu',fmt(au),'per live','') +
+    kC('Engagement',erPct,'likes/views','') +
+    kC('Durata Medie',avgDur,'per live','') +
     kC('Abonati Noi',fmt(ts),'total','kc-green');
 
-  const color = name==='Seven' ? 'bf-gold' : 'bf-cyan';
-  buildChart('chart-'+prefix+'-views', sess.map(s=>({label:s.date.split('-')[2],val:s.views||0})), color);
-  buildChart('chart-'+prefix+'-peak', sess.map(s=>({label:s.date.split('-')[2],val:s.peak_concurrent||0})), color);
+  // SVG line charts
+  setTimeout(() => {
+    svgLine(prefix+'-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), lineColor, 'g'+prefix+'V', prefix+'-lbl-views', 160);
+    svgLine(prefix+'-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), isS?'#ffd84d':'#22d3ee', 'g'+prefix+'P', prefix+'-lbl-peak', 120);
+    svgLine(prefix+'-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'g'+prefix+'L', prefix+'-lbl-likes', 120);
+  }, 50);
 
+  // Calendar
+  renderStreamerCal(prefix, name, sess);
+
+  // Table
   const rows = [...sess].reverse();
   document.getElementById(prefix+'-table').innerHTML = rows.map(s=>sessRow(s,false)).join('');
+
+  // Set initial view state
+  document.getElementById(prefix+'-cal-view').style.display = strView[prefix]==='cal' ? 'block' : 'none';
+  document.getElementById(prefix+'-list-view').style.display = strView[prefix]==='list' ? 'block' : 'none';
 }
 
-// ── PROGRAM ──
+// ── Streamer Calendar ──
+function renderStreamerCal(prefix, name, sess) {
+  const el = document.getElementById(prefix+'-cal-view');
+  if(!el) return;
+  const m = curMonth, y = curYear;
+  const days = new Date(y, m+1, 0).getDate();
+  const firstDow = (new Date(y, m, 1).getDay()+6)%7; // Mon=0
+  const today = new Date();
+  const isS = name==='Seven';
+
+  // Build session map by day
+  const sessByDay = {};
+  sess.forEach(s => {
+    const day = parseInt(s.date.split('-')[2]);
+    if(!sessByDay[day]) sessByDay[day] = [];
+    sessByDay[day].push(s);
+  });
+
+  const moName = MO[m].charAt(0).toUpperCase() + MO[m].slice(1).toLowerCase();
+  let html = `<div style="text-align:center;font-size:clamp(24px,3.5vw,48px);font-weight:900;color:${isS?'var(--gold)':'var(--cyan)'};margin:8px 0 2px;text-transform:capitalize;">${moName} ${y}</div>`;
+  html += `<div style="text-align:center;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--dim);text-transform:uppercase;margin-bottom:16px;">${name}</div>`;
+  html += `<div class="cal-dow-row">${DOW_LBL.map(d=>`<div class="cal-dow">${d}</div>`).join('')}</div>`;
+  html += '<div class="cal-body">';
+
+  for(let i=0; i<firstDow; i++) html += '<div class="cal-cell empty"></div>';
+
+  for(let d=1; d<=days; d++) {
+    const date = new Date(y, m, d);
+    const dow = date.getDay();
+    const isWk = dow===0 || dow===6;
+    const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+    const daySess = sessByDay[d] || [];
+    const hasData = daySess.length > 0;
+
+    let cls = 'cal-cell';
+    if(hasData) cls += isS ? ' has-seven' : ' has-prof';
+    if(isWk) cls += ' weekend';
+    if(isToday) cls += ' today';
+
+    html += `<div class="${cls}">`;
+    html += `<div class="cal-num">${d}</div>`;
+
+    if(hasData) {
+      const s = daySess[0];
+      html += `<div class="cal-badge ${isS?'cal-badge-s':'cal-badge-p'}">${isS?'&#9889;':'&#127919;'} ${name}</div>`;
+      if(s.casino && s.casino!=='—' && s.casino!=='') html += `<div class="cal-info">${s.casino}</div>`;
+      if(s.provider && s.provider!=='—' && s.provider!=='') html += `<div class="cal-info">${s.provider}</div>`;
+      html += '<div class="cal-sess">';
+      if(s.views) html += `<div class="cal-views">${fmt(s.views)}</div>`;
+      if(s.peak_concurrent) html += `<div class="cal-peak">peak ${fmt(s.peak_concurrent)}</div>`;
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════
+//  PROGRAM
+// ═══════════════════════════════
 function switchProg(which, btn) {
   document.querySelectorAll('.prog-panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.prog-tab').forEach(t=>t.classList.remove('on'));
@@ -866,7 +1393,7 @@ function switchProg(which, btn) {
 }
 
 async function renderP() {
-  const days = new Date(curYear,curMonth+1,0).getDate();
+  const days = new Date(curYear, curMonth+1, 0).getDate();
   let progSeven = {};
   let progProf = {};
   try {
@@ -875,7 +1402,6 @@ async function renderP() {
     const r2 = await fetch(`/api/program/${curYear}/${curMonth}?streamer=El Profesor`);
     progProf = await r2.json();
   } catch(e){}
-
   renderProgGrid('pl-seven', 'Seven', progSeven, days);
   renderProgGrid('pl-prof', 'El Profesor', progProf, days);
 }
@@ -925,43 +1451,6 @@ async function updP(el) {
   row.className = 'prog-row' + (hasCasino ? ' ' + colorClass : (isWk ? ' r-free' : ''));
 }
 
-// ── VERSUS ──
-function renderC() {
-  const names=['Seven','El Profesor'];
-  const st=names.map(name=>{
-    const ss=ALL_SESSIONS.filter(s=>s.streamer===name && sessMonth(s));
-    if(!ss.length) return{name,n:0,tv:0,av:0,ap:0,al:0,ts:0,au:0};
-    const n=ss.length;
-    const pv=ss.filter(s=>s.peak_concurrent>0);
-    const lv=ss.filter(s=>s.likes>0);
-    const uv=ss.filter(s=>s.unique_viewers>0);
-    return{name,n,
-      tv:ss.reduce((a,s)=>a+(s.views||0),0),
-      av:Math.round(ss.reduce((a,s)=>a+(s.views||0),0)/n),
-      ap:pv.length?Math.round(pv.reduce((a,s)=>a+s.peak_concurrent,0)/pv.length):0,
-      al:lv.length?Math.round(lv.reduce((a,s)=>a+s.likes,0)/lv.length):0,
-      ts:ss.reduce((a,s)=>a+(s.new_subs||0),0),
-      au:uv.length?Math.round(uv.reduce((a,s)=>a+s.unique_viewers,0)/uv.length):0,
-    };
-  });
-  function vR(l,v){return`<div class="vrow"><span class="vrow-l">${l}</span><span class="vrow-v">${v}</span></div>`;}
-  document.getElementById('vsg').innerHTML=`
-    <div class="vs-side">
-      <div class="vs-nm sn">Seven</div>
-      ${vR('Sesiuni',st[0].n)}${vR('Total Views',fmt(st[0].tv))}${vR('Views / Live',fmt(st[0].av))}${vR('Unici Mediu',fmt(st[0].au))}${vR('Peak Mediu',fmt(st[0].ap))}${vR('Likes Mediu',fmt(st[0].al))}${vR('Abonati Noi',fmt(st[0].ts))}
-    </div><div class="vs-mid">VS</div><div class="vs-side">
-      <div class="vs-nm pn">El Profesor</div>
-      ${vR('Sesiuni',st[1].n)}${vR('Total Views',fmt(st[1].tv))}${vR('Views / Live',fmt(st[1].av))}${vR('Unici Mediu',fmt(st[1].au))}${vR('Peak Mediu',fmt(st[1].ap))}${vR('Likes Mediu',fmt(st[1].al))}${vR('Abonati Noi',fmt(st[1].ts))}
-    </div>`;
-  const met=[{l:'Views Mediu',k:'av'},{l:'Spectatori Unici',k:'au'},{l:'Peak Mediu',k:'ap'},{l:'Likes Mediu',k:'al'}];
-  document.getElementById('bars').innerHTML=met.map(m=>{
-    const v0=st[0][m.k]||0,v1=st[1][m.k]||0,mx=Math.max(v0,v1,1);
-    const p0=Math.round(v0/mx*100),p1=Math.round(v1/mx*100);
-    return`<div class="bitem"><div class="bmeta"><div class="bvs">${fmt(v0)}</div><div class="btitle">${m.l}</div><div class="bvp">${fmt(v1)}</div></div><div class="dbar"><div class="blt"><div class="blf" data-w="${p0}" style="width:0%"></div></div><div class="bct"></div><div class="brt"><div class="brf" data-w="${p1}" style="width:0%"></div></div></div></div>`;
-  }).join('');
-  setTimeout(()=>document.querySelectorAll('[data-w]').forEach(e=>e.style.width=e.dataset.w+'%'),80);
-}
-
 // ── IMPORT ──
 async function ytImport() {
   const btn=document.getElementById('import-btn');
@@ -981,6 +1470,7 @@ async function ytImport() {
       status.textContent=`${result.imported} importate / ${result.total_found} gasite`;
       const sr=await fetch('/api/sessions');
       ALL_SESSIONS=await sr.json();
+      refreshPage();
     } else {
       toast(result.error||'Eroare','');
       status.textContent='Eroare';
