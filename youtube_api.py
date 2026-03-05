@@ -65,27 +65,33 @@ def _get_client_config() -> dict:
         return json.load(f)
 
 
-def _make_flow():
-    """Create OAuth flow from config."""
+def _get_flow_and_url():
+    """Create OAuth flow, return (flow, auth_url). flow.code_verifier needed for callback."""
     from google_auth_oauthlib.flow import Flow
     config = _get_client_config()
     flow = Flow.from_client_config(config, SCOPES)
     flow.redirect_uri = _redirect_uri()
-    return flow
+    # Disable PKCE since we can't persist flow state between requests
+    flow.code_verifier = None
+    auth_url, _ = flow.authorization_url(
+        access_type="offline", prompt="consent",
+    )
+    return flow, auth_url
 
 
 def start_oauth_flow() -> str:
     """Start OAuth flow and return auth URL for user to visit."""
-    flow = _make_flow()
-    auth_url, _ = flow.authorization_url(
-        access_type="offline", prompt="consent"
-    )
+    _, auth_url = _get_flow_and_url()
     return auth_url
 
 
 def complete_oauth_flow(code: str) -> Credentials:
     """Complete OAuth flow with authorization code, save token to DB."""
-    flow = _make_flow()
+    from google_auth_oauthlib.flow import Flow
+    config = _get_client_config()
+    flow = Flow.from_client_config(config, SCOPES)
+    flow.redirect_uri = _redirect_uri()
+    flow.code_verifier = None
     flow.fetch_token(code=code)
     creds = flow.credentials
     db.save_token(creds.to_json())
