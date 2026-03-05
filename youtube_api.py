@@ -65,35 +65,42 @@ def _get_client_config() -> dict:
         return json.load(f)
 
 
-def _get_flow_and_url():
-    """Create OAuth flow, return (flow, auth_url). flow.code_verifier needed for callback."""
-    from google_auth_oauthlib.flow import Flow
-    config = _get_client_config()
-    flow = Flow.from_client_config(config, SCOPES)
-    flow.redirect_uri = _redirect_uri()
-    # Disable PKCE since we can't persist flow state between requests
-    flow.code_verifier = None
-    auth_url, _ = flow.authorization_url(
-        access_type="offline", prompt="consent",
-    )
-    return flow, auth_url
-
-
 def start_oauth_flow() -> str:
-    """Start OAuth flow and return auth URL for user to visit."""
-    _, auth_url = _get_flow_and_url()
-    return auth_url
+    """Start OAuth flow and return auth URL (no PKCE)."""
+    from urllib.parse import urlencode
+    config = _get_client_config()["web"]
+    params = {
+        "client_id": config["client_id"],
+        "redirect_uri": _redirect_uri(),
+        "response_type": "code",
+        "scope": " ".join(SCOPES),
+        "access_type": "offline",
+        "prompt": "consent",
+    }
+    return f"{config['auth_uri']}?{urlencode(params)}"
 
 
 def complete_oauth_flow(code: str) -> Credentials:
-    """Complete OAuth flow with authorization code, save token to DB."""
-    from google_auth_oauthlib.flow import Flow
-    config = _get_client_config()
-    flow = Flow.from_client_config(config, SCOPES)
-    flow.redirect_uri = _redirect_uri()
-    flow.code_verifier = None
-    flow.fetch_token(code=code)
-    creds = flow.credentials
+    """Exchange auth code for tokens (no PKCE)."""
+    import requests
+    config = _get_client_config()["web"]
+    resp = requests.post(config["token_uri"], data={
+        "code": code,
+        "client_id": config["client_id"],
+        "client_secret": config["client_secret"],
+        "redirect_uri": _redirect_uri(),
+        "grant_type": "authorization_code",
+    })
+    resp.raise_for_status()
+    token_data = resp.json()
+    creds = Credentials(
+        token=token_data["access_token"],
+        refresh_token=token_data.get("refresh_token"),
+        token_uri=config["token_uri"],
+        client_id=config["client_id"],
+        client_secret=config["client_secret"],
+        scopes=SCOPES,
+    )
     db.save_token(creds.to_json())
     return creds
 
