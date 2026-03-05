@@ -13,16 +13,20 @@ SCOPES = [
     "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/yt-analytics.readonly",
 ]
-CLIENT_SECRET = os.path.join(os.path.dirname(__file__), "client_secret.json")
+_LOCAL_SECRET = os.path.join(os.path.dirname(__file__), "client_secret.json")
+_TMP_SECRET = "/tmp/client_secret.json"
 
 
-def _ensure_client_secret():
-    """Write client_secret.json from env var if it doesn't exist on disk."""
-    if not os.path.exists(CLIENT_SECRET):
-        data = os.environ.get("CLIENT_SECRET_JSON")
-        if data:
-            with open(CLIENT_SECRET, "w") as f:
-                f.write(data)
+def _get_client_secret_path() -> str:
+    """Return path to client_secret.json, creating from env var if needed."""
+    if os.path.exists(_LOCAL_SECRET):
+        return _LOCAL_SECRET
+    data = os.environ.get("CLIENT_SECRET_JSON")
+    if data:
+        with open(_TMP_SECRET, "w") as f:
+            f.write(data)
+        return _TMP_SECRET
+    return _LOCAL_SECRET
 
 
 def _refresh_and_save(creds: Credentials) -> Credentials:
@@ -54,9 +58,8 @@ def _redirect_uri() -> str:
 
 def start_oauth_flow() -> str:
     """Start OAuth flow and return auth URL for user to visit."""
-    _ensure_client_secret()
     from google_auth_oauthlib.flow import Flow
-    flow = Flow.from_client_secrets_file(CLIENT_SECRET, SCOPES)
+    flow = Flow.from_client_secrets_file(_get_client_secret_path(), SCOPES)
     flow.redirect_uri = _redirect_uri()
     auth_url, _ = flow.authorization_url(
         access_type="offline", prompt="consent"
@@ -66,9 +69,8 @@ def start_oauth_flow() -> str:
 
 def complete_oauth_flow(code: str) -> Credentials:
     """Complete OAuth flow with authorization code, save token to DB."""
-    _ensure_client_secret()
     from google_auth_oauthlib.flow import Flow
-    flow = Flow.from_client_secrets_file(CLIENT_SECRET, SCOPES)
+    flow = Flow.from_client_secrets_file(_get_client_secret_path(), SCOPES)
     flow.redirect_uri = _redirect_uri()
     flow.fetch_token(code=code)
     creds = flow.credentials

@@ -41,8 +41,11 @@ async def index(request: Request):
 
 @app.get("/oauth/login")
 async def oauth_login():
-    url = yt.start_oauth_flow()
-    return RedirectResponse(url)
+    try:
+        url = yt.start_oauth_flow()
+        return RedirectResponse(url)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 @app.get("/oauth/callback")
