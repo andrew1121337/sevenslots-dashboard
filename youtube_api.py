@@ -56,11 +56,27 @@ def _redirect_uri() -> str:
     return f"{base}/oauth/callback"
 
 
+def _get_client_config() -> dict:
+    """Get OAuth client config from env var or file."""
+    env = os.environ.get("CLIENT_SECRET_JSON")
+    if env:
+        return json.loads(env)
+    with open(_LOCAL_SECRET) as f:
+        return json.load(f)
+
+
+def _make_flow():
+    """Create OAuth flow from config."""
+    from google_auth_oauthlib.flow import Flow
+    config = _get_client_config()
+    flow = Flow.from_client_config(config, SCOPES)
+    flow.redirect_uri = _redirect_uri()
+    return flow
+
+
 def start_oauth_flow() -> str:
     """Start OAuth flow and return auth URL for user to visit."""
-    from google_auth_oauthlib.flow import Flow
-    flow = Flow.from_client_secrets_file(_get_client_secret_path(), SCOPES)
-    flow.redirect_uri = _redirect_uri()
+    flow = _make_flow()
     auth_url, _ = flow.authorization_url(
         access_type="offline", prompt="consent"
     )
@@ -69,9 +85,7 @@ def start_oauth_flow() -> str:
 
 def complete_oauth_flow(code: str) -> Credentials:
     """Complete OAuth flow with authorization code, save token to DB."""
-    from google_auth_oauthlib.flow import Flow
-    flow = Flow.from_client_secrets_file(_get_client_secret_path(), SCOPES)
-    flow.redirect_uri = _redirect_uri()
+    flow = _make_flow()
     flow.fetch_token(code=code)
     creds = flow.credentials
     db.save_token(creds.to_json())

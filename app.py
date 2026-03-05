@@ -58,8 +58,12 @@ async def oauth_login():
 
 @app.get("/oauth/callback")
 async def oauth_callback(code: str):
-    yt.complete_oauth_flow(code)
-    return RedirectResponse("/?msg=youtube_connected")
+    try:
+        yt.complete_oauth_flow(code)
+        return RedirectResponse("/?msg=youtube_connected")
+    except Exception as e:
+        import traceback
+        return JSONResponse({"error": str(e), "trace": traceback.format_exc()}, status_code=500)
 
 
 @app.get("/oauth/status")
