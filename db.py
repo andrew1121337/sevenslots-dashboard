@@ -1,6 +1,7 @@
 """Database for SevenSlots Dashboard. Uses PostgreSQL if DATABASE_URL is set, else SQLite."""
 import os
 import sqlite3
+from datetime import datetime, date
 from urllib.parse import urlparse
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -35,6 +36,21 @@ def _pg_run(conn, sql, params=None):
 def _pg_columns(conn):
     """Get column names from last query."""
     return [d["name"] for d in conn.columns] if conn.columns else []
+
+
+def _serialize(val):
+    """Convert non-JSON-serializable types to strings."""
+    if isinstance(val, (datetime, date)):
+        return val.isoformat()
+    return val
+
+
+def _pg_to_dicts(conn, rows):
+    """Convert pg8000 rows to list of dicts with serializable values."""
+    cols = _pg_columns(conn)
+    if not cols:
+        return []
+    return [{c: _serialize(v) for c, v in zip(cols, r)} for r in rows]
 
 
 def init_db():
@@ -150,9 +166,9 @@ def get_sessions(streamer: str = None) -> list[dict]:
             rows = _pg_run(conn, "SELECT * FROM sessions WHERE streamer = :s ORDER BY date DESC", {"s": streamer})
         else:
             rows = _pg_run(conn, "SELECT * FROM sessions ORDER BY date DESC")
-        result_cols = _pg_columns(conn)
+        result = _pg_to_dicts(conn, rows)
         conn.close()
-        return [dict(zip(result_cols, r)) for r in rows] if result_cols else [dict(zip(cols, r)) for r in rows]
+        return result
     else:
         conn = get_conn()
         if streamer:
@@ -214,10 +230,9 @@ def get_program(year: int, month: int, streamer: str = None) -> dict:
                           {"y": year, "m": month, "s": streamer})
         else:
             rows = _pg_run(conn, "SELECT * FROM programs WHERE year=:y AND month=:m", {"y": year, "m": month})
-        result_cols = _pg_columns(conn)
+        result = _pg_to_dicts(conn, rows)
         conn.close()
-        dicts = [dict(zip(result_cols, r)) for r in rows] if result_cols else []
-        return {r["day"]: r for r in dicts}
+        return {r["day"]: r for r in result}
     else:
         conn = get_conn()
         if streamer:
