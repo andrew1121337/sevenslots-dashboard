@@ -135,6 +135,18 @@ def create_user(username: str, password: str):
         conn.close()
 
 
+def delete_user(username: str):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM users WHERE username = :u", {"u": username})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM users WHERE username = ?", (username,))
+        conn.commit()
+        conn.close()
+
+
 def verify_user(username: str, password: str) -> bool:
     import hashlib
     pw_hash = hashlib.sha256(password.encode()).hexdigest()

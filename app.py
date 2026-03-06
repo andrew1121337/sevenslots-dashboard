@@ -53,6 +53,16 @@ def startup():
     try:
         db.init_db()
         print("[STARTUP] DB initialized OK")
+        # Ensure required user accounts exist
+        for uname in ("paul", "costi", "sevenslots"):
+            try:
+                db.create_user(uname, "Liv2026!")
+                print(f"[STARTUP] Created user '{uname}'")
+            except Exception:
+                pass  # already exists
+        # Remove old accounts
+        for old in ("streamers", "managers"):
+            db.delete_user(old)
     except Exception as e:
         print(f"[STARTUP] DB init failed: {e}")
 
