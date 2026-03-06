@@ -1392,7 +1392,7 @@ function setStrView(prefix, view, btn) {
   document.getElementById(prefix+'-list-view').style.display = view==='list' ? 'block' : 'none';
 }
 
-function renderStreamer(name) {
+async function renderStreamer(name) {
   const prefix = name==='Seven' ? 'seven' : 'prof';
   const isS = name==='Seven';
   const AC = isS ? 'var(--gold)' : 'var(--cyan)';
@@ -1400,6 +1400,12 @@ function renderStreamer(name) {
   const sess = ALL_SESSIONS.filter(s=>s.streamer===name && sessMonth(s));
   sess.sort((a,b) => a.date.localeCompare(b.date));
   const n = sess.length;
+  // Fetch program data for calendar
+  let progData = {};
+  try {
+    const pr = await fetch(`/api/program/${curYear}/${curMonth}?streamer=${encodeURIComponent(name)}`);
+    progData = await pr.json();
+  } catch(e){}
 
   const kg = document.getElementById(prefix+'-kpi');
   const chartsEl = document.getElementById(prefix+'-charts');
@@ -1408,7 +1414,7 @@ function renderStreamer(name) {
     kg.innerHTML = kC('Sesiuni','0','','kc-purple');
     if(chartsEl) chartsEl.style.display = 'none';
     document.getElementById(prefix+'-table').innerHTML = '';
-    renderStreamerCal(prefix, name, []);
+    renderStreamerCal(prefix, name, [], progData);
     return;
   }
   if(chartsEl) chartsEl.style.display = 'grid';
@@ -1448,7 +1454,7 @@ function renderStreamer(name) {
   }, 50);
 
   // Calendar
-  renderStreamerCal(prefix, name, sess);
+  renderStreamerCal(prefix, name, sess, progData);
 
   // Table
   const rows = [...sess].reverse();
@@ -1460,7 +1466,7 @@ function renderStreamer(name) {
 }
 
 // ── Streamer Calendar ──
-function renderStreamerCal(prefix, name, sess) {
+function renderStreamerCal(prefix, name, sess, progData) {
   const el = document.getElementById(prefix+'-cal-view');
   if(!el) return;
   const m = curMonth, y = curYear;
@@ -1468,6 +1474,7 @@ function renderStreamerCal(prefix, name, sess) {
   const firstDow = (new Date(y, m, 1).getDay()+6)%7; // Mon=0
   const today = new Date();
   const isS = name==='Seven';
+  const prog = progData || {};
 
   // Build session map by day
   const sessByDay = {};
@@ -1491,25 +1498,36 @@ function renderStreamerCal(prefix, name, sess) {
     const isWk = dow===0 || dow===6;
     const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
     const daySess = sessByDay[d] || [];
-    const hasData = daySess.length > 0;
+    const hasSession = daySess.length > 0;
+    const progDay = prog[d] || {};
+    const hasProg = progDay.casino && progDay.casino !== '—' && progDay.casino !== '';
+    const hasData = hasSession || hasProg;
 
     let cls = 'cal-cell';
     if(hasData) cls += isS ? ' has-seven' : ' has-prof';
-    if(isWk) cls += ' weekend';
+    if(isWk && !hasData) cls += ' weekend';
     if(isToday) cls += ' today';
 
     html += `<div class="${cls}">`;
     html += `<div class="cal-num">${d}</div>`;
 
-    if(hasData) {
+    if(hasSession) {
       const s = daySess[0];
       html += `<div class="cal-badge ${isS?'cal-badge-s':'cal-badge-p'}">${isS?'&#9889;':'&#127919;'} ${name}</div>`;
-      if(s.casino && s.casino!=='—' && s.casino!=='') html += `<div class="cal-info">${s.casino}</div>`;
-      if(s.provider && s.provider!=='—' && s.provider!=='') html += `<div class="cal-info">${s.provider}</div>`;
+      // Use program data for casino/provider, fallback to session data
+      const casino = (hasProg ? progDay.casino : s.casino) || '';
+      const provider = (hasProg ? progDay.provider : s.provider) || '';
+      if(casino && casino!=='—') html += `<div class="cal-info">${casino}</div>`;
+      if(provider && provider!=='—') html += `<div class="cal-info">${provider}</div>`;
       html += '<div class="cal-sess">';
       if(s.views) html += `<div class="cal-views">${fmt(s.views)}</div>`;
       if(s.peak_concurrent) html += `<div class="cal-peak">peak ${fmt(s.peak_concurrent)}</div>`;
       html += '</div>';
+    } else if(hasProg) {
+      // Day has program data but no session yet
+      html += `<div class="cal-badge ${isS?'cal-badge-s':'cal-badge-p'}">${isS?'&#9889;':'&#127919;'} Programat</div>`;
+      if(progDay.casino && progDay.casino!=='—') html += `<div class="cal-info">${progDay.casino}</div>`;
+      if(progDay.provider && progDay.provider!=='—') html += `<div class="cal-info">${progDay.provider}</div>`;
     }
     html += '</div>';
   }
