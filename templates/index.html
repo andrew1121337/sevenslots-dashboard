@@ -1403,7 +1403,7 @@ async function renderStreamer(name) {
   // Fetch program data for calendar
   let progData = {};
   try {
-    const pr = await fetch(`/api/program/${curYear}/${curMonth}?streamer=${encodeURIComponent(name)}`);
+    const pr = await fetch(`/api/program/${curYear}/${curMonth+1}?streamer=${encodeURIComponent(name)}`);
     progData = await pr.json();
   } catch(e){}
 
@@ -1551,9 +1551,9 @@ async function renderP() {
   let progSeven = {};
   let progProf = {};
   try {
-    const r1 = await fetch(`/api/program/${curYear}/${curMonth}?streamer=Seven`);
+    const r1 = await fetch(`/api/program/${curYear}/${curMonth+1}?streamer=Seven`);
     progSeven = await r1.json();
-    const r2 = await fetch(`/api/program/${curYear}/${curMonth}?streamer=El Profesor`);
+    const r2 = await fetch(`/api/program/${curYear}/${curMonth+1}?streamer=El Profesor`);
     progProf = await r2.json();
   } catch(e){}
   renderProgGrid('pl-seven', 'Seven', progSeven, days);
@@ -1591,7 +1591,7 @@ async function updP(el) {
   const sels = row.querySelectorAll('.psel');
   const data = new FormData();
   data.append('year', curYear);
-  data.append('month', curMonth);
+  data.append('month', curMonth+1);
   data.append('day', d);
   data.append('streamer', streamer);
   data.append('casino', sels[0].value);

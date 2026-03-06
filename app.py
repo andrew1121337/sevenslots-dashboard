@@ -63,6 +63,8 @@ def startup():
         # Remove old accounts
         for old in ("streamers", "managers"):
             db.delete_user(old)
+        # One-time fix: migrate program data from 0-indexed to 1-indexed months
+        db.migrate_program_months()
     except Exception as e:
         print(f"[STARTUP] DB init failed: {e}")
 
