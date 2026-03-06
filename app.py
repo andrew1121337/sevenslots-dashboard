@@ -105,11 +105,13 @@ async def index(request: Request):
     try:
         sessions = db.get_sessions()
         authenticated = yt.is_authenticated()
-        return templates.TemplateResponse("index.html", {
+        resp = templates.TemplateResponse("index.html", {
             "request": request,
             "sessions": sessions,
             "authenticated": authenticated,
         })
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return resp
     except Exception as e:
         import traceback
         return JSONResponse({"error": str(e), "trace": traceback.format_exc()}, status_code=500)

@@ -315,17 +315,5 @@ def get_program(year: int, month: int, streamer: str = None) -> dict:
 
 
 def migrate_program_months():
-    """One-time: clear program data saved with wrong 0-indexed months.
-    Uses month=0 as sentinel — valid 1-indexed data never has month=0."""
-    if DATABASE_URL:
-        conn = get_conn()
-        rows = _pg_run(conn, "SELECT count(*) FROM programs WHERE month < 1 OR month > 12")
-        if rows and rows[0][0] > 0:
-            _pg_run(conn, "DELETE FROM programs WHERE month < 1 OR month > 12")
-            print("[MIGRATE] Removed program rows with invalid month values")
-        conn.close()
-    else:
-        conn = get_conn()
-        conn.execute("DELETE FROM programs WHERE month < 1 OR month > 12")
-        conn.commit()
-        conn.close()
+    """One-time: wipe program data with wrong month indexing."""
+    pass
