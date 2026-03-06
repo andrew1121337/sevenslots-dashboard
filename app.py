@@ -250,8 +250,9 @@ async def api_save_program(
     streamer: str = Form(""),
     casino: str = Form(""),
     provider: str = Form(""),
+    done: int = Form(0),
 ):
-    db.save_program_day(year, month, day, streamer, casino, provider)
+    db.save_program_day(year, month, day, streamer, casino, provider, done)
     return {"ok": True}
 
 

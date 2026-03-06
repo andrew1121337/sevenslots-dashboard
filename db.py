@@ -83,8 +83,14 @@ def init_db():
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS programs (
             year INTEGER NOT NULL, month INTEGER NOT NULL, day INTEGER NOT NULL,
             streamer TEXT NOT NULL DEFAULT '', casino TEXT DEFAULT '', provider TEXT DEFAULT '',
+            done INTEGER DEFAULT 0,
             PRIMARY KEY (year, month, day, streamer))""")
         _pg_run(conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video ON sessions(video_id) WHERE video_id != ''")
+        # Add done column if missing (existing tables)
+        try:
+            _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
+        except Exception:
+            pass
         conn.close()
     else:
         conn = get_conn()
@@ -111,10 +117,15 @@ def init_db():
             CREATE TABLE IF NOT EXISTS programs (
                 year INTEGER NOT NULL, month INTEGER NOT NULL, day INTEGER NOT NULL,
                 streamer TEXT NOT NULL DEFAULT '', casino TEXT DEFAULT '', provider TEXT DEFAULT '',
+                done INTEGER DEFAULT 0,
                 PRIMARY KEY (year, month, day, streamer));
             CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video
                 ON sessions(video_id) WHERE video_id != '';
         """)
+        try:
+            conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
+        except Exception:
+            pass
         conn.commit()
         conn.close()
 
@@ -277,18 +288,18 @@ def session_exists_by_video_id(video_id: str) -> bool:
 
 # ── Programs ──
 
-def save_program_day(year: int, month: int, day: int, streamer: str, casino: str, provider: str):
+def save_program_day(year: int, month: int, day: int, streamer: str, casino: str, provider: str, done: int = 0):
     if DATABASE_URL:
         conn = get_conn()
         _pg_run(conn, "DELETE FROM programs WHERE year=:y AND month=:m AND day=:d AND streamer=:s",
                 {"y": year, "m": month, "d": day, "s": streamer})
-        _pg_run(conn, "INSERT INTO programs (year,month,day,streamer,casino,provider) VALUES (:y,:m,:d,:s,:c,:p)",
-                {"y": year, "m": month, "d": day, "s": streamer, "c": casino, "p": provider})
+        _pg_run(conn, "INSERT INTO programs (year,month,day,streamer,casino,provider,done) VALUES (:y,:m,:d,:s,:c,:p,:dn)",
+                {"y": year, "m": month, "d": day, "s": streamer, "c": casino, "p": provider, "dn": done})
         conn.close()
     else:
         conn = get_conn()
-        conn.execute("INSERT OR REPLACE INTO programs (year,month,day,streamer,casino,provider) VALUES (?,?,?,?,?,?)",
-                     (year, month, day, streamer, casino, provider))
+        conn.execute("INSERT OR REPLACE INTO programs (year,month,day,streamer,casino,provider,done) VALUES (?,?,?,?,?,?,?)",
+                     (year, month, day, streamer, casino, provider, done))
         conn.commit()
         conn.close()
 
