@@ -491,6 +491,29 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .toast.ok { border-color:var(--green); color:var(--green2); }
 .toast.show { transform:translateY(0); opacity:1; }
 
+/* ─── HAMBURGER + MOBILE MENU ─── */
+.hamburger {
+  display:none; background:var(--bg3); border:1px solid var(--border);
+  color:var(--dim); font-size:20px; width:36px; height:36px;
+  border-radius:8px; cursor:pointer; flex-shrink:0;
+  align-items:center; justify-content:center; transition:.15s;
+}
+.hamburger:hover { border-color:var(--purple2); color:var(--purple2); }
+.mobile-overlay {
+  display:none; position:fixed; inset:0; z-index:199;
+  background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
+}
+.mobile-overlay.show { display:block; }
+.sidebar.mobile-open { display:flex !important; z-index:250; }
+.logout-btn {
+  display:flex; align-items:center; justify-content:center;
+  width:30px; height:30px; border-radius:8px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--dim); font-size:14px; text-decoration:none;
+  transition:.15s; flex-shrink:0;
+}
+.logout-btn:hover { border-color:var(--red); color:var(--red); background:rgba(239,68,68,0.1); }
+
 /* ─── RESPONSIVE ─── */
 @media(max-width:1100px){
   .breakdown-4 { grid-template-columns:1fr 1fr; }
@@ -501,6 +524,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   .main { margin-left:0; }
   header { padding:0 12px; }
   .logo { width:auto; }
+  .hamburger { display:flex; }
   .graf-2col { grid-template-columns:1fr; }
   .breakdown-4 { grid-template-columns:1fr 1fr; }
   .prog-hdr,.prog-row { grid-template-columns:44px 1fr 1fr; }
@@ -517,6 +541,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   .logo { width:auto; }
   .logo-badge { width:28px; height:28px; font-size:11px; }
   .logo-name { font-size:14px; }
+  .hamburger { display:flex; }
   .month-nav { margin:0; order:3; width:100%; justify-content:center; }
   .month-nav .mn-label { min-width:140px; font-size:12px; }
   .month-nav .mn-btn { width:26px; height:26px; font-size:12px; }
@@ -603,6 +628,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 
 <!-- HEADER -->
 <header>
+  <button class="hamburger" onclick="toggleMobileMenu()" id="hamburger-btn">&#9776;</button>
   <div class="logo">
     <div class="logo-badge">7S</div>
     <div class="logo-name">Seven<span>Slots</span></div>
@@ -620,8 +646,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     {% endif %}
     <div class="live-pill"><div class="ldot"></div>Live</div>
     <div class="clk" id="clk">00:00:00</div>
+    <a href="/logout" class="logout-btn" title="Logout">&#9211;</a>
   </div>
 </header>
+<div class="mobile-overlay" id="mobile-overlay" onclick="closeMobileMenu()"></div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
@@ -915,6 +943,22 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 <div class="toast" id="toast"></div>
 
 <script>
+// ── Mobile Menu ──
+function toggleMobileMenu(){
+  const sb=document.querySelector('.sidebar');
+  const ov=document.getElementById('mobile-overlay');
+  sb.classList.toggle('mobile-open');
+  ov.classList.toggle('show');
+}
+function closeMobileMenu(){
+  document.querySelector('.sidebar').classList.remove('mobile-open');
+  document.getElementById('mobile-overlay').classList.remove('show');
+}
+// Close mobile menu when clicking a sidebar item
+document.addEventListener('click',e=>{
+  if(e.target.closest('.sb-item')) closeMobileMenu();
+});
+
 // ── Clock ──
 setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');},1000);
 

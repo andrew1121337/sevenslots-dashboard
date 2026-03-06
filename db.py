@@ -61,6 +61,11 @@ def _pg_to_dicts(conn, rows):
 def init_db():
     if DATABASE_URL:
         conn = get_conn()
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS oauth_tokens (
             id INTEGER PRIMARY KEY CHECK (id = 1),
             token_json TEXT NOT NULL,
@@ -84,6 +89,11 @@ def init_db():
     else:
         conn = get_conn()
         conn.executescript("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             CREATE TABLE IF NOT EXISTS oauth_tokens (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
                 token_json TEXT NOT NULL,
@@ -107,6 +117,50 @@ def init_db():
         """)
         conn.commit()
         conn.close()
+
+
+# ── Users ──
+
+def create_user(username: str, password: str):
+    import hashlib
+    pw_hash = hashlib.sha256(password.encode()).hexdigest()
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "INSERT INTO users (username, password_hash) VALUES (:u, :p)", {"u": username, "p": pw_hash})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, pw_hash))
+        conn.commit()
+        conn.close()
+
+
+def verify_user(username: str, password: str) -> bool:
+    import hashlib
+    pw_hash = hashlib.sha256(password.encode()).hexdigest()
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT 1 FROM users WHERE username = :u AND password_hash = :p", {"u": username, "p": pw_hash})
+        conn.close()
+        return len(rows) > 0
+    else:
+        conn = get_conn()
+        row = conn.execute("SELECT 1 FROM users WHERE username = ? AND password_hash = ?", (username, pw_hash)).fetchone()
+        conn.close()
+        return row is not None
+
+
+def user_count() -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT count(*) FROM users")
+        conn.close()
+        return rows[0][0]
+    else:
+        conn = get_conn()
+        row = conn.execute("SELECT count(*) FROM users").fetchone()
+        conn.close()
+        return row[0]
 
 
 # ── Token storage ──

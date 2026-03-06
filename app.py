@@ -1,14 +1,51 @@
 """SevenSlots Streaming Dashboard - FastAPI Backend."""
+import hashlib
 import os
-from fastapi import FastAPI, Request, Form
+import secrets
+from fastapi import FastAPI, Request, Form, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
 
 import db
 import youtube_api as yt
 
+SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 app = FastAPI(title="SevenSlots Dashboard")
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
+
+# Simple token store (in-memory, survives within a single process)
+_valid_tokens: set[str] = set()
+
+
+def _make_token(username: str) -> str:
+    raw = f"{username}:{SECRET_KEY}:{secrets.token_hex(16)}"
+    token = hashlib.sha256(raw.encode()).hexdigest()
+    _valid_tokens.add(token)
+    return token
+
+
+def _check_auth(request: Request) -> bool:
+    token = request.cookies.get("ss_token")
+    return token in _valid_tokens if token else False
+
+
+# ── Auth middleware ──
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    OPEN_PATHS = {"/login", "/oauth/callback"}
+
+    async def dispatch(self, request, call_next):
+        path = request.url.path
+        if path in self.OPEN_PATHS or path.startswith("/static"):
+            return await call_next(request)
+        if not _check_auth(request):
+            if path.startswith("/api/") or path == "/oauth/status":
+                return JSONResponse({"error": "unauthorized"}, status_code=401)
+            return RedirectResponse("/login")
+        return await call_next(request)
+
+app.add_middleware(AuthMiddleware)
 
 
 @app.on_event("startup")
@@ -18,14 +55,35 @@ def startup():
         print("[STARTUP] DB initialized OK")
     except Exception as e:
         print(f"[STARTUP] DB init failed: {e}")
-    # Copy client secret if needed
-    src = os.path.expanduser(
-        "~/Downloads/client_secret_936904037043-a20308c78j5nnhuv08q94tq16ecr00fl.apps.googleusercontent.com.json"
-    )
-    dst = os.path.join(os.path.dirname(__file__), "client_secret.json")
-    if not os.path.exists(dst) and os.path.exists(src):
-        import shutil
-        shutil.copy2(src, dst)
+
+
+# ── Auth ──
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, error: str = None):
+    if _check_auth(request):
+        return RedirectResponse("/")
+    return templates.TemplateResponse("login.html", {"request": request, "error": error})
+
+
+@app.post("/login")
+async def login_submit(username: str = Form(...), password: str = Form(...)):
+    if db.verify_user(username, password):
+        token = _make_token(username)
+        resp = RedirectResponse("/", status_code=303)
+        resp.set_cookie("ss_token", token, httponly=True, samesite="lax", max_age=86400 * 30)
+        return resp
+    return RedirectResponse("/login?error=1", status_code=303)
+
+
+@app.get("/logout")
+async def logout(request: Request):
+    token = request.cookies.get("ss_token")
+    if token:
+        _valid_tokens.discard(token)
+    resp = RedirectResponse("/login")
+    resp.delete_cookie("ss_token")
+    return resp
 
 
 # ── Pages ──
