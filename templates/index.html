@@ -1331,13 +1331,16 @@ function sessRow(s, showStreamer) {
 //  OVERVIEW
 // ═══════════════════════════════
 function renderOverview() {
-  const sess = ALL_SESSIONS.filter(sessMonth);
+  const allSess = ALL_SESSIONS.filter(sessMonth);
+  const sess = allSess.filter(s=>s.streamer!=='Catalin');
+  const catSess = allSess.filter(s=>s.streamer==='Catalin');
   sess.sort((a,b) => a.date.localeCompare(b.date));
   const n = sess.length;
+  const nc = catSess.length;
   const kg = document.getElementById('ov-kpi');
   const chartsEl = document.getElementById('ov-charts');
 
-  if(!n) {
+  if(!n && !nc) {
     kg.innerHTML = kC('Sesiuni Luna','0','','kc-purple');
     chartsEl.style.display = 'none';
     document.getElementById('ov-table').innerHTML = '';
@@ -1349,21 +1352,23 @@ function renderOverview() {
   const tv = sess.reduce((a,s)=>a+(s.views||0),0);
   const pv = sess.filter(s=>s.peak_concurrent>0);
   const ap = pv.length ? Math.round(pv.reduce((a,s)=>a+s.peak_concurrent,0)/pv.length) : 0;
-  const mp = Math.max(...sess.map(s=>s.peak_concurrent||0));
+  const mp = n ? Math.max(...sess.map(s=>s.peak_concurrent||0)) : 0;
   const lv = sess.filter(s=>s.likes>0);
   const al = lv.length ? Math.round(lv.reduce((a,s)=>a+s.likes,0)/lv.length) : 0;
   const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
-  const mv = Math.max(...sess.map(s=>s.views||0));
+  const mv = n ? Math.max(...sess.map(s=>s.views||0)) : 0;
+  const catViews = catSess.reduce((a,s)=>a+(s.views||0),0);
 
   kg.innerHTML =
-    kC('Sesiuni',n,'luna curenta','kc-purple') +
-    kC('Total Views',fmt(tv),'cumulat','kc-gold') +
-    kC('Views Mediu',fmt(Math.round(tv/n)),'per live','') +
+    kC('Live-uri',n,'luna curenta','kc-purple') +
+    kC('Total Views',fmt(tv),'live-uri','kc-gold') +
+    kC('Views Mediu',fmt(n?Math.round(tv/n):0),'per live','') +
     kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
     kC('Record Peak',fmt(mp),'max concurrent','kc-cyan') +
     kC('Likes Mediu',fmt(al),'per live','') +
-    kC('Record Views',fmt(mv),'best live','kc-gold') +
-    kC('Abonati Noi',fmt(ts),'total luna','kc-green');
+    kC('Abonati Noi',fmt(ts),'total luna','kc-green') +
+    kC('Catalin Videos',nc,'luna curenta','kc-orange') +
+    kC('Catalin Views',fmt(catViews),'total videos','kc-orange');
 
   // SVG line charts
   setTimeout(() => {
@@ -1413,8 +1418,8 @@ function setCmpMetric(m, btn) {
 function renderComparison() {
   const pm = curMonth===0 ? 11 : curMonth-1;
   const py = curMonth===0 ? curYear-1 : curYear;
-  const curSess = ALL_SESSIONS.filter(s=>sessMonthOf(s, curMonth, curYear)).sort((a,b)=>a.date.localeCompare(b.date));
-  const prevSess = ALL_SESSIONS.filter(s=>sessMonthOf(s, pm, py)).sort((a,b)=>a.date.localeCompare(b.date));
+  const curSess = ALL_SESSIONS.filter(s=>s.streamer!=='Catalin' && sessMonthOf(s, curMonth, curYear)).sort((a,b)=>a.date.localeCompare(b.date));
+  const prevSess = ALL_SESSIONS.filter(s=>s.streamer!=='Catalin' && sessMonthOf(s, pm, py)).sort((a,b)=>a.date.localeCompare(b.date));
 
   const curMoName = MO[curMonth].slice(0,3);
   const prevMoName = MO[pm].slice(0,3);
