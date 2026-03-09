@@ -332,6 +332,48 @@ async def thumbnail_list(year: int, month: int, streamer: str = None):
     return db.get_thumbnails_for_month(year, month, streamer)
 
 
+# ── Meetings API ──
+
+@app.get("/api/meetings")
+async def api_meetings():
+    return db.get_meetings()
+
+
+@app.post("/api/meetings")
+async def api_create_meeting(date: str = Form(...)):
+    mid = db.create_meeting(date)
+    return {"ok": True, "id": mid}
+
+
+@app.delete("/api/meetings/{mid}")
+async def api_delete_meeting(mid: int):
+    db.delete_meeting(mid)
+    return {"ok": True}
+
+
+@app.get("/api/meetings/{mid}/tasks")
+async def api_meeting_tasks(mid: int):
+    return db.get_meeting_tasks(mid)
+
+
+@app.post("/api/meetings/{mid}/tasks")
+async def api_add_task(mid: int, text: str = Form(...)):
+    tid = db.add_meeting_task(mid, text)
+    return {"ok": True, "id": tid}
+
+
+@app.put("/api/meetings/tasks/{tid}")
+async def api_toggle_task(tid: int, done: int = Form(...)):
+    db.toggle_meeting_task(tid, done)
+    return {"ok": True}
+
+
+@app.delete("/api/meetings/tasks/{tid}")
+async def api_delete_task(tid: int):
+    db.delete_meeting_task(tid)
+    return {"ok": True}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)

@@ -124,6 +124,16 @@ def init_db():
         except Exception:
             pass
         # Add done column if missing (existing tables)
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS meetings (
+            id SERIAL PRIMARY KEY,
+            date TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS meeting_tasks (
+            id SERIAL PRIMARY KEY,
+            meeting_id INTEGER NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+            text TEXT NOT NULL,
+            done INTEGER DEFAULT 0,
+            sort_order INTEGER DEFAULT 0)""")
         try:
             _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
         except Exception:
@@ -169,6 +179,16 @@ def init_db():
                 image_data TEXT NOT NULL,
                 uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             CREATE INDEX IF NOT EXISTS idx_thumb_date ON thumbnails(date);
+            CREATE TABLE IF NOT EXISTS meetings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+            CREATE TABLE IF NOT EXISTS meeting_tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                meeting_id INTEGER NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+                text TEXT NOT NULL,
+                done INTEGER DEFAULT 0,
+                sort_order INTEGER DEFAULT 0);
         """)
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
@@ -484,5 +504,108 @@ def delete_thumbnail(tid: int):
     else:
         conn = get_conn()
         conn.execute("DELETE FROM thumbnails WHERE id = ?", (tid,))
+        conn.commit()
+        conn.close()
+
+
+# ── Meetings ──
+
+def create_meeting(date: str) -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "INSERT INTO meetings (date) VALUES (:d) RETURNING id", {"d": date})
+        mid = rows[0][0]
+        conn.close()
+        return mid
+    else:
+        conn = get_conn()
+        cur = conn.execute("INSERT INTO meetings (date) VALUES (?)", (date,))
+        conn.commit()
+        mid = cur.lastrowid
+        conn.close()
+        return mid
+
+
+def get_meetings() -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT id, date, created_at FROM meetings ORDER BY date DESC")
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT id, date, created_at FROM meetings ORDER BY date DESC").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+
+def delete_meeting(mid: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM meeting_tasks WHERE meeting_id = :id", {"id": mid})
+        _pg_run(conn, "DELETE FROM meetings WHERE id = :id", {"id": mid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM meeting_tasks WHERE meeting_id = ?", (mid,))
+        conn.execute("DELETE FROM meetings WHERE id = ?", (mid,))
+        conn.commit()
+        conn.close()
+
+
+def add_meeting_task(meeting_id: int, text: str) -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "INSERT INTO meeting_tasks (meeting_id, text) VALUES (:m, :t) RETURNING id",
+                       {"m": meeting_id, "t": text})
+        tid = rows[0][0]
+        conn.close()
+        return tid
+    else:
+        conn = get_conn()
+        cur = conn.execute("INSERT INTO meeting_tasks (meeting_id, text) VALUES (?, ?)", (meeting_id, text))
+        conn.commit()
+        tid = cur.lastrowid
+        conn.close()
+        return tid
+
+
+def get_meeting_tasks(meeting_id: int) -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT id, meeting_id, text, done, sort_order FROM meeting_tasks WHERE meeting_id = :m ORDER BY sort_order, id",
+                       {"m": meeting_id})
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT id, meeting_id, text, done, sort_order FROM meeting_tasks WHERE meeting_id = ? ORDER BY sort_order, id",
+                            (meeting_id,)).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+
+def toggle_meeting_task(task_id: int, done: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "UPDATE meeting_tasks SET done = :d WHERE id = :id", {"d": done, "id": task_id})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("UPDATE meeting_tasks SET done = ? WHERE id = ?", (done, task_id))
+        conn.commit()
+        conn.close()
+
+
+def delete_meeting_task(task_id: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM meeting_tasks WHERE id = :id", {"id": task_id})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM meeting_tasks WHERE id = ?", (task_id,))
         conn.commit()
         conn.close()
