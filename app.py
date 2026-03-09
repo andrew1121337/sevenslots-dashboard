@@ -476,6 +476,13 @@ async def api_add_roata(category: str = Form(...), date: str = Form(...),
     return {"ok": True, "id": rid}
 
 
+@app.put("/api/roata/edit/{rid}")
+async def api_edit_roata(rid: int, rotiri: str = Form(""), user_app: str = Form(""),
+                          username_cazino: str = Form(""), status: str = Form("")):
+    db.update_roata_entry(rid, rotiri, user_app, username_cazino, status)
+    return {"ok": True}
+
+
 @app.put("/api/roata/{rid}")
 async def api_update_roata(rid: int, status: str = Form(...)):
     db.update_roata_status(rid, status)
@@ -485,6 +492,60 @@ async def api_update_roata(rid: int, status: str = Form(...)):
 @app.delete("/api/roata/{rid}")
 async def api_delete_roata(rid: int):
     db.delete_roata(rid)
+    return {"ok": True}
+
+
+# ── Kanban ──
+
+@app.get("/api/kanban")
+async def api_kanban():
+    cols = db.get_kanban_columns()
+    cards = db.get_kanban_cards()
+    return {"columns": cols, "cards": cards}
+
+
+@app.post("/api/kanban/columns")
+async def api_add_kanban_col(title: str = Form(...)):
+    cid = db.add_kanban_column(title)
+    return {"ok": True, "id": cid}
+
+
+@app.put("/api/kanban/columns/{cid}")
+async def api_rename_kanban_col(cid: int, title: str = Form(...)):
+    db.rename_kanban_column(cid, title)
+    return {"ok": True}
+
+
+@app.delete("/api/kanban/columns/{cid}")
+async def api_delete_kanban_col(cid: int):
+    db.delete_kanban_column(cid)
+    return {"ok": True}
+
+
+@app.post("/api/kanban/cards")
+async def api_add_kanban_card(column_id: int = Form(...), title: str = Form(...),
+                               description: str = Form(""), color: str = Form("")):
+    cid = db.add_kanban_card(column_id, title, description, color)
+    return {"ok": True, "id": cid}
+
+
+@app.put("/api/kanban/cards/{card_id}")
+async def api_update_kanban_card(card_id: int, title: str = Form(...),
+                                  description: str = Form(""), color: str = Form("")):
+    db.update_kanban_card(card_id, title, description, color)
+    return {"ok": True}
+
+
+@app.put("/api/kanban/cards/{card_id}/move")
+async def api_move_kanban_card(card_id: int, column_id: int = Form(...),
+                                sort_order: int = Form(0)):
+    db.move_kanban_card(card_id, column_id, sort_order)
+    return {"ok": True}
+
+
+@app.delete("/api/kanban/cards/{card_id}")
+async def api_delete_kanban_card(card_id: int):
+    db.delete_kanban_card(card_id)
     return {"ok": True}
 
 

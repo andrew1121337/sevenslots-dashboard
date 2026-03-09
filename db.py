@@ -154,6 +154,18 @@ def init_db():
             user_app TEXT DEFAULT '',
             username_cazino TEXT DEFAULT '',
             status TEXT DEFAULT '')""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS kanban_columns (
+            id SERIAL PRIMARY KEY,
+            title TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0)""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS kanban_cards (
+            id SERIAL PRIMARY KEY,
+            column_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            color TEXT DEFAULT '',
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         try:
             _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
         except Exception:
@@ -228,6 +240,18 @@ def init_db():
                 user_app TEXT DEFAULT '',
                 username_cazino TEXT DEFAULT '',
                 status TEXT DEFAULT '');
+            CREATE TABLE IF NOT EXISTS kanban_columns (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                sort_order INTEGER DEFAULT 0);
+            CREATE TABLE IF NOT EXISTS kanban_cards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                column_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT DEFAULT '',
+                color TEXT DEFAULT '',
+                sort_order INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
         """)
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
@@ -815,6 +839,20 @@ def update_roata_status(rid: int, status: str):
         conn.close()
 
 
+def update_roata_entry(rid: int, rotiri: str, user_app: str, username_cazino: str, status: str):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "UPDATE roata SET rotiri=:r, user_app=:ua, username_cazino=:uc, status=:s WHERE id=:id",
+                {"r": rotiri, "ua": user_app, "uc": username_cazino, "s": status, "id": rid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("UPDATE roata SET rotiri=?, user_app=?, username_cazino=?, status=? WHERE id=?",
+                     (rotiri, user_app, username_cazino, status, rid))
+        conn.commit()
+        conn.close()
+
+
 def delete_roata(rid: int):
     if DATABASE_URL:
         conn = get_conn()
@@ -823,5 +861,143 @@ def delete_roata(rid: int):
     else:
         conn = get_conn()
         conn.execute("DELETE FROM roata WHERE id = ?", (rid,))
+        conn.commit()
+        conn.close()
+
+
+# ── Kanban ──
+
+def get_kanban_columns() -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_rows(conn, "SELECT id, title, sort_order FROM kanban_columns ORDER BY sort_order, id")
+        conn.close()
+        return rows
+    else:
+        conn = get_conn()
+        rows = [dict(r) for r in conn.execute("SELECT id, title, sort_order FROM kanban_columns ORDER BY sort_order, id").fetchall()]
+        conn.close()
+        return rows
+
+
+def add_kanban_column(title: str) -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_rows(conn, "SELECT COALESCE(MAX(sort_order),0)+1 AS mx FROM kanban_columns")
+        mx = rows[0]["mx"]
+        r = _pg_rows(conn, "INSERT INTO kanban_columns (title, sort_order) VALUES (:t, :s) RETURNING id", {"t": title, "s": mx})
+        conn.close()
+        return r[0]["id"]
+    else:
+        conn = get_conn()
+        mx = conn.execute("SELECT COALESCE(MAX(sort_order),0)+1 FROM kanban_columns").fetchone()[0]
+        cur = conn.execute("INSERT INTO kanban_columns (title, sort_order) VALUES (?, ?)", (title, mx))
+        conn.commit()
+        cid = cur.lastrowid
+        conn.close()
+        return cid
+
+
+def rename_kanban_column(cid: int, title: str):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "UPDATE kanban_columns SET title=:t WHERE id=:id", {"t": title, "id": cid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("UPDATE kanban_columns SET title=? WHERE id=?", (title, cid))
+        conn.commit()
+        conn.close()
+
+
+def delete_kanban_column(cid: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM kanban_cards WHERE column_id=:cid", {"cid": cid})
+        _pg_run(conn, "DELETE FROM kanban_columns WHERE id=:id", {"id": cid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM kanban_cards WHERE column_id=?", (cid,))
+        conn.execute("DELETE FROM kanban_columns WHERE id=?", (cid,))
+        conn.commit()
+        conn.close()
+
+
+def get_kanban_cards(column_id: int = None) -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        if column_id:
+            rows = _pg_rows(conn, "SELECT id, column_id, title, description, color, sort_order FROM kanban_cards WHERE column_id=:cid ORDER BY sort_order, id", {"cid": column_id})
+        else:
+            rows = _pg_rows(conn, "SELECT id, column_id, title, description, color, sort_order FROM kanban_cards ORDER BY sort_order, id")
+        conn.close()
+        return rows
+    else:
+        conn = get_conn()
+        if column_id:
+            rows = [dict(r) for r in conn.execute("SELECT id, column_id, title, description, color, sort_order FROM kanban_cards WHERE column_id=? ORDER BY sort_order, id", (column_id,)).fetchall()]
+        else:
+            rows = [dict(r) for r in conn.execute("SELECT id, column_id, title, description, color, sort_order FROM kanban_cards ORDER BY sort_order, id").fetchall()]
+        conn.close()
+        return rows
+
+
+def add_kanban_card(column_id: int, title: str, description: str = "", color: str = "") -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_rows(conn, "SELECT COALESCE(MAX(sort_order),0)+1 AS mx FROM kanban_cards WHERE column_id=:cid", {"cid": column_id})
+        mx = rows[0]["mx"]
+        r = _pg_rows(conn, "INSERT INTO kanban_cards (column_id, title, description, color, sort_order) VALUES (:cid,:t,:d,:c,:s) RETURNING id",
+                      {"cid": column_id, "t": title, "d": description, "c": color, "s": mx})
+        conn.close()
+        return r[0]["id"]
+    else:
+        conn = get_conn()
+        mx = conn.execute("SELECT COALESCE(MAX(sort_order),0)+1 FROM kanban_cards WHERE column_id=?", (column_id,)).fetchone()[0]
+        cur = conn.execute("INSERT INTO kanban_cards (column_id, title, description, color, sort_order) VALUES (?,?,?,?,?)",
+                           (column_id, title, description, color, mx))
+        conn.commit()
+        cid = cur.lastrowid
+        conn.close()
+        return cid
+
+
+def update_kanban_card(card_id: int, title: str, description: str, color: str):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "UPDATE kanban_cards SET title=:t, description=:d, color=:c WHERE id=:id",
+                {"t": title, "d": description, "c": color, "id": card_id})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("UPDATE kanban_cards SET title=?, description=?, color=? WHERE id=?",
+                     (title, description, color, card_id))
+        conn.commit()
+        conn.close()
+
+
+def move_kanban_card(card_id: int, column_id: int, sort_order: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "UPDATE kanban_cards SET column_id=:cid, sort_order=:s WHERE id=:id",
+                {"cid": column_id, "s": sort_order, "id": card_id})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("UPDATE kanban_cards SET column_id=?, sort_order=? WHERE id=?",
+                     (column_id, sort_order, card_id))
+        conn.commit()
+        conn.close()
+
+
+def delete_kanban_card(card_id: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM kanban_cards WHERE id=:id", {"id": card_id})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM kanban_cards WHERE id=?", (card_id,))
         conn.commit()
         conn.close()
