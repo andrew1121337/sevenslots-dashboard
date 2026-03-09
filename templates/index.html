@@ -1368,7 +1368,6 @@ function renderOverview() {
   const al = lv.length ? Math.round(lv.reduce((a,s)=>a+s.likes,0)/lv.length) : 0;
   const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
   const mv = n ? Math.max(...sess.map(s=>s.views||0)) : 0;
-  const catViews = catSess.reduce((a,s)=>a+(s.views||0),0);
 
   kg.innerHTML =
     kC('Live-uri',n,'luna curenta','kc-purple') +
@@ -1377,9 +1376,7 @@ function renderOverview() {
     kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
     kC('Record Peak',fmt(mp),'max concurrent','kc-cyan') +
     kC('Likes Mediu',fmt(al),'per live','') +
-    kC('Abonati Noi',fmt(ts),'total luna','kc-green') +
-    kC('Catalin Videos',nc,'luna curenta','kc-orange') +
-    kC('Catalin Views',fmt(catViews),'total videos','kc-orange');
+    kC('Abonati Noi',fmt(ts),'total luna','kc-green');
 
   // SVG line charts
   setTimeout(() => {
