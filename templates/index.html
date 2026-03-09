@@ -25,6 +25,9 @@
   --gold-dim: rgba(245,197,24,0.15);
   --green:    #10b981;
   --green2:   #34d399;
+  --orange:   #f97316;
+  --orange2:  #fb923c;
+  --orange-dim: rgba(249,115,22,0.15);
   --red:      #ef4444;
   --text:     #ffffff;
   --text2:    #d1c8f0;
@@ -154,6 +157,7 @@ header::after {
 }
 .sb-item.sb-seven .sb-dot { background:var(--gold); }
 .sb-item.sb-prof .sb-dot { background:var(--cyan); }
+.sb-item.sb-catalin .sb-dot { background:var(--orange); }
 .sb-sep { height:1px; background:var(--border); margin:10px 16px; }
 
 /* ─── MAIN ─── */
@@ -191,6 +195,7 @@ header::after {
 .kcard.kc-cyan::before { background:linear-gradient(90deg,var(--cyan),var(--cyan2)); }
 .kcard.kc-gold::before { background:linear-gradient(90deg,var(--gold),var(--gold2)); }
 .kcard.kc-green::before { background:linear-gradient(90deg,var(--green),var(--green2)); }
+.kcard.kc-orange::before { background:linear-gradient(90deg,var(--orange),var(--orange2)); }
 .kcard:hover { border-color:var(--border2); transform:translateY(-2px); box-shadow:0 8px 24px rgba(147,51,234,0.12); }
 .kc-l { font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
 .kc-v { font-size:24px; font-weight:900; color:var(--text); line-height:1; margin-bottom:2px; }
@@ -198,6 +203,7 @@ header::after {
 .kcard.kc-cyan .kc-v { color:var(--cyan); }
 .kcard.kc-green .kc-v { color:var(--green2); }
 .kcard.kc-purple .kc-v { color:var(--purple2); }
+.kcard.kc-orange .kc-v { color:var(--orange); }
 .kc-s { font-size:10px; color:var(--dim); }
 
 /* ─── SVG LINE CHARTS ─── */
@@ -295,14 +301,17 @@ header::after {
 .cal-cell.today { border-color:var(--purple2); box-shadow:inset 0 0 0 1px var(--purple2),0 0 20px rgba(168,85,247,.1); }
 .cal-cell.has-seven { border-color:rgba(245,197,24,.4); background:linear-gradient(160deg,rgba(245,197,24,.07) 0%,var(--bg2) 60%); }
 .cal-cell.has-prof { border-color:rgba(6,182,212,.4); background:linear-gradient(160deg,rgba(6,182,212,.07) 0%,var(--bg2) 60%); }
+.cal-cell.has-catalin { border-color:rgba(249,115,22,.4); background:linear-gradient(160deg,rgba(249,115,22,.07) 0%,var(--bg2) 60%); }
 .cal-cell.weekend:not(.has-seven):not(.has-prof) { opacity:.4; }
 .cal-num { font-size:14px; font-weight:800; color:rgba(255,255,255,.25); line-height:1; margin-bottom:6px; }
 .cal-cell.has-seven .cal-num { color:var(--gold); }
 .cal-cell.has-prof .cal-num { color:var(--cyan); }
+.cal-cell.has-catalin .cal-num { color:var(--orange); }
 .cal-cell.today .cal-num { color:var(--purple2); }
 .cal-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:999px; font-size:9px; font-weight:800; margin-bottom:4px; }
 .cal-badge-s { background:rgba(245,197,24,.15); color:var(--gold); border:1px solid rgba(245,197,24,.3); }
 .cal-badge-p { background:rgba(6,182,212,.12); color:var(--cyan); border:1px solid rgba(6,182,212,.25); }
+.cal-badge-c { background:rgba(249,115,22,.12); color:var(--orange); border:1px solid rgba(249,115,22,.25); }
 .cal-badge-done { background:rgba(34,197,94,.15); color:#22c55e; border:1px solid rgba(34,197,94,.3); }
 .cal-badge-sched { background:rgba(251,191,36,.1); color:#fbbf24; border:1px solid rgba(251,191,36,.25); }
 .cal-tag { display:inline-block; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:800; margin:1px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
@@ -678,6 +687,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     <span class="sb-ico">&#127919;</span> El Profesor
     <span class="sb-dot"></span>
   </div>
+  <div class="sb-item sb-catalin" onclick="goP('catalin',this)">
+    <span class="sb-ico">&#127916;</span> Catalin
+    <span class="sb-dot"></span>
+  </div>
   <div class="sb-sep"></div>
   <div class="sb-section">Actiuni</div>
   <div class="sb-item" onclick="goP('import',this)">
@@ -883,27 +896,93 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     </div>
   </div>
 
+  <!-- CATALIN -->
+  <div class="page" id="pg-catalin">
+    <div class="sh"><div class="dot"></div>Catalin &mdash; Videos &amp; Shorts<div class="ln"></div></div>
+    <div class="krow" id="catalin-kpi"></div>
+
+    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+    <div class="graf-2col" id="catalin-charts">
+      <div class="chart-card span2">
+        <div class="cc-head"><div><div class="cc-title">Views per Video</div><div class="cc-sub" id="catalin-lbl-views"></div></div></div>
+        <div id="catalin-line-views" style="width:100%;height:160px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="catalin-lbl-likes"></div></div></div>
+        <div id="catalin-line-likes" style="width:100%;height:120px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Durata</div><div class="cc-sub" id="catalin-lbl-dur"></div></div></div>
+        <div id="catalin-line-dur" style="width:100%;height:120px;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Videoclipuri<div class="ln"></div></div>
+      <div class="view-toggle">
+        <button class="vtb on" onclick="setStrView('catalin','cal',this)">Calendar</button>
+        <button class="vtb" onclick="setStrView('catalin','list',this)">Lista</button>
+      </div>
+    </div>
+    <div id="catalin-cal-view"></div>
+    <div id="catalin-list-view">
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Tip</th><th>Durata</th><th>Link</th><th>Views</th>
+          <th>Likes</th><th>Abo.</th><th></th>
+        </tr></thead><tbody id="catalin-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+
   <!-- IMPORT -->
   <div class="page" id="pg-import">
     <div class="sh"><div class="dot"></div>YouTube Import<div class="ln"></div></div>
+    <!-- Connected channels -->
+    <div class="import-card">
+      <h3>Canale <span>Conectate</span></h3>
+      <div id="channels-list" style="margin:12px 0;"></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="new-channel-name" class="fi" placeholder="Nume canal (ex: Catalin)" style="max-width:200px;">
+        <a id="add-channel-btn" class="import-btn" style="text-decoration:none;display:inline-block;cursor:pointer;" onclick="addChannel()">Adauga Canal</a>
+      </div>
+    </div>
+
     {% if authenticated %}
     <div class="import-card">
-      <h3>Import <span>Automat</span></h3>
-      <div class="ic-sub">Importa live-urile din luna selectata in header direct din YouTube</div>
+      <h3>Import <span>Live Streams</span></h3>
+      <div class="ic-sub">Importa live-urile din luna selectata</div>
       <div class="import-actions">
         <select class="import-sel" id="import-streamer">
           <option value="Seven">Seven</option>
           <option value="El Profesor">El Profesor</option>
         </select>
+        <select class="import-sel" id="import-channel">
+          {% for ch in channels %}<option value="{{ ch.channel_name }}">{{ ch.channel_name }}</option>{% endfor %}
+        </select>
         <button class="import-btn" id="import-btn" onclick="ytImport()">Import Luna Curenta</button>
         <span class="import-status" id="import-status"></span>
+      </div>
+    </div>
+
+    <div class="import-card">
+      <h3>Import <span>Videos &amp; Shorts</span></h3>
+      <div class="ic-sub">Importa videoclipurile si shorts-urile (nu live) din luna selectata</div>
+      <div class="import-actions">
+        <select class="import-sel" id="import-vid-streamer">
+          <option value="Catalin">Catalin</option>
+        </select>
+        <select class="import-sel" id="import-vid-channel">
+          {% for ch in channels %}<option value="{{ ch.channel_name }}">{{ ch.channel_name }}</option>{% endfor %}
+        </select>
+        <button class="import-btn" id="import-vid-btn" onclick="ytImportVideos()">Import Videos</button>
+        <span class="import-status" id="import-vid-status"></span>
       </div>
     </div>
     {% else %}
     <div class="import-card">
       <h3>YouTube <span>Neconectat</span></h3>
-      <div class="ic-sub">Conecteaza-te la YouTube pentru a importa automat statisticile</div>
-      <a href="/oauth/login" class="import-btn" style="text-decoration:none;display:inline-block;">Conecteaza YouTube</a>
+      <div class="ic-sub">Adauga un canal YouTube mai sus pentru a importa automat</div>
     </div>
     {% endif %}
   </div>
@@ -983,7 +1062,7 @@ let curYear = new Date().getFullYear();
 let selStreamer = 'Seven';
 let curPage = 'overview';
 let cmpMetric = 'views';
-let strView = { seven:'cal', prof:'cal' };
+let strView = { seven:'cal', prof:'cal', catalin:'cal' };
 
 // ── Month nav ──
 function updateMonthLabel() {
@@ -1009,6 +1088,7 @@ function refreshPage() {
   if(curPage==='program') renderP();
   if(curPage==='seven') renderStreamer('Seven');
   if(curPage==='profesor') renderStreamer('El Profesor');
+  if(curPage==='catalin') renderCatalin();
 }
 
 // ── Helpers ──
@@ -1549,6 +1629,120 @@ function renderStreamerCal(prefix, name, sess, progData) {
 }
 
 // ═══════════════════════════════
+//  CATALIN
+// ═══════════════════════════════
+async function renderCatalin() {
+  const sess = ALL_SESSIONS.filter(s=>s.streamer==='Catalin' && sessMonth(s));
+  sess.sort((a,b) => a.date.localeCompare(b.date));
+  const n = sess.length;
+  const kg = document.getElementById('catalin-kpi');
+  const chartsEl = document.getElementById('catalin-charts');
+
+  if(!n) {
+    kg.innerHTML = kC('Videoclipuri','0','','kc-orange');
+    if(chartsEl) chartsEl.style.display = 'none';
+    document.getElementById('catalin-table').innerHTML = '';
+    renderCatalinCal([]);
+    return;
+  }
+  if(chartsEl) chartsEl.style.display = 'grid';
+
+  const shorts = sess.filter(s => durToMin(s.duration) <= 1 && durToMin(s.duration) > 0);
+  const tv = sess.reduce((a,s)=>a+(s.views||0),0);
+  const tl = sess.reduce((a,s)=>a+(s.likes||0),0);
+  const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
+  const er = sess.filter(s=>s.views>0&&s.likes>0);
+  const erPct = er.length ? ((er.reduce((a,s)=>a+(s.likes/s.views*100),0)/er.length)).toFixed(1)+'%' : '—';
+
+  kg.innerHTML =
+    kC('Videoclipuri',n,'luna curenta','kc-orange') +
+    kC('Shorts',shorts.length,'din '+n,'kc-orange') +
+    kC('Total Views',fmt(tv),'cumulat','kc-orange') +
+    kC('Views Mediu',fmt(Math.round(tv/n)),'per video','') +
+    kC('Total Likes',fmt(tl),'cumulat','') +
+    kC('Engagement',erPct,'likes/views','') +
+    kC('Abonati Noi',fmt(ts),'total','kc-green');
+
+  setTimeout(() => {
+    svgLine('catalin-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#f97316', 'gcatV', 'catalin-lbl-views', 160);
+    svgLine('catalin-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#fb923c', 'gcatL', 'catalin-lbl-likes', 120);
+    svgLine('catalin-line-dur', sess.map(s=>({v:durToMin(s.duration)||0, lbl:s.date})), '#a855f7', 'gcatD', 'catalin-lbl-dur', 120);
+  }, 50);
+
+  renderCatalinCal(sess);
+
+  // Table
+  const rows = [...sess].reverse();
+  document.getElementById('catalin-table').innerHTML = rows.map(s => {
+    const isShort = durToMin(s.duration) <= 1 && durToMin(s.duration) > 0;
+    const link = s.link ? `<a href="${s.link}" target="_blank" style="color:var(--purple2);">&#9654;</a>` : '';
+    return `<tr>
+      <td>${s.date}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.title||''}</td>
+      <td><span style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;${isShort?'background:rgba(249,115,22,.15);color:var(--orange);':'background:rgba(147,51,234,.15);color:var(--purple2);'}">${isShort?'Short':'Video'}</span></td>
+      <td>${s.duration||''}</td><td>${link}</td><td>${fmt(s.views)}</td>
+      <td>${fmt(s.likes)}</td><td>${fmt(s.new_subs)}</td>
+      <td><button onclick="delS(${s.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">&#128465;</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCatalinCal(sess) {
+  const el = document.getElementById('catalin-cal-view');
+  if(!el) return;
+  const m = curMonth, y = curYear;
+  const days = new Date(y, m+1, 0).getDate();
+  const firstDow = (new Date(y, m, 1).getDay()+6)%7;
+  const today = new Date();
+
+  const sessByDay = {};
+  sess.forEach(s => {
+    const day = parseInt(s.date.split('-')[2]);
+    if(!sessByDay[day]) sessByDay[day] = [];
+    sessByDay[day].push(s);
+  });
+
+  const moName = MO[m].charAt(0).toUpperCase() + MO[m].slice(1).toLowerCase();
+  let html = `<div style="text-align:center;font-size:clamp(24px,3.5vw,48px);font-weight:900;color:var(--orange);margin:8px 0 2px;text-transform:capitalize;">${moName} ${y}</div>`;
+  html += `<div style="text-align:center;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--dim);text-transform:uppercase;margin-bottom:16px;">Catalin</div>`;
+  html += `<div class="cal-dow-row">${DOW_LBL.map(d=>`<div class="cal-dow">${d}</div>`).join('')}</div>`;
+  html += '<div class="cal-body">';
+
+  for(let i=0; i<firstDow; i++) html += '<div class="cal-cell empty"></div>';
+
+  for(let d=1; d<=days; d++) {
+    const date = new Date(y, m, d);
+    const dow = date.getDay();
+    const isWk = dow===0||dow===6;
+    const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+    const daySess = sessByDay[d] || [];
+    const hasData = daySess.length > 0;
+
+    let cls = 'cal-cell';
+    if(hasData) cls += ' has-catalin';
+    if(isWk && !hasData) cls += ' weekend';
+    if(isToday) cls += ' today';
+
+    html += `<div class="${cls}">`;
+    html += `<div class="cal-num">${d}</div>`;
+
+    if(hasData) {
+      const count = daySess.length;
+      const shorts = daySess.filter(s => durToMin(s.duration) <= 1 && durToMin(s.duration) > 0).length;
+      const vids = count - shorts;
+      html += `<div class="cal-badge cal-badge-c">&#127916; ${count} ${count===1?'video':'videos'}</div>`;
+      if(vids > 0) html += `<div class="cal-tag cal-tag-provider">${vids} video${vids>1?'s':''}</div>`;
+      if(shorts > 0) html += `<div class="cal-tag cal-tag-casino">${shorts} short${shorts>1?'s':''}</div>`;
+      const totalViews = daySess.reduce((a,s)=>a+(s.views||0),0);
+      if(totalViews) html += `<div class="cal-views">${fmt(totalViews)} views</div>`;
+    }
+    html += '</div>';
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════
 //  PROGRAM
 // ═══════════════════════════════
 function switchProg(which, btn) {
@@ -1627,17 +1821,19 @@ async function ytImport() {
   const btn=document.getElementById('import-btn');
   const status=document.getElementById('import-status');
   const streamer=document.getElementById('import-streamer').value;
+  const channel=document.getElementById('import-channel').value;
   btn.disabled=true; btn.textContent='Se importa...';
   status.textContent=MO[curMonth]+' '+curYear;
   try {
     const data=new FormData();
     data.append('streamer',streamer);
+    data.append('channel',channel);
     data.append('year',curYear);
     data.append('month',curMonth+1);
     const resp=await fetch('/api/youtube/import',{method:'POST',body:data});
     const result=await resp.json();
     if(resp.ok){
-      toast(`Importat ${result.imported} sesiuni noi!`,'ok');
+      toast(`Importat ${result.imported} live-uri noi!`,'ok');
       status.textContent=`${result.imported} importate / ${result.total_found} gasite`;
       const sr=await fetch('/api/sessions');
       ALL_SESSIONS=await sr.json();
@@ -1648,6 +1844,68 @@ async function ytImport() {
     }
   } catch(e) { toast('Eroare: '+e.message,''); status.textContent='Eroare'; }
   btn.disabled=false; btn.textContent='Import Luna Curenta';
+}
+
+async function ytImportVideos() {
+  const btn=document.getElementById('import-vid-btn');
+  const status=document.getElementById('import-vid-status');
+  const streamer=document.getElementById('import-vid-streamer').value;
+  const channel=document.getElementById('import-vid-channel').value;
+  btn.disabled=true; btn.textContent='Se importa...';
+  status.textContent=MO[curMonth]+' '+curYear;
+  try {
+    const data=new FormData();
+    data.append('streamer',streamer);
+    data.append('channel',channel);
+    data.append('year',curYear);
+    data.append('month',curMonth+1);
+    const resp=await fetch('/api/youtube/import-videos',{method:'POST',body:data});
+    const result=await resp.json();
+    if(resp.ok){
+      toast(`Importat ${result.imported} videoclipuri noi!`,'ok');
+      status.textContent=`${result.imported} importate / ${result.total_found} gasite`;
+      const sr=await fetch('/api/sessions');
+      ALL_SESSIONS=await sr.json();
+      refreshPage();
+    } else {
+      toast(result.error||'Eroare','');
+      status.textContent='Eroare';
+    }
+  } catch(e) { toast('Eroare: '+e.message,''); status.textContent='Eroare'; }
+  btn.disabled=false; btn.textContent='Import Videos';
+}
+
+function addChannel() {
+  const name = document.getElementById('new-channel-name').value.trim();
+  if(!name) { toast('Introdu un nume de canal'); return; }
+  window.location.href = '/oauth/login?channel=' + encodeURIComponent(name);
+}
+
+async function loadChannels() {
+  try {
+    const r = await fetch('/oauth/status');
+    const d = await r.json();
+    const el = document.getElementById('channels-list');
+    if(!el) return;
+    if(!d.channels || !d.channels.length) {
+      el.innerHTML = '<div style="color:var(--dim);font-size:13px;">Niciun canal conectat</div>';
+      return;
+    }
+    el.innerHTML = d.channels.map(c =>
+      `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+        <span style="color:var(--green2);font-size:14px;">&#9679;</span>
+        <span style="font-weight:700;font-size:14px;">${c.channel_name}</span>
+        <span style="color:var(--dim);font-size:11px;">${c.channel_id||''}</span>
+        <button onclick="disconnectChannel('${c.channel_name}')" style="margin-left:auto;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;">Deconecteaza</button>
+      </div>`
+    ).join('');
+  } catch(e){}
+}
+
+async function disconnectChannel(name) {
+  await fetch('/oauth/channel/'+encodeURIComponent(name), {method:'DELETE'});
+  toast('Canal deconectat: '+name);
+  loadChannels();
 }
 
 // ── DELETE ──
@@ -1672,6 +1930,7 @@ if(urlP.get('msg')==='youtube_connected') setTimeout(()=>toast('YouTube conectat
 
 // ── Init ──
 renderOverview();
+loadChannels();
 </script>
 </body>
 </html>

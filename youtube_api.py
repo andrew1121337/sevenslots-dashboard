@@ -29,23 +29,23 @@ def _get_client_secret_path() -> str:
     return _LOCAL_SECRET
 
 
-def _refresh_and_save(creds: Credentials) -> Credentials:
+def _refresh_and_save(creds: Credentials, channel_name: str = "SevenSlots") -> Credentials:
     """Refresh token if needed and persist to DB."""
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
-        db.save_token(creds.to_json())
+        db.save_token(creds.to_json(), channel_name=channel_name)
     return creds
 
 
-def get_credentials() -> Credentials | None:
+def get_credentials(channel_name: str = None) -> Credentials | None:
     """Load credentials from DB, refresh if needed."""
-    token_json = db.get_token()
+    token_json = db.get_token(channel_name)
     if not token_json:
         return None
     creds = Credentials.from_authorized_user_info(json.loads(token_json), SCOPES)
     if not creds.valid:
         if creds.expired and creds.refresh_token:
-            creds = _refresh_and_save(creds)
+            creds = _refresh_and_save(creds, channel_name or "SevenSlots")
         else:
             return None
     return creds
@@ -80,7 +80,7 @@ def start_oauth_flow() -> str:
     return f"{config['auth_uri']}?{urlencode(params)}"
 
 
-def complete_oauth_flow(code: str) -> Credentials:
+def complete_oauth_flow(code: str, channel_name: str = "SevenSlots") -> Credentials:
     """Exchange auth code for tokens (no PKCE)."""
     import requests
     config = _get_client_config()["web"]
@@ -101,12 +101,25 @@ def complete_oauth_flow(code: str) -> Credentials:
         client_secret=config["client_secret"],
         scopes=SCOPES,
     )
-    db.save_token(creds.to_json())
+    # Fetch channel ID
+    channel_id = ""
+    try:
+        youtube = build("youtube", "v3", credentials=creds)
+        ch = youtube.channels().list(part="id,snippet", mine=True).execute()
+        if ch.get("items"):
+            channel_id = ch["items"][0]["id"]
+    except Exception:
+        pass
+    db.save_token(creds.to_json(), channel_name=channel_name, channel_id=channel_id)
     return creds
 
 
 def is_authenticated() -> bool:
-    return get_credentials() is not None
+    return len(db.get_all_channels()) > 0
+
+
+def get_connected_channels() -> list[dict]:
+    return db.get_all_channels()
 
 
 def parse_iso_duration(iso: str) -> str:
@@ -239,6 +252,109 @@ def fetch_live_streams(creds: Credentials, year: int = None, month: int = None) 
                         if total_sec > 0:
                             # unique ~= minutesWatched / avgViewDuration * 60
                             v["unique_viewers"] = int(minutes_watched * 60 / avg_view_sec) if avg_view_sec > 0 else 0
+        except Exception:
+            pass
+
+    return videos
+
+
+def fetch_videos(creds: Credentials, year: int = None, month: int = None) -> list[dict]:
+    """Fetch regular videos and shorts (not live streams) for a specific month."""
+    from datetime import datetime
+    youtube = build("youtube", "v3", credentials=creds)
+    yt_analytics = build("youtubeAnalytics", "v2", credentials=creds)
+
+    if year is None:
+        year = datetime.now().year
+    if month is None:
+        month = datetime.now().month
+
+    month_start = f"{year}-{month:02d}-01"
+    if month == 12:
+        month_end = f"{year + 1}-01-01"
+    else:
+        month_end = f"{year}-{month + 1:02d}-01"
+
+    ch = youtube.channels().list(part="id,contentDetails", mine=True).execute()
+    channel_id = ch["items"][0]["id"]
+    uploads_id = ch["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+    all_video_ids = []
+    request = youtube.playlistItems().list(
+        part="contentDetails,snippet",
+        playlistId=uploads_id,
+        maxResults=50,
+    )
+    done = False
+    while request and not done:
+        resp = request.execute()
+        for item in resp.get("items", []):
+            published = item["snippet"]["publishedAt"][:10]
+            if published < month_start:
+                done = True
+                break
+            if published >= month_end:
+                continue
+            vid = item["contentDetails"]["videoId"]
+            if not db.session_exists_by_video_id(vid):
+                all_video_ids.append(vid)
+        if not done:
+            request = youtube.playlistItems().list_next(request, resp)
+
+    if not all_video_ids:
+        return []
+
+    # Get video details, EXCLUDE live streams
+    videos = []
+    for i in range(0, len(all_video_ids), 50):
+        batch = all_video_ids[i:i+50]
+        resp = youtube.videos().list(
+            part="snippet,statistics,contentDetails,liveStreamingDetails",
+            id=",".join(batch),
+        ).execute()
+        for item in resp.get("items", []):
+            if item.get("liveStreamingDetails"):
+                continue  # Skip live streams
+            vid = item["id"]
+            stats = item.get("statistics", {})
+            dur = parse_iso_duration(item.get("contentDetails", {}).get("duration", ""))
+            videos.append({
+                "video_id": vid,
+                "title": item["snippet"]["title"],
+                "date": item["snippet"]["publishedAt"][:10],
+                "views": int(stats.get("viewCount", 0)),
+                "likes": int(stats.get("likeCount", 0)),
+                "duration": dur,
+                "peak_concurrent": 0,
+                "unique_viewers": 0,
+                "avg_duration": "",
+                "avg_viewers": 0,
+                "new_subs": 0,
+            })
+
+    # Get analytics per video
+    today = datetime.now().strftime("%Y-%m-%d")
+    for v in videos:
+        vid = v["video_id"]
+        try:
+            a = yt_analytics.reports().query(
+                ids=f"channel=={channel_id}",
+                startDate="2000-01-01",
+                endDate=today,
+                metrics="views,estimatedMinutesWatched,averageViewDuration,likes,subscribersGained",
+                filters=f"video=={vid}",
+            ).execute()
+            if a.get("rows"):
+                row = a["rows"][0]
+                analytics_views = int(row[0])
+                avg_view_sec = int(row[2])
+                analytics_likes = int(row[3])
+                v["new_subs"] = int(row[4])
+                v["avg_duration"] = f"{avg_view_sec // 60}:{avg_view_sec % 60:02d}"
+                if analytics_views > v["views"]:
+                    v["views"] = analytics_views
+                if analytics_likes > v["likes"]:
+                    v["likes"] = analytics_likes
         except Exception:
             pass
 

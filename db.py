@@ -67,9 +67,30 @@ def init_db():
             password_hash TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS oauth_tokens (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
+            id SERIAL PRIMARY KEY,
+            channel_name TEXT NOT NULL DEFAULT 'SevenSlots',
+            channel_id TEXT DEFAULT '',
             token_json TEXT NOT NULL,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        # Migrate: add channel columns if missing
+        try:
+            _pg_run(conn, "ALTER TABLE oauth_tokens ADD COLUMN channel_name TEXT NOT NULL DEFAULT 'SevenSlots'")
+        except Exception:
+            pass
+        try:
+            _pg_run(conn, "ALTER TABLE oauth_tokens ADD COLUMN channel_id TEXT DEFAULT ''")
+        except Exception:
+            pass
+        # Drop old id=1 constraint if exists
+        try:
+            _pg_run(conn, "ALTER TABLE oauth_tokens DROP CONSTRAINT IF EXISTS oauth_tokens_id_check")
+        except Exception:
+            pass
+        # Create unique index on channel_name
+        try:
+            _pg_run(conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_oauth_channel ON oauth_tokens(channel_name)")
+        except Exception:
+            pass
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS sessions (
             id SERIAL PRIMARY KEY,
             streamer TEXT NOT NULL, date TEXT NOT NULL, title TEXT DEFAULT '',
@@ -101,7 +122,9 @@ def init_db():
                 password_hash TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             CREATE TABLE IF NOT EXISTS oauth_tokens (
-                id INTEGER PRIMARY KEY CHECK (id = 1),
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                channel_name TEXT NOT NULL DEFAULT 'SevenSlots',
+                channel_id TEXT DEFAULT '',
                 token_json TEXT NOT NULL,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             CREATE TABLE IF NOT EXISTS sessions (
@@ -186,32 +209,67 @@ def user_count() -> int:
         return row[0]
 
 
-# ── Token storage ──
+# ── Token storage (multi-channel) ──
 
-def save_token(token_json: str):
+def save_token(token_json: str, channel_name: str = "SevenSlots", channel_id: str = ""):
     if DATABASE_URL:
         conn = get_conn()
-        _pg_run(conn, "DELETE FROM oauth_tokens WHERE id = 1")
-        _pg_run(conn, "INSERT INTO oauth_tokens (id, token_json) VALUES (1, :tj)", {"tj": token_json})
+        _pg_run(conn, "DELETE FROM oauth_tokens WHERE channel_name = :cn", {"cn": channel_name})
+        _pg_run(conn, "INSERT INTO oauth_tokens (channel_name, channel_id, token_json) VALUES (:cn, :ci, :tj)",
+                {"cn": channel_name, "ci": channel_id, "tj": token_json})
         conn.close()
     else:
         conn = get_conn()
-        conn.execute("INSERT OR REPLACE INTO oauth_tokens (id, token_json, updated_at) VALUES (1, ?, CURRENT_TIMESTAMP)", (token_json,))
+        conn.execute("DELETE FROM oauth_tokens WHERE channel_name = ?", (channel_name,))
+        conn.execute("INSERT INTO oauth_tokens (channel_name, channel_id, token_json, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                     (channel_name, channel_id, token_json))
         conn.commit()
         conn.close()
 
 
-def get_token() -> str | None:
+def get_token(channel_name: str = None) -> str | None:
     if DATABASE_URL:
         conn = get_conn()
-        rows = _pg_run(conn, "SELECT token_json FROM oauth_tokens WHERE id = 1")
+        if channel_name:
+            rows = _pg_run(conn, "SELECT token_json FROM oauth_tokens WHERE channel_name = :cn", {"cn": channel_name})
+        else:
+            rows = _pg_run(conn, "SELECT token_json FROM oauth_tokens ORDER BY id LIMIT 1")
         conn.close()
         return rows[0][0] if rows else None
     else:
         conn = get_conn()
-        row = conn.execute("SELECT token_json FROM oauth_tokens WHERE id = 1").fetchone()
+        if channel_name:
+            row = conn.execute("SELECT token_json FROM oauth_tokens WHERE channel_name = ?", (channel_name,)).fetchone()
+        else:
+            row = conn.execute("SELECT token_json FROM oauth_tokens ORDER BY id LIMIT 1").fetchone()
         conn.close()
-        return row["token_json"] if row else None
+        return dict(row)["token_json"] if row else None
+
+
+def get_all_channels() -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT channel_name, channel_id FROM oauth_tokens ORDER BY id")
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT channel_name, channel_id FROM oauth_tokens ORDER BY id").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+
+def delete_channel_token(channel_name: str):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM oauth_tokens WHERE channel_name = :cn", {"cn": channel_name})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM oauth_tokens WHERE channel_name = ?", (channel_name,))
+        conn.commit()
+        conn.close()
 
 
 # ── Sessions ──

@@ -105,10 +105,12 @@ async def index(request: Request):
     try:
         sessions = db.get_sessions()
         authenticated = yt.is_authenticated()
+        channels = yt.get_connected_channels()
         resp = templates.TemplateResponse("index.html", {
             "request": request,
             "sessions": sessions,
             "authenticated": authenticated,
+            "channels": channels,
         })
         resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return resp
@@ -119,8 +121,13 @@ async def index(request: Request):
 
 # ── OAuth ──
 
+_pending_channel_name: str = "SevenSlots"
+
+
 @app.get("/oauth/login")
-async def oauth_login():
+async def oauth_login(channel: str = "SevenSlots"):
+    global _pending_channel_name
+    _pending_channel_name = channel
     try:
         url = yt.start_oauth_flow()
         return RedirectResponse(url)
@@ -131,7 +138,7 @@ async def oauth_login():
 @app.get("/oauth/callback")
 async def oauth_callback(code: str):
     try:
-        yt.complete_oauth_flow(code)
+        yt.complete_oauth_flow(code, channel_name=_pending_channel_name)
         return RedirectResponse("/?msg=youtube_connected")
     except Exception as e:
         import traceback
@@ -140,20 +147,19 @@ async def oauth_callback(code: str):
 
 @app.get("/oauth/status")
 async def oauth_status():
-    return {"authenticated": yt.is_authenticated()}
+    channels = yt.get_connected_channels()
+    return {"authenticated": len(channels) > 0, "channels": channels}
+
+
+@app.delete("/oauth/channel/{channel_name}")
+async def oauth_disconnect(channel_name: str):
+    db.delete_channel_token(channel_name)
+    return {"ok": True}
 
 
 # ── YouTube Import ──
 
-@app.post("/api/youtube/import")
-async def youtube_import(streamer: str = Form("Seven"), year: int = Form(None), month: int = Form(None)):
-    creds = yt.get_credentials()
-    if not creds:
-        return JSONResponse({"error": "Not authenticated"}, status_code=401)
-
-    print(f"[IMPORT] streamer={streamer} year={year} month={month}")
-    videos = yt.fetch_live_streams(creds, year=year, month=month)
-    print(f"[IMPORT] found {len(videos)} videos")
+def _import_videos_to_db(videos: list, streamer: str) -> int:
     imported = 0
     for v in videos:
         if db.session_exists_by_video_id(v["video_id"]):
@@ -178,7 +184,34 @@ async def youtube_import(streamer: str = Form("Seven"), year: int = Form(None), 
             "note": "",
         })
         imported += 1
+    return imported
 
+
+@app.post("/api/youtube/import")
+async def youtube_import(streamer: str = Form("Seven"), channel: str = Form("SevenSlots"),
+                         year: int = Form(None), month: int = Form(None)):
+    creds = yt.get_credentials(channel)
+    if not creds:
+        return JSONResponse({"error": f"Channel '{channel}' not authenticated"}, status_code=401)
+
+    print(f"[IMPORT] streamer={streamer} channel={channel} year={year} month={month}")
+    videos = yt.fetch_live_streams(creds, year=year, month=month)
+    print(f"[IMPORT] found {len(videos)} live streams")
+    imported = _import_videos_to_db(videos, streamer)
+    return {"imported": imported, "total_found": len(videos)}
+
+
+@app.post("/api/youtube/import-videos")
+async def youtube_import_videos(streamer: str = Form("Catalin"), channel: str = Form("Catalin"),
+                                year: int = Form(None), month: int = Form(None)):
+    creds = yt.get_credentials(channel)
+    if not creds:
+        return JSONResponse({"error": f"Channel '{channel}' not authenticated"}, status_code=401)
+
+    print(f"[IMPORT-VIDEOS] streamer={streamer} channel={channel} year={year} month={month}")
+    videos = yt.fetch_videos(creds, year=year, month=month)
+    print(f"[IMPORT-VIDEOS] found {len(videos)} videos")
+    imported = _import_videos_to_db(videos, streamer)
     return {"imported": imported, "total_found": len(videos)}
 
 
