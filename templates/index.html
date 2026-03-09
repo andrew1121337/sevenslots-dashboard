@@ -1280,21 +1280,29 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <!-- ROATA APP -->
   <div class="page" id="pg-roata">
     <div class="sh"><div class="dot"></div>Roata APP<div class="ln"></div></div>
-    <!-- Add new casino -->
-    <div class="roata-add-casino">
-      <input type="text" id="roata-new-casino" class="fi" placeholder="Nume cazino nou (ex: Betano)" style="max-width:220px;">
-      <button class="meet-add-btn" onclick="addRoataCasino()">Adauga Cazino</button>
+    <div class="roata-tabs" id="roata-tabs">
+      <button class="roata-tab on" onclick="selectRoataTab('netbet',this)">Netbet - Rotiri</button>
+      <button class="roata-tab" onclick="selectRoataTab('superbet',this)">Superbet - Rotiri</button>
+      <button class="roata-tab" onclick="selectRoataTab('paysafe',this)">PaySafe</button>
     </div>
-    <!-- Casino tabs -->
-    <div class="roata-tabs" id="roata-tabs"></div>
-    <!-- Add entry for selected casino -->
-    <div class="roata-add-entry" id="roata-add-section" style="display:none;">
-      <label style="font-size:12px;font-weight:700;color:var(--dim);">Username:</label>
-      <input type="text" id="roata-user" class="fi" placeholder="@username" style="max-width:180px;">
+    <!-- Add form -->
+    <div class="roata-add-entry" id="roata-add-form">
+      <input type="text" id="roata-rotiri" class="fi" placeholder="50 rotiri" style="max-width:120px;">
+      <input type="text" id="roata-userapp" class="fi" placeholder="User APP (email)" style="max-width:220px;">
+      <input type="text" id="roata-usercazino" class="fi" placeholder="Username cazino" style="max-width:180px;">
+      <select id="roata-status" class="psf-sel">
+        <option value="User request">User request</option>
+        <option value="User primit">User primit</option>
+      </select>
       <button class="meet-add-btn" onclick="addRoataEntry()">Adauga</button>
     </div>
-    <!-- Entries list -->
-    <div id="roata-list"></div>
+    <!-- Table -->
+    <div class="tw">
+      <table class="psf-table">
+        <thead id="roata-thead"></thead>
+        <tbody id="roata-tbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- SEDINTA -->
@@ -2388,104 +2396,123 @@ function pickS(s) {
 }
 
 // ── ROATA APP ──
-let _roataCasino = null;
+let _roataTab = 'netbet';
+
+const ROATA_CFG = {
+  netbet: {
+    label: 'Netbet - Rotiri',
+    cols: ['Data','Rotiri Netbet','User APP','Username cazino','Status',''],
+    defaultRotiri: '50 rotiri',
+    statuses: ['User request','User primit'],
+  },
+  superbet: {
+    label: 'Superbet - Rotiri',
+    cols: ['Data','Rotiri Superbet','User APP','Username cazino','Status',''],
+    defaultRotiri: '100 Rotiri',
+    statuses: ['User request','User primit'],
+  },
+  paysafe: {
+    label: 'PaySafe',
+    cols: ['Data','Paysafe','User','Status',''],
+    defaultRotiri: '25RON',
+    statuses: ['Psf trimis','In asteptare'],
+    noCazino: true,
+  },
+};
+
+function selectRoataTab(tab, el) {
+  _roataTab = tab;
+  document.querySelectorAll('#roata-tabs .roata-tab').forEach(t=>t.classList.remove('on'));
+  if(el) el.classList.add('on');
+  const cfg = ROATA_CFG[tab];
+  // Update add form
+  const rotiriInput = document.getElementById('roata-rotiri');
+  rotiriInput.placeholder = cfg.defaultRotiri;
+  const ucInput = document.getElementById('roata-usercazino');
+  ucInput.style.display = cfg.noCazino ? 'none' : '';
+  // Update status options
+  const sel = document.getElementById('roata-status');
+  sel.innerHTML = cfg.statuses.map(s=>`<option value="${s}">${s}</option>`).join('');
+  renderRoataTable();
+}
 
 async function renderRoata() {
-  // Load casino tabs
-  try {
-    const r = await fetch('/api/roata/casinos');
-    const casinos = await r.json();
-    const tabs = document.getElementById('roata-tabs');
-    if(!casinos.length) {
-      tabs.innerHTML = '<span style="font-size:12px;color:var(--dim);">Niciun cazino adaugat</span>';
-      document.getElementById('roata-add-section').style.display = 'none';
-      document.getElementById('roata-list').innerHTML = '';
-      return;
-    }
-    if(!_roataCasino || !casinos.includes(_roataCasino)) _roataCasino = casinos[0];
-    tabs.innerHTML = casinos.map(c =>
-      `<button class="roata-tab ${c===_roataCasino?'on':''}" onclick="selectRoataCasino('${escHtml(c)}')">${escHtml(c)}</button>`
-    ).join('');
-    document.getElementById('roata-add-section').style.display = 'flex';
-    renderRoataEntries();
-  } catch(e) {}
+  selectRoataTab(_roataTab, document.querySelector('#roata-tabs .roata-tab.on'));
 }
 
-function selectRoataCasino(casino) {
-  _roataCasino = casino;
-  renderRoata();
-}
-
-async function renderRoataEntries() {
-  if(!_roataCasino) return;
-  const el = document.getElementById('roata-list');
+async function renderRoataTable() {
+  const cfg = ROATA_CFG[_roataTab];
+  // Header
+  document.getElementById('roata-thead').innerHTML = '<tr>' + cfg.cols.map(c=>`<th>${c}</th>`).join('') + '</tr>';
+  // Body
   try {
-    const r = await fetch(`/api/roata?casino=${encodeURIComponent(_roataCasino)}`);
-    const entries = await r.json();
-    if(!entries.length) {
-      el.innerHTML = '<div class="roata-empty">Nicio intrare pentru ' + escHtml(_roataCasino) + '</div>';
+    const r = await fetch(`/api/roata/${_roataTab}`);
+    const data = await r.json();
+    const tbody = document.getElementById('roata-tbody');
+    if(!data.length) {
+      const span = cfg.noCazino ? 5 : 6;
+      tbody.innerHTML = `<tr><td colspan="${span}" style="text-align:center;padding:30px;color:var(--dim);">Nicio intrare</td></tr>`;
       return;
     }
-    el.innerHTML = entries.map(e => {
-      const cls = e.status === 'rezolvat' ? 're-done' : (e.status === 'in asteptare' ? 're-pending' : '');
-      return `<div class="roata-entry ${cls}">
-        <div class="roata-user">${escHtml(e.username)}</div>
-        <div class="roata-date">${e.date}</div>
-        <select class="roata-status-sel" onchange="updRoataStatus(${e.id},this.value)">
-          <option value="" ${!e.status?'selected':''}>—</option>
-          <option value="in asteptare" ${e.status==='in asteptare'?'selected':''}>in asteptare</option>
-          <option value="rezolvat" ${e.status==='rezolvat'?'selected':''}>rezolvat</option>
-        </select>
-        <button class="delbtn" onclick="deleteRoataEntry(${e.id})">&#128465;</button>
-      </div>`;
+    tbody.innerHTML = data.map(e => {
+      const stCls = e.status==='User primit'||e.status==='Psf trimis' ? 'psf-status-rezolvat' : 'psf-status-pending';
+      if(cfg.noCazino) {
+        return `<tr>
+          <td>${e.date}</td>
+          <td style="font-weight:700;">${escHtml(e.rotiri)}</td>
+          <td class="psf-user">${escHtml(e.user_app)}</td>
+          <td><span class="psf-status ${stCls}">${escHtml(e.status)}</span></td>
+          <td><button class="delbtn" onclick="deleteRoata(${e.id})">&#128465;</button></td>
+        </tr>`;
+      }
+      return `<tr>
+        <td>${e.date}</td>
+        <td style="font-weight:700;">${escHtml(e.rotiri)}</td>
+        <td class="psf-user">${escHtml(e.user_app)}</td>
+        <td>${escHtml(e.username_cazino)}</td>
+        <td>
+          <select class="roata-status-sel" onchange="updRoataStatus(${e.id},this.value)">
+            ${cfg.statuses.map(s=>`<option value="${s}" ${e.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td><button class="delbtn" onclick="deleteRoata(${e.id})">&#128465;</button></td>
+      </tr>`;
     }).join('');
   } catch(e) {}
 }
 
-function addRoataCasino() {
-  const input = document.getElementById('roata-new-casino');
-  const name = input.value.trim();
-  if(!name) { toast('Introdu numele cazinoului'); return; }
-  _roataCasino = name;
-  input.value = '';
-  toast('Cazino selectat: ' + name + '. Adauga useri mai jos.', 'ok');
-  // Show add section even if no entries yet
-  document.getElementById('roata-add-section').style.display = 'flex';
-  // Add tab manually
-  const tabs = document.getElementById('roata-tabs');
-  const existing = tabs.innerHTML;
-  // Remove 'on' from all existing tabs
-  tabs.querySelectorAll('.roata-tab').forEach(t => t.classList.remove('on'));
-  const btn = document.createElement('button');
-  btn.className = 'roata-tab on';
-  btn.textContent = name;
-  btn.onclick = () => selectRoataCasino(name);
-  tabs.appendChild(btn);
-  document.getElementById('roata-list').innerHTML = '<div class="roata-empty">Adauga primul user pentru ' + escHtml(name) + '</div>';
-}
-
 async function addRoataEntry() {
-  if(!_roataCasino) { toast('Selecteaza un cazino'); return; }
-  const user = document.getElementById('roata-user').value.trim();
-  if(!user) { toast('Introdu username'); return; }
+  const rotiri = document.getElementById('roata-rotiri').value.trim();
+  const userApp = document.getElementById('roata-userapp').value.trim();
+  const userCazino = document.getElementById('roata-usercazino').value.trim();
+  const status = document.getElementById('roata-status').value;
+  if(!userApp) { toast('Introdu User APP'); return; }
   const today = new Date().toISOString().split('T')[0];
+  const cfg = ROATA_CFG[_roataTab];
   await fetch('/api/roata', {method:'POST', body:new URLSearchParams({
-    casino: _roataCasino, username: user, date: today, status: ''
+    category: _roataTab,
+    date: today,
+    rotiri: rotiri || cfg.defaultRotiri,
+    user_app: userApp,
+    username_cazino: cfg.noCazino ? '' : userCazino,
+    status: status,
   })});
-  document.getElementById('roata-user').value = '';
-  toast('Adaugat in ' + _roataCasino, 'ok');
-  renderRoata();
+  document.getElementById('roata-rotiri').value = '';
+  document.getElementById('roata-userapp').value = '';
+  document.getElementById('roata-usercazino').value = '';
+  toast('Adaugat!', 'ok');
+  renderRoataTable();
 }
 
 async function updRoataStatus(id, status) {
   await fetch(`/api/roata/${id}`, {method:'PUT', body:new URLSearchParams({status})});
-  renderRoataEntries();
+  renderRoataTable();
 }
 
-async function deleteRoataEntry(id) {
+async function deleteRoata(id) {
   await fetch(`/api/roata/${id}`, {method:'DELETE'});
   toast('Sters');
-  renderRoata();
+  renderRoataTable();
 }
 
 // ── LICENTE ──

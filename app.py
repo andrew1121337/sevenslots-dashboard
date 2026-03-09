@@ -463,20 +463,16 @@ async def api_delete_paysafe(pid: int):
 
 # ── Roata APP API ──
 
-@app.get("/api/roata")
-async def api_roata(casino: str = None):
-    return db.get_roata_entries(casino)
-
-
-@app.get("/api/roata/casinos")
-async def api_roata_casinos():
-    return db.get_roata_casinos()
+@app.get("/api/roata/{category}")
+async def api_roata(category: str):
+    return db.get_roata(category)
 
 
 @app.post("/api/roata")
-async def api_add_roata(casino: str = Form(...), username: str = Form(...),
-                         date: str = Form(...), status: str = Form("")):
-    rid = db.add_roata_entry(casino, username, date, status)
+async def api_add_roata(category: str = Form(...), date: str = Form(...),
+                         rotiri: str = Form(""), user_app: str = Form(""),
+                         username_cazino: str = Form(""), status: str = Form("")):
+    rid = db.add_roata(category, date, rotiri, user_app, username_cazino, status)
     return {"ok": True, "id": rid}
 
 
@@ -488,7 +484,7 @@ async def api_update_roata(rid: int, status: str = Form(...)):
 
 @app.delete("/api/roata/{rid}")
 async def api_delete_roata(rid: int):
-    db.delete_roata_entry(rid)
+    db.delete_roata(rid)
     return {"ok": True}
 
 
