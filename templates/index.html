@@ -400,6 +400,11 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   background:var(--cyan-dim); border-color:var(--cyan);
   color:var(--cyan); box-shadow:0 0 16px rgba(6,182,212,0.15);
 }
+.prog-tab.pt-catalin.on {
+  background:var(--orange-dim); border-color:var(--orange);
+  color:var(--orange); box-shadow:0 0 16px rgba(249,115,22,0.15);
+}
+.prog-row.rc { border-left-color:var(--orange); }
 .prog-panel { display:none; animation:fadeIn .22s ease; }
 .prog-panel.on { display:block; }
 .pday { font-size:22px; font-weight:900; color:var(--dim2); line-height:1; }
@@ -411,6 +416,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   padding:7px 10px; appearance:none; cursor:pointer; transition:.15s; border-radius:6px;
 }
 .psel:focus { outline:none; border-color:var(--purple2); }
+.psel-text { appearance:auto; }
 .psel option { background:#1a0e2e; }
 
 /* ─── IMPORT ─── */
@@ -805,6 +811,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     <div class="prog-tabs">
       <button class="prog-tab pt-seven on" onclick="switchProg('seven',this)">Seven</button>
       <button class="prog-tab pt-prof" onclick="switchProg('prof',this)">El Profesor</button>
+      <button class="prog-tab pt-catalin" onclick="switchProg('catalin',this)">Catalin</button>
     </div>
     <div class="prog-panel on" id="pp-seven">
       <div class="prog-hdr"><div>Zi</div><div>Cazino</div><div>Provider</div></div>
@@ -813,6 +820,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     <div class="prog-panel" id="pp-prof">
       <div class="prog-hdr"><div>Zi</div><div>Cazino</div><div>Provider</div></div>
       <div id="pl-prof"></div>
+    </div>
+    <div class="prog-panel" id="pp-catalin">
+      <div class="prog-hdr"><div>Zi</div><div>Tip Video</div><div>Nota</div></div>
+      <div id="pl-catalin"></div>
     </div>
   </div>
 
@@ -1759,22 +1770,29 @@ function switchProg(which, btn) {
 
 async function renderP() {
   const days = new Date(curYear, curMonth+1, 0).getDate();
-  let progSeven = {};
-  let progProf = {};
+  let progSeven = {}, progProf = {}, progCat = {};
   try {
-    const r1 = await fetch(`/api/program/${curYear}/${curMonth+1}?streamer=Seven`);
+    const [r1, r2, r3] = await Promise.all([
+      fetch(`/api/program/${curYear}/${curMonth+1}?streamer=Seven`),
+      fetch(`/api/program/${curYear}/${curMonth+1}?streamer=El Profesor`),
+      fetch(`/api/program/${curYear}/${curMonth+1}?streamer=Catalin`),
+    ]);
     progSeven = await r1.json();
-    const r2 = await fetch(`/api/program/${curYear}/${curMonth+1}?streamer=El Profesor`);
     progProf = await r2.json();
+    progCat = await r3.json();
   } catch(e){}
   renderProgGrid('pl-seven', 'Seven', progSeven, days);
   renderProgGrid('pl-prof', 'El Profesor', progProf, days);
+  renderProgGrid('pl-catalin', 'Catalin', progCat, days);
 }
+
+const VID_TYPES=['—','Video','Short','Reel','Compilatie'];
 
 function renderProgGrid(containerId, streamer, prog, days) {
   const el = document.getElementById(containerId);
   el.innerHTML = '';
-  const colorClass = streamer === 'Seven' ? 'rs' : 'rp';
+  const isCat = streamer === 'Catalin';
+  const colorClass = streamer === 'Seven' ? 'rs' : (isCat ? 'rc' : 'rp');
   for (let d = 1; d <= days; d++) {
     const r = prog[d] || { casino: '—', provider: '—', done: 0 };
     const date = new Date(curYear, curMonth, d);
@@ -1784,15 +1802,25 @@ function renderProgGrid(containerId, streamer, prog, days) {
     const isDone = r.done ? true : false;
     const div = document.createElement('div');
     div.className = 'prog-row' + (isDone ? ' r-done' : (hasCasino ? ' ' + colorClass : (wk ? ' r-free' : '')));
-    div.innerHTML = `
-      <div class="pday">${String(d).padStart(2, '0')}<span>${dn}</span></div>
-      <select class="psel" data-d="${d}" data-s="${streamer}" data-f="casino" onchange="updP(this)">
-        ${CAS.map(c => `<option value="${c}" ${r.casino === c ? 'selected' : ''}>${c}</option>`).join('')}
-      </select>
-      <select class="psel" data-d="${d}" data-s="${streamer}" data-f="provider" onchange="updP(this)">
-        ${PRO.map(p => `<option value="${p}" ${r.provider === p ? 'selected' : ''}>${p}</option>`).join('')}
-      </select>
-      <div class="pdone-wrap"><input type="checkbox" class="pdone" data-d="${d}" data-s="${streamer}" ${isDone?'checked':''} onchange="updP(this)" title="LIVE facut"></div>`;
+    if(isCat) {
+      div.innerHTML = `
+        <div class="pday">${String(d).padStart(2, '0')}<span>${dn}</span></div>
+        <select class="psel" data-d="${d}" data-s="${streamer}" data-f="casino" onchange="updP(this)">
+          ${VID_TYPES.map(c => `<option value="${c}" ${r.casino === c ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>
+        <input type="text" class="psel psel-text" data-d="${d}" data-s="${streamer}" data-f="provider" value="${(r.provider&&r.provider!=='—')?r.provider:''}" placeholder="Nota / descriere" onchange="updP(this)">
+        <div class="pdone-wrap"><input type="checkbox" class="pdone" data-d="${d}" data-s="${streamer}" ${isDone?'checked':''} onchange="updP(this)" title="Publicat"></div>`;
+    } else {
+      div.innerHTML = `
+        <div class="pday">${String(d).padStart(2, '0')}<span>${dn}</span></div>
+        <select class="psel" data-d="${d}" data-s="${streamer}" data-f="casino" onchange="updP(this)">
+          ${CAS.map(c => `<option value="${c}" ${r.casino === c ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>
+        <select class="psel" data-d="${d}" data-s="${streamer}" data-f="provider" onchange="updP(this)">
+          ${PRO.map(p => `<option value="${p}" ${r.provider === p ? 'selected' : ''}>${p}</option>`).join('')}
+        </select>
+        <div class="pdone-wrap"><input type="checkbox" class="pdone" data-d="${d}" data-s="${streamer}" ${isDone?'checked':''} onchange="updP(this)" title="LIVE facut"></div>`;
+    }
     el.appendChild(div);
   }
 }
@@ -1817,7 +1845,7 @@ async function updP(el) {
   const dayNum = parseInt(d);
   const date = new Date(curYear, curMonth, dayNum);
   const isWk = date.getDay() === 0 || date.getDay() === 6;
-  const colorClass = streamer === 'Seven' ? 'rs' : 'rp';
+  const colorClass = streamer === 'Seven' ? 'rs' : (streamer === 'Catalin' ? 'rc' : 'rp');
   row.className = 'prog-row' + (isDone ? ' r-done' : (hasCasino ? ' ' + colorClass : (isWk ? ' r-free' : '')));
 }
 
