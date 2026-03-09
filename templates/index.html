@@ -1772,11 +1772,18 @@ async function renderCatalin() {
   const kg = document.getElementById('catalin-kpi');
   const chartsEl = document.getElementById('catalin-charts');
 
+  // Fetch program data for calendar
+  let progData = {};
+  try {
+    const pr = await fetch(`/api/program/${curYear}/${curMonth+1}?streamer=Catalin`);
+    progData = await pr.json();
+  } catch(e){}
+
   if(!n) {
     kg.innerHTML = kC('Videoclipuri','0','','kc-orange');
     if(chartsEl) chartsEl.style.display = 'none';
     document.getElementById('catalin-table').innerHTML = '';
-    renderCatalinCal([]);
+    renderCatalinCal([], progData);
     return;
   }
   if(chartsEl) chartsEl.style.display = 'grid';
@@ -1803,7 +1810,7 @@ async function renderCatalin() {
     svgLine('catalin-line-dur', sess.map(s=>({v:durToMin(s.duration)||0, lbl:s.date})), '#a855f7', 'gcatD', 'catalin-lbl-dur', 120);
   }, 50);
 
-  renderCatalinCal(sess);
+  renderCatalinCal(sess, progData);
 
   // Table
   const rows = [...sess].reverse();
@@ -1820,9 +1827,10 @@ async function renderCatalin() {
   }).join('');
 }
 
-function renderCatalinCal(sess) {
+function renderCatalinCal(sess, progData) {
   const el = document.getElementById('catalin-cal-view');
   if(!el) return;
+  progData = progData || {};
   const m = curMonth, y = curYear;
   const days = new Date(y, m+1, 0).getDate();
   const firstDow = (new Date(y, m, 1).getDay()+6)%7;
@@ -1849,15 +1857,28 @@ function renderCatalinCal(sess) {
     const isWk = dow===0||dow===6;
     const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
     const daySess = sessByDay[d] || [];
+    const prog = progData[d];
     const hasData = daySess.length > 0;
+    const hasProg = prog && prog.casino && prog.casino !== '—';
 
     let cls = 'cal-cell';
-    if(hasData) cls += ' has-catalin';
-    if(isWk && !hasData) cls += ' weekend';
+    if(hasData || hasProg) cls += ' has-catalin';
+    if(isWk && !hasData && !hasProg) cls += ' weekend';
     if(isToday) cls += ' today';
 
     html += `<div class="${cls}">`;
     html += `<div class="cal-num">${d}</div>`;
+
+    // Program data (scheduled)
+    if(hasProg) {
+      if(prog.done) {
+        html += `<div class="cal-badge cal-badge-done">&#10003; Publicat</div>`;
+      } else {
+        html += `<div class="cal-badge cal-badge-sched">&#128338; Programat</div>`;
+      }
+      html += `<div class="cal-tag cal-tag-casino">${prog.casino}</div>`;
+      if(prog.provider && prog.provider !== '—') html += `<div class="cal-tag cal-tag-provider" style="font-size:9px;">${prog.provider}</div>`;
+    }
 
     if(hasData) {
       const count = daySess.length;
