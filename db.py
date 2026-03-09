@@ -145,6 +145,17 @@ def init_db():
             psf50 INTEGER DEFAULT 0,
             status TEXT DEFAULT '',
             platform TEXT DEFAULT 'Instagram')""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS roata_entries (
+            id SERIAL PRIMARY KEY,
+            casino TEXT NOT NULL,
+            username TEXT NOT NULL,
+            date TEXT NOT NULL,
+            status TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        try:
+            _pg_run(conn, "CREATE INDEX IF NOT EXISTS idx_roata_casino ON roata_entries(casino)")
+        except Exception:
+            pass
         try:
             _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
         except Exception:
@@ -211,6 +222,14 @@ def init_db():
                 psf50 INTEGER DEFAULT 0,
                 status TEXT DEFAULT '',
                 platform TEXT DEFAULT 'Instagram');
+            CREATE TABLE IF NOT EXISTS roata_entries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                casino TEXT NOT NULL,
+                username TEXT NOT NULL,
+                date TEXT NOT NULL,
+                status TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+            CREATE INDEX IF NOT EXISTS idx_roata_casino ON roata_entries(casino);
         """)
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
@@ -746,5 +765,85 @@ def delete_paysafe(pid: int):
     else:
         conn = get_conn()
         conn.execute("DELETE FROM paysafes WHERE id = ?", (pid,))
+        conn.commit()
+        conn.close()
+
+
+# ── Roata APP ──
+
+def get_roata_casinos() -> list[str]:
+    """Get distinct casino names from roata_entries."""
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT DISTINCT casino FROM roata_entries ORDER BY casino")
+        conn.close()
+        return [r[0] for r in rows]
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT DISTINCT casino FROM roata_entries ORDER BY casino").fetchall()
+        conn.close()
+        return [r[0] for r in rows]
+
+
+def get_roata_entries(casino: str = None) -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        if casino:
+            rows = _pg_run(conn, "SELECT id, casino, username, date, status FROM roata_entries WHERE casino = :c ORDER BY date DESC, id DESC",
+                           {"c": casino})
+        else:
+            rows = _pg_run(conn, "SELECT id, casino, username, date, status FROM roata_entries ORDER BY casino, date DESC, id DESC")
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result
+    else:
+        conn = get_conn()
+        if casino:
+            rows = conn.execute("SELECT id, casino, username, date, status FROM roata_entries WHERE casino = ? ORDER BY date DESC, id DESC",
+                                (casino,)).fetchall()
+        else:
+            rows = conn.execute("SELECT id, casino, username, date, status FROM roata_entries ORDER BY casino, date DESC, id DESC").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+
+def add_roata_entry(casino: str, username: str, date: str, status: str = "") -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "INSERT INTO roata_entries (casino, username, date, status) VALUES (:c, :u, :d, :s) RETURNING id",
+                       {"c": casino, "u": username, "d": date, "s": status})
+        rid = rows[0][0]
+        conn.close()
+        return rid
+    else:
+        conn = get_conn()
+        cur = conn.execute("INSERT INTO roata_entries (casino, username, date, status) VALUES (?, ?, ?, ?)",
+                           (casino, username, date, status))
+        conn.commit()
+        rid = cur.lastrowid
+        conn.close()
+        return rid
+
+
+def update_roata_status(rid: int, status: str):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "UPDATE roata_entries SET status=:s WHERE id=:id", {"s": status, "id": rid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("UPDATE roata_entries SET status=? WHERE id=?", (status, rid))
+        conn.commit()
+        conn.close()
+
+
+def delete_roata_entry(rid: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM roata_entries WHERE id = :id", {"id": rid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM roata_entries WHERE id = ?", (rid,))
         conn.commit()
         conn.close()

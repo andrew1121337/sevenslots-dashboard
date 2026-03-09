@@ -461,6 +461,37 @@ async def api_delete_paysafe(pid: int):
     return {"ok": True}
 
 
+# ── Roata APP API ──
+
+@app.get("/api/roata")
+async def api_roata(casino: str = None):
+    return db.get_roata_entries(casino)
+
+
+@app.get("/api/roata/casinos")
+async def api_roata_casinos():
+    return db.get_roata_casinos()
+
+
+@app.post("/api/roata")
+async def api_add_roata(casino: str = Form(...), username: str = Form(...),
+                         date: str = Form(...), status: str = Form("")):
+    rid = db.add_roata_entry(casino, username, date, status)
+    return {"ok": True, "id": rid}
+
+
+@app.put("/api/roata/{rid}")
+async def api_update_roata(rid: int, status: str = Form(...)):
+    db.update_roata_status(rid, status)
+    return {"ok": True}
+
+
+@app.delete("/api/roata/{rid}")
+async def api_delete_roata(rid: int):
+    db.delete_roata_entry(rid)
+    return {"ok": True}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)
