@@ -1024,6 +1024,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <!-- THUMBNAILS (calendar view) -->
   <div class="page" id="pg-thumbnails">
     <div class="sh"><div class="dot"></div>Thumbnails<div class="ln"></div></div>
+    <div class="prog-tabs" style="margin-bottom:18px;">
+      <button class="prog-tab on" onclick="setThumbTab('Seven',this)" style="border-bottom-color:var(--gold);"><span style="margin-right:4px;">&#9889;</span> Seven</button>
+      <button class="prog-tab" onclick="setThumbTab('El Profesor',this)" style="border-bottom-color:var(--cyan);"><span style="margin-right:4px;">&#127919;</span> El Profesor</button>
+    </div>
     <div id="thumb-calendar"></div>
   </div>
 
@@ -1032,8 +1036,13 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     <div class="sh"><div class="dot"></div>Upload Thumbnails<div class="ln"></div></div>
     <div class="import-card">
       <h3>Upload <span>Thumbnail</span></h3>
-      <div class="ic-sub">Selecteaza data si incarca imaginea</div>
+      <div class="ic-sub">Selecteaza streamerul, data si incarca imaginea</div>
       <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+        <label style="font-size:12px;font-weight:700;color:var(--dim);">Pentru:</label>
+        <select id="thumb-streamer" class="import-sel">
+          <option value="Seven">Seven</option>
+          <option value="El Profesor">El Profesor</option>
+        </select>
         <label style="font-size:12px;font-weight:700;color:var(--dim);">Data:</label>
         <input type="date" id="thumb-date" class="fi" style="max-width:180px;">
       </div>
@@ -1049,6 +1058,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
       </div>
     </div>
     <div class="sh"><div class="dot"></div>Uploaduri Luna Curenta<div class="ln"></div></div>
+    <div class="prog-tabs" style="margin-bottom:12px;">
+      <button class="prog-tab on" onclick="setUploadTab('Seven',this)"><span style="margin-right:4px;">&#9889;</span> Seven</button>
+      <button class="prog-tab" onclick="setUploadTab('El Profesor',this)"><span style="margin-right:4px;">&#127919;</span> El Profesor</button>
+    </div>
     <div id="upload-list"></div>
   </div>
 
@@ -2064,10 +2077,26 @@ function pickS(s) {
 
 // ── THUMBNAILS ──
 let _thumbCache = [];
+let _thumbStreamer = 'Seven';
+let _uploadListStreamer = 'Seven';
+
+function setThumbTab(streamer, el) {
+  _thumbStreamer = streamer;
+  el.closest('.prog-tabs').querySelectorAll('.prog-tab').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  renderThumbnails();
+}
+
+function setUploadTab(streamer, el) {
+  _uploadListStreamer = streamer;
+  el.closest('.prog-tabs').querySelectorAll('.prog-tab').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  renderUploadList();
+}
 
 async function renderThumbnails() {
   try {
-    const r = await fetch(`/api/thumbnails/${curYear}/${curMonth+1}`);
+    const r = await fetch(`/api/thumbnails/${curYear}/${curMonth+1}?streamer=${encodeURIComponent(_thumbStreamer)}`);
     _thumbCache = await r.json();
   } catch(e) { _thumbCache = []; }
 
@@ -2078,13 +2107,13 @@ async function renderThumbnails() {
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
-  // Group thumbs by date
   const byDate = {};
   _thumbCache.forEach(t => {
     if(!byDate[t.date]) byDate[t.date] = [];
     byDate[t.date].push(t);
   });
 
+  const accentColor = _thumbStreamer === 'Seven' ? 'var(--gold)' : 'var(--cyan)';
   let h = '<div class="thumb-grid">';
   ['Lun','Mar','Mie','Joi','Vin','Sam','Dum'].forEach(d => h += `<div class="thumb-hdr">${d}</div>`);
   for(let i=0;i<startDay;i++) h += '<div class="thumb-cell empty"></div>';
@@ -2095,8 +2124,8 @@ async function renderThumbnails() {
     const cls = ['thumb-cell'];
     if(isToday) cls.push('today');
     if(thumbs.length) cls.push('has-thumb');
-    h += `<div class="${cls.join(' ')}" onclick="showThumbDay('${ds}')">`;
-    h += `<div class="thumb-num">${d}</div>`;
+    h += `<div class="${cls.join(' ')}" onclick="showThumbDay('${ds}')" ${thumbs.length ? `style="border-color:${accentColor}33;"` : ''}>`;
+    h += `<div class="thumb-num" ${thumbs.length ? `style="color:${accentColor};"` : ''}>${d}</div>`;
     if(thumbs.length > 0) {
       h += `<img class="thumb-img" src="/api/thumbnails/view/${thumbs[0].id}" loading="lazy">`;
       if(thumbs.length > 1) h += `<div class="thumb-count">${thumbs.length}</div>`;
@@ -2124,7 +2153,7 @@ function showThumbDay(dateStr) {
   ).join('');
   overlay.innerHTML = `<div class="thumb-modal">
     <button class="thumb-modal-close" onclick="this.closest('.thumb-modal-overlay').remove()">&times;</button>
-    <div style="font-size:14px;font-weight:900;margin-bottom:14px;color:var(--orange);">${dateStr}</div>
+    <div style="font-size:14px;font-weight:900;margin-bottom:14px;">${dateStr} &mdash; ${_thumbStreamer}</div>
     <div style="max-height:75vh;overflow-y:auto;">${imgs}</div>
   </div>`;
   document.body.appendChild(overlay);
@@ -2136,8 +2165,6 @@ let _uploadFile = null;
 function setupUploadZone() {
   const zone = document.getElementById('upload-zone');
   const fileInput = document.getElementById('thumb-file');
-  const preview = document.getElementById('upload-preview');
-  const btn = document.getElementById('upload-btn');
   if(!zone) return;
 
   zone.ondragover = e => { e.preventDefault(); zone.classList.add('dragover'); };
@@ -2163,22 +2190,24 @@ function handleFile(file) {
 async function uploadThumb() {
   if(!_uploadFile) return;
   const date = document.getElementById('thumb-date').value;
+  const streamer = document.getElementById('thumb-streamer').value;
   if(!date) { toast('Selecteaza o data'); return; }
   const btn = document.getElementById('upload-btn');
   btn.disabled = true; btn.textContent = 'Se uploadeaza...';
   try {
     const fd = new FormData();
+    fd.append('streamer', streamer);
     fd.append('date', date);
     fd.append('file', _uploadFile);
     const r = await fetch('/api/thumbnails/upload', {method:'POST', body:fd});
     const d = await r.json();
     if(r.ok) {
-      toast('Thumbnail uploadat!','ok');
+      toast(`Thumbnail uploadat pt ${streamer}!`,'ok');
       _uploadFile = null;
       document.getElementById('upload-preview').style.display='none';
       document.getElementById('thumb-file').value='';
       btn.style.display='none';
-      renderUpload();
+      renderUploadList();
     } else {
       toast(d.error||'Eroare');
     }
@@ -2187,20 +2216,21 @@ async function uploadThumb() {
 }
 
 async function renderUpload() {
-  // Set default date
   const dateInput = document.getElementById('thumb-date');
   if(dateInput && !dateInput.value) {
     dateInput.value = new Date().toISOString().split('T')[0];
   }
   setupUploadZone();
+  renderUploadList();
+}
 
-  // Load current month uploads
+async function renderUploadList() {
   try {
-    const r = await fetch(`/api/thumbnails/${curYear}/${curMonth+1}`);
+    const r = await fetch(`/api/thumbnails/${curYear}/${curMonth+1}?streamer=${encodeURIComponent(_uploadListStreamer)}`);
     const thumbs = await r.json();
     const el = document.getElementById('upload-list');
     if(!thumbs.length) {
-      el.innerHTML = '<div class="ndb"><div class="ico">&#128444;</div><p>Niciun thumbnail in aceasta luna</p></div>';
+      el.innerHTML = `<div class="ndb"><div class="ico">&#128444;</div><p>Niciun thumbnail pt ${_uploadListStreamer} in aceasta luna</p></div>`;
       return;
     }
     el.innerHTML = thumbs.map(t =>
@@ -2219,7 +2249,7 @@ async function renderUpload() {
 async function deleteThumb(id) {
   await fetch(`/api/thumbnails/${id}`, {method:'DELETE'});
   toast('Thumbnail sters');
-  renderUpload();
+  renderUploadList();
 }
 
 // ── URL params ──

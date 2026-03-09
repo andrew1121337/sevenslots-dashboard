@@ -109,6 +109,7 @@ def init_db():
         _pg_run(conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video ON sessions(video_id) WHERE video_id != ''")
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS thumbnails (
             id SERIAL PRIMARY KEY,
+            streamer TEXT NOT NULL DEFAULT 'Seven',
             date TEXT NOT NULL,
             filename TEXT NOT NULL,
             content_type TEXT DEFAULT 'image/png',
@@ -116,6 +117,10 @@ def init_db():
             uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         try:
             _pg_run(conn, "CREATE INDEX IF NOT EXISTS idx_thumb_date ON thumbnails(date)")
+        except Exception:
+            pass
+        try:
+            _pg_run(conn, "ALTER TABLE thumbnails ADD COLUMN streamer TEXT NOT NULL DEFAULT 'Seven'")
         except Exception:
             pass
         # Add done column if missing (existing tables)
@@ -157,6 +162,7 @@ def init_db():
                 ON sessions(video_id) WHERE video_id != '';
             CREATE TABLE IF NOT EXISTS thumbnails (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                streamer TEXT NOT NULL DEFAULT 'Seven',
                 date TEXT NOT NULL,
                 filename TEXT NOT NULL,
                 content_type TEXT DEFAULT 'image/png',
@@ -409,25 +415,25 @@ def migrate_program_months():
 
 # ── Thumbnails ──
 
-def add_thumbnail(date: str, filename: str, content_type: str, image_data: str) -> int:
+def add_thumbnail(streamer: str, date: str, filename: str, content_type: str, image_data: str) -> int:
     if DATABASE_URL:
         conn = get_conn()
-        rows = _pg_run(conn, "INSERT INTO thumbnails (date, filename, content_type, image_data) VALUES (:d, :f, :ct, :img) RETURNING id",
-                       {"d": date, "f": filename, "ct": content_type, "img": image_data})
+        rows = _pg_run(conn, "INSERT INTO thumbnails (streamer, date, filename, content_type, image_data) VALUES (:s, :d, :f, :ct, :img) RETURNING id",
+                       {"s": streamer, "d": date, "f": filename, "ct": content_type, "img": image_data})
         tid = rows[0][0]
         conn.close()
         return tid
     else:
         conn = get_conn()
-        cur = conn.execute("INSERT INTO thumbnails (date, filename, content_type, image_data) VALUES (?, ?, ?, ?)",
-                           (date, filename, content_type, image_data))
+        cur = conn.execute("INSERT INTO thumbnails (streamer, date, filename, content_type, image_data) VALUES (?, ?, ?, ?, ?)",
+                           (streamer, date, filename, content_type, image_data))
         conn.commit()
         tid = cur.lastrowid
         conn.close()
         return tid
 
 
-def get_thumbnails_for_month(year: int, month: int) -> list[dict]:
+def get_thumbnails_for_month(year: int, month: int, streamer: str = None) -> list[dict]:
     start = f"{year}-{month:02d}-01"
     if month == 12:
         end = f"{year + 1}-01-01"
@@ -435,15 +441,23 @@ def get_thumbnails_for_month(year: int, month: int) -> list[dict]:
         end = f"{year}-{month + 1:02d}-01"
     if DATABASE_URL:
         conn = get_conn()
-        rows = _pg_run(conn, "SELECT id, date, filename, content_type FROM thumbnails WHERE date >= :s AND date < :e ORDER BY date",
-                       {"s": start, "e": end})
+        if streamer:
+            rows = _pg_run(conn, "SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= :s AND date < :e AND streamer = :st ORDER BY date",
+                           {"s": start, "e": end, "st": streamer})
+        else:
+            rows = _pg_run(conn, "SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= :s AND date < :e ORDER BY date",
+                           {"s": start, "e": end})
         result = _pg_to_dicts(conn, rows)
         conn.close()
         return result
     else:
         conn = get_conn()
-        rows = conn.execute("SELECT id, date, filename, content_type FROM thumbnails WHERE date >= ? AND date < ? ORDER BY date",
-                            (start, end)).fetchall()
+        if streamer:
+            rows = conn.execute("SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= ? AND date < ? AND streamer = ? ORDER BY date",
+                                (start, end, streamer)).fetchall()
+        else:
+            rows = conn.execute("SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= ? AND date < ? ORDER BY date",
+                                (start, end)).fetchall()
         conn.close()
         return [dict(r) for r in rows]
 

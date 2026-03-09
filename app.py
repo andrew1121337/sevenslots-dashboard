@@ -293,12 +293,12 @@ async def api_save_program(
 # ── Thumbnails API ──
 
 @app.post("/api/thumbnails/upload")
-async def thumbnail_upload(date: str = Form(...), file: UploadFile = File(...)):
+async def thumbnail_upload(streamer: str = Form(...), date: str = Form(...), file: UploadFile = File(...)):
     data = await file.read()
     if len(data) > 5 * 1024 * 1024:
         return JSONResponse({"error": "File too large (max 5MB)"}, status_code=400)
     b64 = base64.b64encode(data).decode()
-    tid = db.add_thumbnail(date, file.filename, file.content_type or "image/png", b64)
+    tid = db.add_thumbnail(streamer, date, file.filename, file.content_type or "image/png", b64)
     return {"ok": True, "id": tid}
 
 
@@ -328,8 +328,8 @@ async def thumbnail_delete(tid: int):
 
 
 @app.get("/api/thumbnails/{year}/{month}")
-async def thumbnail_list(year: int, month: int):
-    return db.get_thumbnails_for_month(year, month)
+async def thumbnail_list(year: int, month: int, streamer: str = None):
+    return db.get_thumbnails_for_month(year, month, streamer)
 
 
 if __name__ == "__main__":
