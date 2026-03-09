@@ -107,6 +107,17 @@ def init_db():
             done INTEGER DEFAULT 0,
             PRIMARY KEY (year, month, day, streamer))""")
         _pg_run(conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video ON sessions(video_id) WHERE video_id != ''")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS thumbnails (
+            id SERIAL PRIMARY KEY,
+            date TEXT NOT NULL,
+            filename TEXT NOT NULL,
+            content_type TEXT DEFAULT 'image/png',
+            image_data TEXT NOT NULL,
+            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        try:
+            _pg_run(conn, "CREATE INDEX IF NOT EXISTS idx_thumb_date ON thumbnails(date)")
+        except Exception:
+            pass
         # Add done column if missing (existing tables)
         try:
             _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
@@ -144,6 +155,14 @@ def init_db():
                 PRIMARY KEY (year, month, day, streamer));
             CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_video
                 ON sessions(video_id) WHERE video_id != '';
+            CREATE TABLE IF NOT EXISTS thumbnails (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                filename TEXT NOT NULL,
+                content_type TEXT DEFAULT 'image/png',
+                image_data TEXT NOT NULL,
+                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+            CREATE INDEX IF NOT EXISTS idx_thumb_date ON thumbnails(date);
         """)
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
@@ -386,3 +405,70 @@ def get_program(year: int, month: int, streamer: str = None) -> dict:
 def migrate_program_months():
     """One-time: wipe program data with wrong month indexing."""
     pass
+
+
+# ── Thumbnails ──
+
+def add_thumbnail(date: str, filename: str, content_type: str, image_data: str) -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "INSERT INTO thumbnails (date, filename, content_type, image_data) VALUES (:d, :f, :ct, :img) RETURNING id",
+                       {"d": date, "f": filename, "ct": content_type, "img": image_data})
+        tid = rows[0][0]
+        conn.close()
+        return tid
+    else:
+        conn = get_conn()
+        cur = conn.execute("INSERT INTO thumbnails (date, filename, content_type, image_data) VALUES (?, ?, ?, ?)",
+                           (date, filename, content_type, image_data))
+        conn.commit()
+        tid = cur.lastrowid
+        conn.close()
+        return tid
+
+
+def get_thumbnails_for_month(year: int, month: int) -> list[dict]:
+    start = f"{year}-{month:02d}-01"
+    if month == 12:
+        end = f"{year + 1}-01-01"
+    else:
+        end = f"{year}-{month + 1:02d}-01"
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT id, date, filename, content_type FROM thumbnails WHERE date >= :s AND date < :e ORDER BY date",
+                       {"s": start, "e": end})
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT id, date, filename, content_type FROM thumbnails WHERE date >= ? AND date < ? ORDER BY date",
+                            (start, end)).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+
+def get_thumbnail(tid: int) -> dict | None:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT id, date, filename, content_type, image_data FROM thumbnails WHERE id = :id", {"id": tid})
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result[0] if result else None
+    else:
+        conn = get_conn()
+        row = conn.execute("SELECT id, date, filename, content_type, image_data FROM thumbnails WHERE id = ?", (tid,)).fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+
+def delete_thumbnail(tid: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM thumbnails WHERE id = :id", {"id": tid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM thumbnails WHERE id = ?", (tid,))
+        conn.commit()
+        conn.close()

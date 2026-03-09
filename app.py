@@ -1,9 +1,10 @@
 """SevenSlots Streaming Dashboard - FastAPI Backend."""
+import base64
 import hashlib
 import os
 import secrets
-from fastapi import FastAPI, Request, Form, Cookie
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi import FastAPI, Request, Form, Cookie, UploadFile, File
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, Response
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -287,6 +288,48 @@ async def api_save_program(
 ):
     db.save_program_day(year, month, day, streamer, casino, provider, done)
     return {"ok": True}
+
+
+# ── Thumbnails API ──
+
+@app.post("/api/thumbnails/upload")
+async def thumbnail_upload(date: str = Form(...), file: UploadFile = File(...)):
+    data = await file.read()
+    if len(data) > 5 * 1024 * 1024:
+        return JSONResponse({"error": "File too large (max 5MB)"}, status_code=400)
+    b64 = base64.b64encode(data).decode()
+    tid = db.add_thumbnail(date, file.filename, file.content_type or "image/png", b64)
+    return {"ok": True, "id": tid}
+
+
+@app.get("/api/thumbnails/download/{tid}")
+async def thumbnail_download(tid: int):
+    t = db.get_thumbnail(tid)
+    if not t:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    data = base64.b64decode(t["image_data"])
+    return Response(content=data, media_type=t["content_type"],
+                    headers={"Content-Disposition": f'attachment; filename="{t["filename"]}"'})
+
+
+@app.get("/api/thumbnails/view/{tid}")
+async def thumbnail_view(tid: int):
+    t = db.get_thumbnail(tid)
+    if not t:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    data = base64.b64decode(t["image_data"])
+    return Response(content=data, media_type=t["content_type"])
+
+
+@app.delete("/api/thumbnails/{tid}")
+async def thumbnail_delete(tid: int):
+    db.delete_thumbnail(tid)
+    return {"ok": True}
+
+
+@app.get("/api/thumbnails/{year}/{month}")
+async def thumbnail_list(year: int, month: int):
+    return db.get_thumbnails_for_month(year, month)
 
 
 if __name__ == "__main__":

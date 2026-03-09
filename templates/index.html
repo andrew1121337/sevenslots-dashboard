@@ -445,6 +445,65 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .import-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
 .import-status { font-size:12px; color:var(--dim); font-weight:600; }
 
+/* ─── THUMBNAILS ─── */
+.thumb-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.thumb-hdr { font-size:9px; font-weight:800; color:var(--dim2); text-transform:uppercase; text-align:center; padding:6px 0; letter-spacing:1.5px; }
+.thumb-cell {
+  min-height:110px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:10px; padding:6px; position:relative; cursor:pointer; transition:.15s;
+}
+.thumb-cell:hover { border-color:var(--border2); background:var(--bg3); }
+.thumb-cell.empty { background:transparent; border-color:transparent; pointer-events:none; }
+.thumb-cell.today { border-color:var(--purple2); }
+.thumb-cell.has-thumb { border-color:rgba(249,115,22,.4); background:linear-gradient(160deg,rgba(249,115,22,.05) 0%,var(--bg2) 60%); }
+.thumb-num { font-size:12px; font-weight:800; color:rgba(255,255,255,.2); margin-bottom:4px; }
+.thumb-cell.has-thumb .thumb-num { color:var(--orange); }
+.thumb-cell.today .thumb-num { color:var(--purple2); }
+.thumb-img { width:100%; border-radius:6px; object-fit:cover; aspect-ratio:16/9; }
+.thumb-count { position:absolute; top:4px; right:6px; background:var(--orange); color:#fff; font-size:9px; font-weight:900; padding:1px 6px; border-radius:999px; }
+.thumb-modal-overlay {
+  position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,.85);
+  display:flex; align-items:center; justify-content:center;
+  animation:fadeIn .15s;
+}
+.thumb-modal {
+  background:var(--bg2); border:1px solid var(--border2); border-radius:16px;
+  max-width:90vw; max-height:90vh; padding:20px; position:relative;
+}
+.thumb-modal img { max-width:100%; max-height:70vh; border-radius:10px; }
+.thumb-modal-close {
+  position:absolute; top:10px; right:14px; background:none; border:none;
+  color:var(--dim); font-size:22px; cursor:pointer;
+}
+.thumb-modal-close:hover { color:var(--text); }
+.thumb-modal-actions { display:flex; gap:10px; margin-top:14px; justify-content:center; flex-wrap:wrap; }
+.thumb-dl-btn {
+  padding:8px 20px; border-radius:999px;
+  background:linear-gradient(90deg,var(--purple),var(--purple3));
+  border:none; color:#fff; font-family:'Nunito',sans-serif;
+  font-size:12px; font-weight:800; cursor:pointer; text-decoration:none;
+}
+.thumb-dl-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px var(--purple-glow); }
+.upload-zone {
+  border:2px dashed var(--border2); border-radius:14px; padding:40px 20px;
+  text-align:center; color:var(--dim); cursor:pointer; transition:.2s;
+  margin-bottom:16px;
+}
+.upload-zone:hover,.upload-zone.dragover { border-color:var(--orange); background:rgba(249,115,22,.05); color:var(--orange); }
+.upload-zone .uz-ico { font-size:36px; margin-bottom:8px; }
+.upload-zone .uz-txt { font-size:13px; font-weight:700; }
+.upload-zone .uz-sub { font-size:11px; color:var(--dim); margin-top:4px; }
+.upload-preview { max-width:200px; border-radius:10px; margin:12px auto; display:none; }
+.upload-list { margin-top:20px; }
+.upload-item {
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+  background:var(--bg2); border:1px solid var(--border); border-radius:10px;
+  margin-bottom:6px;
+}
+.upload-item img { width:60px; height:34px; object-fit:cover; border-radius:6px; }
+.upload-item .ui-name { font-size:12px; font-weight:700; color:var(--text2); }
+.upload-item .ui-date { font-size:10px; color:var(--dim); }
+
 /* ─── ADD FORM ─── */
 .stog { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
 .scard {
@@ -624,6 +683,14 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   .import-actions { flex-direction:column; align-items:stretch; }
   .import-btn { text-align:center; }
 
+  /* Thumbnails */
+  .thumb-cell { min-height:50px; padding:3px; border-radius:6px; }
+  .thumb-num { font-size:10px; }
+  .thumb-count { font-size:8px; padding:1px 4px; }
+  .thumb-modal { padding:12px; }
+  .upload-zone { padding:20px 10px; }
+  .upload-zone .uz-ico { font-size:24px; }
+
   /* Add form */
   .stog { grid-template-columns:1fr; gap:8px; }
   .fg { grid-template-columns:1fr !important; }
@@ -696,6 +763,14 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <div class="sb-item sb-catalin" onclick="goP('catalin',this)">
     <span class="sb-ico">&#127916;</span> Catalin
     <span class="sb-dot"></span>
+  </div>
+  <div class="sb-sep"></div>
+  <div class="sb-section">Media</div>
+  <div class="sb-item" onclick="goP('thumbnails',this)">
+    <span class="sb-ico">&#128444;</span> Thumbnails
+  </div>
+  <div class="sb-item" onclick="goP('upload',this)">
+    <span class="sb-ico">&#11014;</span> Upload
   </div>
   <div class="sb-sep"></div>
   <div class="sb-section">Actiuni</div>
@@ -946,6 +1021,37 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     </div>
   </div>
 
+  <!-- THUMBNAILS (calendar view) -->
+  <div class="page" id="pg-thumbnails">
+    <div class="sh"><div class="dot"></div>Thumbnails<div class="ln"></div></div>
+    <div id="thumb-calendar"></div>
+  </div>
+
+  <!-- UPLOAD (Catalin upload page) -->
+  <div class="page" id="pg-upload">
+    <div class="sh"><div class="dot"></div>Upload Thumbnails<div class="ln"></div></div>
+    <div class="import-card">
+      <h3>Upload <span>Thumbnail</span></h3>
+      <div class="ic-sub">Selecteaza data si incarca imaginea</div>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+        <label style="font-size:12px;font-weight:700;color:var(--dim);">Data:</label>
+        <input type="date" id="thumb-date" class="fi" style="max-width:180px;">
+      </div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('thumb-file').click()">
+        <div class="uz-ico">&#128444;</div>
+        <div class="uz-txt">Click sau trage imaginea aici</div>
+        <div class="uz-sub">Max 5MB - PNG, JPG, WEBP</div>
+      </div>
+      <input type="file" id="thumb-file" accept="image/*" style="display:none">
+      <img class="upload-preview" id="upload-preview">
+      <div style="text-align:center;">
+        <button class="import-btn" id="upload-btn" onclick="uploadThumb()" style="display:none;">Upload</button>
+      </div>
+    </div>
+    <div class="sh"><div class="dot"></div>Uploaduri Luna Curenta<div class="ln"></div></div>
+    <div id="upload-list"></div>
+  </div>
+
   <!-- IMPORT -->
   <div class="page" id="pg-import">
     <div class="sh"><div class="dot"></div>YouTube Import<div class="ln"></div></div>
@@ -1100,6 +1206,8 @@ function refreshPage() {
   if(curPage==='seven') renderStreamer('Seven');
   if(curPage==='profesor') renderStreamer('El Profesor');
   if(curPage==='catalin') renderCatalin();
+  if(curPage==='thumbnails') renderThumbnails();
+  if(curPage==='upload') renderUpload();
 }
 
 // ── Helpers ──
@@ -1952,6 +2060,166 @@ function pickS(s) {
   document.getElementById('f-streamer').value=s;
   document.querySelectorAll('.scard').forEach(c=>c.classList.remove('on'));
   document.querySelector(s==='Seven'?'.sc-s':'.sc-p').classList.add('on');
+}
+
+// ── THUMBNAILS ──
+let _thumbCache = [];
+
+async function renderThumbnails() {
+  try {
+    const r = await fetch(`/api/thumbnails/${curYear}/${curMonth+1}`);
+    _thumbCache = await r.json();
+  } catch(e) { _thumbCache = []; }
+
+  const el = document.getElementById('thumb-calendar');
+  const first = new Date(curYear, curMonth, 1);
+  const days = new Date(curYear, curMonth+1, 0).getDate();
+  let startDay = first.getDay(); if(startDay===0) startDay=7; startDay--;
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  // Group thumbs by date
+  const byDate = {};
+  _thumbCache.forEach(t => {
+    if(!byDate[t.date]) byDate[t.date] = [];
+    byDate[t.date].push(t);
+  });
+
+  let h = '<div class="thumb-grid">';
+  ['Lun','Mar','Mie','Joi','Vin','Sam','Dum'].forEach(d => h += `<div class="thumb-hdr">${d}</div>`);
+  for(let i=0;i<startDay;i++) h += '<div class="thumb-cell empty"></div>';
+  for(let d=1;d<=days;d++) {
+    const ds = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const thumbs = byDate[ds] || [];
+    const isToday = ds === todayStr;
+    const cls = ['thumb-cell'];
+    if(isToday) cls.push('today');
+    if(thumbs.length) cls.push('has-thumb');
+    h += `<div class="${cls.join(' ')}" onclick="showThumbDay('${ds}')">`;
+    h += `<div class="thumb-num">${d}</div>`;
+    if(thumbs.length > 0) {
+      h += `<img class="thumb-img" src="/api/thumbnails/view/${thumbs[0].id}" loading="lazy">`;
+      if(thumbs.length > 1) h += `<div class="thumb-count">${thumbs.length}</div>`;
+    }
+    h += '</div>';
+  }
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+function showThumbDay(dateStr) {
+  const thumbs = _thumbCache.filter(t => t.date === dateStr);
+  if(!thumbs.length) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'thumb-modal-overlay';
+  overlay.onclick = e => { if(e.target === overlay) overlay.remove(); };
+  let imgs = thumbs.map(t =>
+    `<div style="margin-bottom:16px;">
+      <img src="/api/thumbnails/view/${t.id}" style="max-width:100%;max-height:60vh;border-radius:10px;">
+      <div class="thumb-modal-actions">
+        <div style="font-size:11px;color:var(--dim);margin-right:auto;">${t.filename}</div>
+        <a href="/api/thumbnails/download/${t.id}" class="thumb-dl-btn" download>Descarca</a>
+      </div>
+    </div>`
+  ).join('');
+  overlay.innerHTML = `<div class="thumb-modal">
+    <button class="thumb-modal-close" onclick="this.closest('.thumb-modal-overlay').remove()">&times;</button>
+    <div style="font-size:14px;font-weight:900;margin-bottom:14px;color:var(--orange);">${dateStr}</div>
+    <div style="max-height:75vh;overflow-y:auto;">${imgs}</div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+// ── UPLOAD ──
+let _uploadFile = null;
+
+function setupUploadZone() {
+  const zone = document.getElementById('upload-zone');
+  const fileInput = document.getElementById('thumb-file');
+  const preview = document.getElementById('upload-preview');
+  const btn = document.getElementById('upload-btn');
+  if(!zone) return;
+
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('dragover'); };
+  zone.ondragleave = () => zone.classList.remove('dragover');
+  zone.ondrop = e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  };
+  fileInput.onchange = () => { if(fileInput.files.length) handleFile(fileInput.files[0]); };
+}
+
+function handleFile(file) {
+  if(file.size > 5*1024*1024) { toast('Fisierul e prea mare (max 5MB)'); return; }
+  _uploadFile = file;
+  const preview = document.getElementById('upload-preview');
+  const btn = document.getElementById('upload-btn');
+  const reader = new FileReader();
+  reader.onload = e => { preview.src = e.target.result; preview.style.display='block'; };
+  reader.readAsDataURL(file);
+  btn.style.display = 'inline-block';
+}
+
+async function uploadThumb() {
+  if(!_uploadFile) return;
+  const date = document.getElementById('thumb-date').value;
+  if(!date) { toast('Selecteaza o data'); return; }
+  const btn = document.getElementById('upload-btn');
+  btn.disabled = true; btn.textContent = 'Se uploadeaza...';
+  try {
+    const fd = new FormData();
+    fd.append('date', date);
+    fd.append('file', _uploadFile);
+    const r = await fetch('/api/thumbnails/upload', {method:'POST', body:fd});
+    const d = await r.json();
+    if(r.ok) {
+      toast('Thumbnail uploadat!','ok');
+      _uploadFile = null;
+      document.getElementById('upload-preview').style.display='none';
+      document.getElementById('thumb-file').value='';
+      btn.style.display='none';
+      renderUpload();
+    } else {
+      toast(d.error||'Eroare');
+    }
+  } catch(e) { toast('Eroare: '+e.message); }
+  btn.disabled = false; btn.textContent = 'Upload';
+}
+
+async function renderUpload() {
+  // Set default date
+  const dateInput = document.getElementById('thumb-date');
+  if(dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
+  setupUploadZone();
+
+  // Load current month uploads
+  try {
+    const r = await fetch(`/api/thumbnails/${curYear}/${curMonth+1}`);
+    const thumbs = await r.json();
+    const el = document.getElementById('upload-list');
+    if(!thumbs.length) {
+      el.innerHTML = '<div class="ndb"><div class="ico">&#128444;</div><p>Niciun thumbnail in aceasta luna</p></div>';
+      return;
+    }
+    el.innerHTML = thumbs.map(t =>
+      `<div class="upload-item">
+        <img src="/api/thumbnails/view/${t.id}" loading="lazy">
+        <div>
+          <div class="ui-name">${t.filename}</div>
+          <div class="ui-date">${t.date}</div>
+        </div>
+        <button class="delbtn" style="margin-left:auto;" onclick="deleteThumb(${t.id})">&#128465;</button>
+      </div>`
+    ).join('');
+  } catch(e) {}
+}
+
+async function deleteThumb(id) {
+  await fetch(`/api/thumbnails/${id}`, {method:'DELETE'});
+  toast('Thumbnail sters');
+  renderUpload();
 }
 
 // ── URL params ──
