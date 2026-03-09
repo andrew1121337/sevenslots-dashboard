@@ -64,6 +64,46 @@ def startup():
         # Remove old accounts
         for old in ("streamers", "managers"):
             db.delete_user(old)
+        # Seed licente if empty
+        if db.licente_count() == 0:
+            _LICENTE = [
+                ("L1203785W001253","Magic Jackpot"),("L1170664W000663","Betano"),
+                ("L1234166W001528","Winner"),("L1200662W001197","Favbet"),
+                ("L1203785W001253","Superbet"),("L1173107W000815","Conti Cazino"),
+                ("L1213823W001269","Magnum"),("L1213823W001269","Luck"),
+                ("L1213823W001269","Winboss"),("L1183150W000826","Winbet"),
+                ("L1173107W000815","Getsbet"),("L1213823W001269","ExcellBet"),
+                ("L1213823W001269","Yoji"),("L1160661W000651","Maxbet"),
+                ("L1213822W001268","Stanley"),("L1213822W001268","Gameworld"),
+                ("L1234008W001473","Million"),("L1160651W000195","Netbet"),
+                ("L1213854W001295","Mr Bit"),("L1160657W000330","Unibet"),
+                ("L1160657W000330","Vlad Casino"),("L1213854W001295","Frank Casino"),
+                ("L1213854W001295","SlotsV"),("L1234101W001500","Don"),
+                ("L1234008W001473","Prima Casino"),("L1203414W001173","Mozzart"),
+                ("L1213823W001269","Princess"),("L1234166W001528","Lady Casino"),
+                ("L1234166W001528","Elite Slots"),("L1234166W001528","Bet 7"),
+                ("L1234166W001528","Hot Spins"),("L1160650W000194","Pariuri Plus"),
+                ("L1213823W001269","Powerbet"),("L1213823W001269","Wacko"),
+                ("L1160650W000194","WinMaster"),("L1234144W001522","TotalBet"),
+            ]
+            for code, name in _LICENTE:
+                db.add_licenta(code, name)
+            print(f"[STARTUP] Seeded {len(_LICENTE)} licente")
+        # Seed paysafes if empty
+        existing_psf = db.get_paysafes()
+        if not existing_psf:
+            _PSF = [
+                ("dav1dush",1,0,"rezolvat","Instagram"),
+                ("byochan999",1,0,"rezolvat","Instagram"),
+                ("acesiuu",1,0,"rezolvat","Instagram"),
+                ("brkn8422",1,0,"rezolvat","Instagram"),
+                ("alexx10922",0,1,"rezolvat","Discord"),
+                ("caponaru_militaru",0,1,"rezolvat","Discord"),
+                ("Andrei.dum.26",1,0,"rezolvat","Instagram"),
+            ]
+            for u,a,b,s,p in _PSF:
+                db.add_paysafe(u,a,b,s,p)
+            print(f"[STARTUP] Seeded {len(_PSF)} paysafes")
         # One-time fix: migrate program data from 0-indexed to 1-indexed months
         db.migrate_program_months()
     except Exception as e:
@@ -371,6 +411,53 @@ async def api_toggle_task(tid: int, done: int = Form(...)):
 @app.delete("/api/meetings/tasks/{tid}")
 async def api_delete_task(tid: int):
     db.delete_meeting_task(tid)
+    return {"ok": True}
+
+
+# ── Licente API ──
+
+@app.get("/api/licente")
+async def api_licente():
+    return db.get_licente()
+
+
+@app.post("/api/licente")
+async def api_add_licenta(license_code: str = Form(...), casino_name: str = Form(...)):
+    lid = db.add_licenta(license_code, casino_name)
+    return {"ok": True, "id": lid}
+
+
+@app.delete("/api/licente/{lid}")
+async def api_delete_licenta(lid: int):
+    db.delete_licenta(lid)
+    return {"ok": True}
+
+
+# ── PaySafe API ──
+
+@app.get("/api/paysafes")
+async def api_paysafes():
+    return db.get_paysafes()
+
+
+@app.post("/api/paysafes")
+async def api_add_paysafe(username: str = Form(...), psf25: int = Form(0),
+                           psf50: int = Form(0), status: str = Form(""),
+                           platform: str = Form("Instagram")):
+    pid = db.add_paysafe(username, psf25, psf50, status, platform)
+    return {"ok": True, "id": pid}
+
+
+@app.put("/api/paysafes/{pid}")
+async def api_update_paysafe(pid: int, psf25: int = Form(0), psf50: int = Form(0),
+                              status: str = Form("")):
+    db.update_paysafe(pid, psf25, psf50, status)
+    return {"ok": True}
+
+
+@app.delete("/api/paysafes/{pid}")
+async def api_delete_paysafe(pid: int):
+    db.delete_paysafe(pid)
     return {"ok": True}
 
 

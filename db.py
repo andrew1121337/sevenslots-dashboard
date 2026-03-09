@@ -134,6 +134,17 @@ def init_db():
             text TEXT NOT NULL,
             done INTEGER DEFAULT 0,
             sort_order INTEGER DEFAULT 0)""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS licente (
+            id SERIAL PRIMARY KEY,
+            license_code TEXT NOT NULL,
+            casino_name TEXT NOT NULL)""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS paysafes (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            psf25 INTEGER DEFAULT 0,
+            psf50 INTEGER DEFAULT 0,
+            status TEXT DEFAULT '',
+            platform TEXT DEFAULT 'Instagram')""")
         try:
             _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
         except Exception:
@@ -189,6 +200,17 @@ def init_db():
                 text TEXT NOT NULL,
                 done INTEGER DEFAULT 0,
                 sort_order INTEGER DEFAULT 0);
+            CREATE TABLE IF NOT EXISTS licente (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                license_code TEXT NOT NULL,
+                casino_name TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS paysafes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                psf25 INTEGER DEFAULT 0,
+                psf50 INTEGER DEFAULT 0,
+                status TEXT DEFAULT '',
+                platform TEXT DEFAULT 'Instagram');
         """)
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
@@ -607,5 +629,122 @@ def delete_meeting_task(task_id: int):
     else:
         conn = get_conn()
         conn.execute("DELETE FROM meeting_tasks WHERE id = ?", (task_id,))
+        conn.commit()
+        conn.close()
+
+
+# ── Licente ──
+
+def get_licente() -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT id, license_code, casino_name FROM licente ORDER BY casino_name")
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT id, license_code, casino_name FROM licente ORDER BY casino_name").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+
+def add_licenta(license_code: str, casino_name: str) -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "INSERT INTO licente (license_code, casino_name) VALUES (:c, :n) RETURNING id",
+                       {"c": license_code, "n": casino_name})
+        lid = rows[0][0]
+        conn.close()
+        return lid
+    else:
+        conn = get_conn()
+        cur = conn.execute("INSERT INTO licente (license_code, casino_name) VALUES (?, ?)", (license_code, casino_name))
+        conn.commit()
+        lid = cur.lastrowid
+        conn.close()
+        return lid
+
+
+def delete_licenta(lid: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM licente WHERE id = :id", {"id": lid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM licente WHERE id = ?", (lid,))
+        conn.commit()
+        conn.close()
+
+
+def licente_count() -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT count(*) FROM licente")
+        conn.close()
+        return rows[0][0]
+    else:
+        conn = get_conn()
+        row = conn.execute("SELECT count(*) FROM licente").fetchone()
+        conn.close()
+        return row[0]
+
+
+# ── PaySafes ──
+
+def get_paysafes() -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "SELECT id, username, psf25, psf50, status, platform FROM paysafes ORDER BY id")
+        result = _pg_to_dicts(conn, rows)
+        conn.close()
+        return result
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT id, username, psf25, psf50, status, platform FROM paysafes ORDER BY id").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+
+def add_paysafe(username: str, psf25: int, psf50: int, status: str, platform: str) -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_run(conn, "INSERT INTO paysafes (username, psf25, psf50, status, platform) VALUES (:u, :a, :b, :s, :p) RETURNING id",
+                       {"u": username, "a": psf25, "b": psf50, "s": status, "p": platform})
+        pid = rows[0][0]
+        conn.close()
+        return pid
+    else:
+        conn = get_conn()
+        cur = conn.execute("INSERT INTO paysafes (username, psf25, psf50, status, platform) VALUES (?, ?, ?, ?, ?)",
+                           (username, psf25, psf50, status, platform))
+        conn.commit()
+        pid = cur.lastrowid
+        conn.close()
+        return pid
+
+
+def update_paysafe(pid: int, psf25: int, psf50: int, status: str):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "UPDATE paysafes SET psf25=:a, psf50=:b, status=:s WHERE id=:id",
+                {"a": psf25, "b": psf50, "s": status, "id": pid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("UPDATE paysafes SET psf25=?, psf50=?, status=? WHERE id=?", (psf25, psf50, status, pid))
+        conn.commit()
+        conn.close()
+
+
+def delete_paysafe(pid: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "DELETE FROM paysafes WHERE id = :id", {"id": pid})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("DELETE FROM paysafes WHERE id = ?", (pid,))
         conn.commit()
         conn.close()

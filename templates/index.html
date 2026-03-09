@@ -583,6 +583,64 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 }
 .meet-add-btn:hover { background:var(--purple2); }
 
+/* ─── LICENTE ─── */
+.lic-row {
+  display:flex; align-items:center; gap:12px; padding:10px 16px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:10px; margin-bottom:4px; transition:.12s;
+}
+.lic-row:hover { background:var(--bg3); border-color:var(--border2); }
+.lic-code {
+  font-family:'Roboto Mono',monospace; font-size:13px;
+  font-weight:700; color:var(--purple2); letter-spacing:0.5px;
+  min-width:180px;
+}
+.lic-name { font-size:14px; font-weight:800; color:var(--text); flex:1; }
+.lic-copy {
+  padding:5px 14px; border-radius:8px;
+  background:var(--bg4); border:1px solid var(--border);
+  color:var(--dim); font-size:11px; font-weight:700;
+  cursor:pointer; transition:.15s; font-family:'Nunito',sans-serif;
+}
+.lic-copy:hover { border-color:var(--purple2); color:var(--purple2); background:var(--purple-dim); }
+.lic-copy.copied { background:rgba(16,185,129,.15); border-color:var(--green); color:var(--green2); }
+.lic-add { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+
+/* ─── PAYSAFE ─── */
+.psf-table { width:100%; border-collapse:collapse; }
+.psf-table th {
+  padding:10px 12px; text-align:left; font-size:9px; font-weight:800;
+  letter-spacing:1.5px; text-transform:uppercase; color:var(--dim);
+  background:var(--bg3); border-bottom:1px solid var(--border2);
+}
+.psf-table td {
+  padding:8px 12px; font-size:12px; border-bottom:1px solid var(--border);
+  color:var(--text2);
+}
+.psf-table tr:hover td { background:rgba(147,51,234,.04); }
+.psf-user { font-weight:700; color:var(--text); }
+.psf-platform { font-size:10px; color:var(--dim); }
+.psf-chk {
+  width:18px; height:18px; border-radius:5px;
+  border:2px solid var(--border2); background:var(--bg3);
+  cursor:pointer; appearance:none; -webkit-appearance:none;
+  transition:.15s;
+}
+.psf-chk:checked { background:var(--green); border-color:var(--green); }
+.psf-chk:checked::after { content:'✓'; color:#fff; font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+.psf-status {
+  padding:3px 10px; border-radius:999px; font-size:10px; font-weight:800;
+  display:inline-block;
+}
+.psf-status-rezolvat { background:rgba(16,185,129,.15); color:var(--green2); border:1px solid rgba(16,185,129,.3); }
+.psf-status-pending { background:rgba(251,191,36,.1); color:#fbbf24; border:1px solid rgba(251,191,36,.25); }
+.psf-add { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+.psf-sel {
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text2); font-family:'Nunito',sans-serif;
+  font-size:12px; font-weight:600; padding:8px 12px; border-radius:8px;
+}
+
 /* ─── ADD FORM ─── */
 .stog { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
 .scard {
@@ -762,6 +820,17 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   .import-actions { flex-direction:column; align-items:stretch; }
   .import-btn { text-align:center; }
 
+  /* Licente */
+  .lic-row { flex-wrap:wrap; gap:6px; padding:8px 10px; }
+  .lic-code { font-size:11px; min-width:auto; }
+  .lic-name { font-size:12px; }
+  .lic-add { flex-direction:column; }
+
+  /* Paysafe */
+  .psf-add { flex-direction:column; align-items:stretch; }
+  .psf-table th { font-size:8px; padding:8px 6px; }
+  .psf-table td { font-size:11px; padding:6px; }
+
   /* Sedinta */
   .meet-create { flex-direction:column; align-items:stretch; }
   .meet-card { padding:14px; }
@@ -853,6 +922,12 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <div class="sb-section">Management</div>
   <div class="sb-item" onclick="goP('sedinta',this)">
     <span class="sb-ico">&#128203;</span> Sedinta
+  </div>
+  <div class="sb-item" onclick="goP('licente',this)">
+    <span class="sb-ico">&#128196;</span> Licente
+  </div>
+  <div class="sb-item" onclick="goP('paysafe',this)">
+    <span class="sb-ico">&#128179;</span> PaySafe-uri
   </div>
   <div class="sb-sep"></div>
   <div class="sb-section">Media</div>
@@ -1111,6 +1186,44 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     </div>
   </div>
 
+  <!-- LICENTE -->
+  <div class="page" id="pg-licente">
+    <div class="sh"><div class="dot"></div>Licente ONJN<div class="ln"></div></div>
+    <div class="lic-add">
+      <input type="text" id="lic-code" class="fi" placeholder="Cod licenta" style="max-width:200px;">
+      <input type="text" id="lic-name" class="fi" placeholder="Nume cazino" style="max-width:200px;">
+      <button class="meet-add-btn" onclick="addLicenta()">Adauga</button>
+    </div>
+    <div id="lic-list"></div>
+  </div>
+
+  <!-- PAYSAFE -->
+  <div class="page" id="pg-paysafe">
+    <div class="sh"><div class="dot"></div>PaySafe-uri<div class="ln"></div></div>
+    <div class="psf-add">
+      <input type="text" id="psf-user" class="fi" placeholder="Username" style="max-width:180px;">
+      <select id="psf-platform" class="psf-sel">
+        <option value="Instagram">Instagram</option>
+        <option value="Discord">Discord</option>
+      </select>
+      <label style="font-size:11px;font-weight:700;color:var(--dim);display:flex;align-items:center;gap:4px;">
+        <input type="checkbox" id="psf-25" class="psf-chk"> PSF 25
+      </label>
+      <label style="font-size:11px;font-weight:700;color:var(--dim);display:flex;align-items:center;gap:4px;">
+        <input type="checkbox" id="psf-50" class="psf-chk"> PSF 50
+      </label>
+      <button class="meet-add-btn" onclick="addPaysafe()">Adauga</button>
+    </div>
+    <div class="tw">
+      <table class="psf-table">
+        <thead><tr>
+          <th>PSF 25</th><th>Instagram/Discord</th><th>PSF 50</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="psf-body"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- SEDINTA -->
   <div class="page" id="pg-sedinta">
     <div class="sh"><div class="dot"></div>Sedinte<div class="ln"></div></div>
@@ -1321,6 +1434,8 @@ function refreshPage() {
   if(curPage==='profesor') renderStreamer('El Profesor');
   if(curPage==='catalin') renderCatalin();
   if(curPage==='sedinta') renderMeetings();
+  if(curPage==='licente') renderLicente();
+  if(curPage==='paysafe') renderPaysafes();
   if(curPage==='thumbnails') renderThumbnails();
   if(curPage==='upload') renderUpload();
 }
@@ -2196,6 +2311,117 @@ function pickS(s) {
   document.getElementById('f-streamer').value=s;
   document.querySelectorAll('.scard').forEach(c=>c.classList.remove('on'));
   document.querySelector(s==='Seven'?'.sc-s':'.sc-p').classList.add('on');
+}
+
+// ── LICENTE ──
+async function renderLicente() {
+  try {
+    const r = await fetch('/api/licente');
+    const data = await r.json();
+    const el = document.getElementById('lic-list');
+    if(!data.length) {
+      el.innerHTML = '<div class="ndb"><div class="ico">&#128196;</div><p>Nicio licenta</p></div>';
+      return;
+    }
+    el.innerHTML = data.map(l =>
+      `<div class="lic-row">
+        <div class="lic-code">${escHtml(l.license_code)}</div>
+        <div class="lic-name">${escHtml(l.casino_name)}</div>
+        <button class="lic-copy" onclick="copyLic(this,'${escHtml(l.license_code)}')">Copiaza</button>
+        <button class="delbtn" onclick="deleteLicenta(${l.id})">&#128465;</button>
+      </div>`
+    ).join('');
+  } catch(e) {}
+}
+
+function copyLic(btn, code) {
+  navigator.clipboard.writeText(code);
+  btn.textContent = 'Copiat!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copiaza'; btn.classList.remove('copied'); }, 1500);
+}
+
+async function addLicenta() {
+  const code = document.getElementById('lic-code').value.trim();
+  const name = document.getElementById('lic-name').value.trim();
+  if(!code || !name) { toast('Completeaza codul si numele'); return; }
+  await fetch('/api/licente', {method:'POST', body:new URLSearchParams({license_code:code, casino_name:name})});
+  document.getElementById('lic-code').value = '';
+  document.getElementById('lic-name').value = '';
+  toast('Licenta adaugata!','ok');
+  renderLicente();
+}
+
+async function deleteLicenta(id) {
+  await fetch(`/api/licente/${id}`, {method:'DELETE'});
+  toast('Licenta stearsa');
+  renderLicente();
+}
+
+// ── PAYSAFE ──
+async function renderPaysafes() {
+  try {
+    const r = await fetch('/api/paysafes');
+    const data = await r.json();
+    const el = document.getElementById('psf-body');
+    if(!data.length) {
+      el.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--dim);">Niciun PaySafe</td></tr>';
+      return;
+    }
+    el.innerHTML = data.map(p => {
+      const stCls = p.status === 'rezolvat' ? 'psf-status-rezolvat' : (p.status ? 'psf-status-pending' : '');
+      return `<tr>
+        <td><input type="checkbox" class="psf-chk" ${p.psf25?'checked':''} onchange="updPsf(${p.id},this.checked?1:0,null,null)"></td>
+        <td><span class="psf-user">${escHtml(p.username)}</span> <span class="psf-platform">${escHtml(p.platform||'')}</span></td>
+        <td><input type="checkbox" class="psf-chk" ${p.psf50?'checked':''} onchange="updPsf(${p.id},null,this.checked?1:0,null)"></td>
+        <td>
+          <select class="psf-sel" style="font-size:11px;padding:4px 8px;" onchange="updPsf(${p.id},null,null,this.value)">
+            <option value="" ${!p.status?'selected':''}>—</option>
+            <option value="rezolvat" ${p.status==='rezolvat'?'selected':''}>rezolvat</option>
+            <option value="in asteptare" ${p.status==='in asteptare'?'selected':''}>in asteptare</option>
+          </select>
+        </td>
+        <td><button class="delbtn" onclick="deletePsf(${p.id})">&#128465;</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) {}
+}
+
+async function updPsf(id, psf25, psf50, status) {
+  // Get current values first
+  const r = await fetch('/api/paysafes');
+  const all = await r.json();
+  const cur = all.find(p => p.id === id);
+  if(!cur) return;
+  const fd = new URLSearchParams({
+    psf25: psf25 !== null ? psf25 : cur.psf25,
+    psf50: psf50 !== null ? psf50 : cur.psf50,
+    status: status !== null ? status : (cur.status || ''),
+  });
+  await fetch(`/api/paysafes/${id}`, {method:'PUT', body:fd});
+  renderPaysafes();
+}
+
+async function addPaysafe() {
+  const user = document.getElementById('psf-user').value.trim();
+  if(!user) { toast('Introdu username'); return; }
+  const platform = document.getElementById('psf-platform').value;
+  const p25 = document.getElementById('psf-25').checked ? 1 : 0;
+  const p50 = document.getElementById('psf-50').checked ? 1 : 0;
+  await fetch('/api/paysafes', {method:'POST', body:new URLSearchParams({
+    username:user, psf25:p25, psf50:p50, status:'', platform:platform
+  })});
+  document.getElementById('psf-user').value = '';
+  document.getElementById('psf-25').checked = false;
+  document.getElementById('psf-50').checked = false;
+  toast('PaySafe adaugat!','ok');
+  renderPaysafes();
+}
+
+async function deletePsf(id) {
+  await fetch(`/api/paysafes/${id}`, {method:'DELETE'});
+  toast('Sters');
+  renderPaysafes();
 }
 
 // ── SEDINTA ──
