@@ -367,11 +367,11 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   color:var(--dim2); text-transform:uppercase;
 }
 .prog-row {
-  display:grid; grid-template-columns:54px 1fr 1fr 40px;
-  gap:8px; padding:9px 14px; margin-bottom:3px;
+  display:grid; grid-template-columns:40px 1fr 1fr 30px;
+  gap:6px; padding:6px 10px; margin-bottom:2px;
   background:var(--bg2); border:1px solid var(--border);
-  border-radius:8px; border-left:3px solid transparent;
-  transition:.15s; align-items:center;
+  border-radius:6px; border-left:3px solid transparent;
+  transition:.15s; align-items:center; font-size:11px;
 }
 .prog-row:hover { background:var(--bg3); border-color:var(--border2); }
 .prog-row.rs { border-left-color:var(--gold); }
@@ -405,15 +405,30 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   color:var(--orange); box-shadow:0 0 16px rgba(249,115,22,0.15);
 }
 .prog-row.rc { border-left-color:var(--orange); }
+.prog-row.r-liber { border-left-color:var(--dim); background:rgba(255,255,255,.03); opacity:.6; }
 .prog-panel { display:none; animation:fadeIn .22s ease; }
 .prog-panel.on { display:block; }
-.pday { font-size:22px; font-weight:900; color:var(--dim2); line-height:1; }
-.pday span { font-size:9px; display:block; font-weight:600; color:var(--dim2); }
+.prog-3col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.prog-3col-section { }
+.prog-3col-hdr { font-size:10px; font-weight:800; color:var(--dim); text-transform:uppercase; letter-spacing:1.5px; padding:6px 8px; margin-bottom:4px; border-bottom:1px solid var(--border); }
+.pday { font-size:16px; font-weight:900; color:var(--dim2); line-height:1; }
+.pday span { font-size:8px; display:block; font-weight:600; color:var(--dim2); }
+.stats-footer {
+  margin-top:20px; padding:16px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; display:flex; gap:24px; flex-wrap:wrap; align-items:center;
+}
+.sf-item { font-size:13px; color:var(--dim); }
+.sf-item strong { color:var(--text); font-weight:800; }
+.sf-target { display:flex; align-items:center; gap:8px; }
+.sf-target input { width:100px; padding:4px 8px; border:1px solid var(--border); border-radius:6px; background:var(--bg3); color:var(--fg); font-family:'Nunito',sans-serif; font-size:12px; }
+.sf-target button { padding:4px 12px; border:none; border-radius:6px; background:var(--purple); color:#fff; cursor:pointer; font-size:11px; font-weight:700; }
+.sf-bar { width:200px; height:8px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+.sf-bar-fill { height:100%; border-radius:4px; transition:.3s; }
 .psel {
   width:100%; background:var(--bg3); border:1px solid var(--border);
   color:var(--text2); font-family:'Nunito',sans-serif;
-  font-size:12px; font-weight:600;
-  padding:7px 10px; appearance:none; cursor:pointer; transition:.15s; border-radius:6px;
+  font-size:11px; font-weight:600;
+  padding:5px 8px; appearance:none; cursor:pointer; transition:.15s; border-radius:5px;
 }
 .psel:focus { outline:none; border-color:var(--purple2); }
 .psel-text { appearance:auto; }
@@ -789,6 +804,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   .graf-2col { grid-template-columns:1fr; }
   .breakdown-4 { grid-template-columns:1fr 1fr; }
   .prog-hdr,.prog-row { grid-template-columns:44px 1fr 1fr 36px; }
+  .prog-3col { grid-template-columns:1fr 1fr; }
   .cal-cell { min-height:70px; padding:6px; }
   .cal-badge,.cal-tag,.cal-sess { display:none; }
   .main { padding:18px 14px; }
@@ -845,9 +861,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   td { padding:6px 8px; font-size:10px; }
 
   /* Program */
+  .prog-3col { grid-template-columns:1fr; }
   .prog-hdr,.prog-row { grid-template-columns:40px 1fr 30px; gap:6px; }
   .prog-hdr > :nth-child(3),.prog-row > :nth-child(3) { display:none; }
-  .pday { font-size:16px; }
+  .pday { font-size:14px; }
   .psel { font-size:11px; padding:6px 8px; }
   .pdone { width:18px; height:18px; }
   .prog-tabs { flex-wrap:wrap; }
@@ -958,7 +975,11 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <div class="sb-sep"></div>
   <div class="sb-section">Streameri</div>
   <div class="sb-item sb-seven" onclick="goP('seven',this)">
-    <span class="sb-ico">&#9889;</span> Seven
+    <span class="sb-ico">&#9889;</span> Seven Live
+    <span class="sb-dot"></span>
+  </div>
+  <div class="sb-item sb-seven" onclick="goP('sevenslots',this)">
+    <span class="sb-ico">&#127916;</span> Seven Slots
     <span class="sb-dot"></span>
   </div>
   <div class="sb-item sb-prof" onclick="goP('profesor',this)">
@@ -1107,23 +1128,29 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
       <button class="prog-tab pt-prof" onclick="switchProg('prof',this)">El Profesor</button>
       <button class="prog-tab pt-catalin" onclick="switchProg('catalin',this)">Catalin</button>
     </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;" id="prog-toolbar">
+      <label style="font-size:11px;font-weight:700;color:var(--dim);">Preset:</label>
+      <select class="psel" style="max-width:200px;" id="prog-preset" onchange="applyPreset(this.value)">
+      </select>
+      <label style="font-size:11px;font-weight:700;color:var(--dim);">Filtru Provider:</label>
+      <select class="psel" style="max-width:160px;" id="prog-filter" onchange="renderP()">
+        <option value="">Toate</option>
+      </select>
+    </div>
     <div class="prog-panel on" id="pp-seven">
-      <div class="prog-hdr"><div>Zi</div><div>Cazino</div><div>Provider</div></div>
-      <div id="pl-seven"></div>
+      <div class="prog-3col" id="pl-seven"></div>
     </div>
     <div class="prog-panel" id="pp-prof">
-      <div class="prog-hdr"><div>Zi</div><div>Cazino</div><div>Provider</div></div>
-      <div id="pl-prof"></div>
+      <div class="prog-3col" id="pl-prof"></div>
     </div>
     <div class="prog-panel" id="pp-catalin">
-      <div class="prog-hdr"><div>Zi</div><div>Tip Video</div><div>Nota</div></div>
-      <div id="pl-catalin"></div>
+      <div class="prog-3col" id="pl-catalin"></div>
     </div>
   </div>
 
   <!-- SEVEN -->
   <div class="page" id="pg-seven">
-    <div class="sh"><div class="dot"></div>Seven &mdash; Statistici<div class="ln"></div></div>
+    <div class="sh"><div class="dot"></div>Seven Live &mdash; Statistici<div class="ln"></div></div>
     <div class="krow" id="seven-kpi"></div>
 
     <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
@@ -1154,11 +1181,12 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
     <div id="seven-list-view">
       <div class="tw">
         <table><thead><tr>
-          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th><th>Unici</th><th>D.Medie</th>
           <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
         </tr></thead><tbody id="seven-table"></tbody></table>
       </div>
     </div>
+    <div class="stats-footer" id="seven-footer"></div>
   </div>
 
   <!-- EL PROFESOR -->
@@ -1199,6 +1227,41 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
         </tr></thead><tbody id="prof-table"></tbody></table>
       </div>
     </div>
+    <div class="stats-footer" id="prof-footer"></div>
+  </div>
+
+  <!-- SEVEN SLOTS (second channel) -->
+  <div class="page" id="pg-sevenslots">
+    <div class="sh"><div class="dot"></div>Seven Slots &mdash; Statistici<div class="ln"></div></div>
+    <div class="krow" id="slots-kpi"></div>
+    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+    <div class="graf-2col" id="slots-charts">
+      <div class="chart-card span2">
+        <div class="cc-head"><div><div class="cc-title">Views per Video</div><div class="cc-sub" id="slots-lbl-views"></div></div></div>
+        <div id="slots-line-views" style="width:100%;height:160px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="slots-lbl-likes"></div></div></div>
+        <div id="slots-line-likes" style="width:100%;height:120px;"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
+      <div class="view-toggle">
+        <button class="vtb on" onclick="setStrView('slots','cal',this)">Calendar</button>
+        <button class="vtb" onclick="setStrView('slots','list',this)">Lista</button>
+      </div>
+    </div>
+    <div id="slots-cal-view"></div>
+    <div id="slots-list-view">
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th>
+          <th>Likes</th><th>Abo.</th><th></th>
+        </tr></thead><tbody id="slots-table"></tbody></table>
+      </div>
+    </div>
+    <div class="stats-footer" id="slots-footer"></div>
   </div>
 
   <!-- CATALIN -->
@@ -1478,8 +1541,9 @@ setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=[
 const MO=['IANUARIE','FEBRUARIE','MARTIE','APRILIE','MAI','IUNIE','IULIE','AUGUST','SEPTEMBRIE','OCTOMBRIE','NOIEMBRIE','DECEMBRIE'];
 const DAYS=['Dum','Lun','Mar','Mie','Joi','Vin','Sam'];
 const DOW_LBL=['LUN','MAR','MIE','JOI','VIN','SAM','DUM'];
-const CAS=['—','Betano','MrBit','Joker','Superbet','TopBet','GetsBet','Win2','Cazino Live','NETBET'];
-const PRO=['—','Pragmatic','Win2','NetEnt','Evolution','Push Gaming','Nolimit City','Hacksaw','PatePlay'];
+const CAS=['—','Liber','Fara cazino dedicat','Betano','MrBit','Joker','Superbet','TopBet','GetsBet','Win2','Cazino Live','NETBET'];
+const PRO=['—','Liber','Fara provider dedicat','Pragmatic','Win2','NetEnt','Evolution','Push Gaming','Nolimit City','Hacksaw','PatePlay'];
+const PROG_PRESETS=[{label:'—',cas:'—',pro:'—'},{label:'Betano + Pragmatic',cas:'Betano',pro:'Pragmatic'},{label:'Superbet + Evolution',cas:'Superbet',pro:'Evolution'},{label:'MrBit + NetEnt',cas:'MrBit',pro:'NetEnt'},{label:'Liber',cas:'Liber',pro:'Liber'}];
 const DONUT_COLORS=['#9333ea','#f5c518','#06b6d4','#10b981','#ef4444','#f59e0b','#8b5cf6','#22d3ee','#34d399','#fb7185'];
 
 let ALL_SESSIONS = {{ sessions | tojson }};
@@ -1488,7 +1552,7 @@ let curYear = new Date().getFullYear();
 let selStreamer = 'Seven';
 let curPage = 'overview';
 let cmpMetric = 'views';
-let strView = { seven:'cal', prof:'cal', catalin:'cal' };
+let strView = { seven:'cal', prof:'cal', catalin:'cal', slots:'cal' };
 
 // ── Month nav ──
 function updateMonthLabel() {
@@ -1513,6 +1577,7 @@ function refreshPage() {
   if(curPage==='overview') renderOverview();
   if(curPage==='program') renderP();
   if(curPage==='seven') renderStreamer('Seven');
+  if(curPage==='sevenslots') renderSevenSlots();
   if(curPage==='profesor') renderStreamer('El Profesor');
   if(curPage==='catalin') renderCatalin();
   if(curPage==='sedinta') renderMeetings();
@@ -1922,21 +1987,29 @@ async function renderStreamer(name) {
   const sess = ALL_SESSIONS.filter(s=>s.streamer===name && sessMonth(s));
   sess.sort((a,b) => a.date.localeCompare(b.date));
   const n = sess.length;
-  // Fetch program data for calendar
+  // Fetch program data + target
   let progData = {};
+  let target = 0;
   try {
-    const pr = await fetch(`/api/program/${curYear}/${curMonth+1}?streamer=${encodeURIComponent(name)}`);
+    const [pr, tr] = await Promise.all([
+      fetch(`/api/program/${curYear}/${curMonth+1}?streamer=${encodeURIComponent(name)}`),
+      fetch(`/api/targets/${curYear}/${curMonth+1}`),
+    ]);
     progData = await pr.json();
+    const targets = await tr.json();
+    target = targets[name] || 0;
   } catch(e){}
 
   const kg = document.getElementById(prefix+'-kpi');
   const chartsEl = document.getElementById(prefix+'-charts');
+  const footer = document.getElementById(prefix+'-footer');
 
   if(!n) {
     kg.innerHTML = kC('Sesiuni','0','','kc-purple');
     if(chartsEl) chartsEl.style.display = 'none';
     document.getElementById(prefix+'-table').innerHTML = '';
     renderStreamerCal(prefix, name, [], progData);
+    if(footer) footer.innerHTML = renderStatsFooter(name, 0, 0, target);
     return;
   }
   if(chartsEl) chartsEl.style.display = 'grid';
@@ -1947,18 +2020,19 @@ async function renderStreamer(name) {
   const mp = Math.max(...sess.map(s=>s.peak_concurrent||0));
   const lv = sess.filter(s=>s.likes>0);
   const al = lv.length ? Math.round(lv.reduce((a,s)=>a+s.likes,0)/lv.length) : 0;
-  const ml = lv.length ? Math.max(...lv.map(s=>s.likes)) : 0;
   const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
   const uv = sess.filter(s=>s.unique_viewers>0);
   const au = uv.length ? Math.round(uv.reduce((a,s)=>a+s.unique_viewers,0)/uv.length) : 0;
   const dArr = sess.filter(s=>durToMin(s.duration)>0).map(s=>durToMin(s.duration));
-  const avgDur = dArr.length ? minToStr(dArr.reduce((a,v)=>a+v,0)/dArr.length) : '—';
+  const totalMin = dArr.reduce((a,v)=>a+v,0);
+  const avgDur = dArr.length ? minToStr(totalMin/dArr.length) : '—';
+  const totalDur = minToStr(totalMin);
   const er = sess.filter(s=>s.views>0&&s.likes>0);
   const erPct = er.length ? ((er.reduce((a,s)=>a+(s.likes/s.views*100),0)/er.length)).toFixed(1)+'%' : '—';
 
   kg.innerHTML =
     kC('Sesiuni',n,'luna curenta', isS?'kc-gold':'kc-cyan') +
-    kC('Total Views',fmt(tv),'cumulat', isS?'kc-gold':'kc-cyan') +
+    kC('&#9654; Total Views',fmt(tv),'cumulat', isS?'kc-gold':'kc-cyan') +
     kC('Views Mediu',fmt(Math.round(tv/n)),'per live','') +
     kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
     kC('Record Peak',fmt(mp),'max','kc-cyan') +
@@ -1966,25 +2040,50 @@ async function renderStreamer(name) {
     kC('Unici Mediu',fmt(au),'per live','') +
     kC('Engagement',erPct,'likes/views','') +
     kC('Durata Medie',avgDur,'per live','') +
+    kC('Total Ore Live',totalDur,'cumulat','kc-purple') +
     kC('Abonati Noi',fmt(ts),'total','kc-green');
 
-  // SVG line charts
   setTimeout(() => {
     svgLine(prefix+'-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), lineColor, 'g'+prefix+'V', prefix+'-lbl-views', 160);
     svgLine(prefix+'-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), isS?'#ffd84d':'#22d3ee', 'g'+prefix+'P', prefix+'-lbl-peak', 120);
     svgLine(prefix+'-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'g'+prefix+'L', prefix+'-lbl-likes', 120);
   }, 50);
 
-  // Calendar
   renderStreamerCal(prefix, name, sess, progData);
 
-  // Table
   const rows = [...sess].reverse();
   document.getElementById(prefix+'-table').innerHTML = rows.map(s=>sessRow(s,false)).join('');
 
-  // Set initial view state
+  // Footer with total views, total hours, target
+  if(footer) footer.innerHTML = renderStatsFooter(name, tv, totalMin, target);
+
   document.getElementById(prefix+'-cal-view').style.display = strView[prefix]==='cal' ? 'block' : 'none';
   document.getElementById(prefix+'-list-view').style.display = strView[prefix]==='list' ? 'block' : 'none';
+}
+
+function renderStatsFooter(streamer, totalViews, totalMin, target) {
+  const pct = target > 0 ? Math.min(100, Math.round(totalViews/target*100)) : 0;
+  const barColor = pct >= 100 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+  return `
+    <div class="sf-item">&#9654; <strong>Total Views:</strong> ${fmt(totalViews)}</div>
+    <div class="sf-item">&#128338; <strong>Total Ore Live:</strong> ${minToStr(totalMin)}</div>
+    <div class="sf-target">
+      <span class="sf-item"><strong>Target:</strong></span>
+      <input type="number" id="target-${streamer}" value="${target||''}" placeholder="Views target">
+      <button onclick="saveTarget('${streamer}')">Set</button>
+      ${target > 0 ? `<span class="sf-item"><strong>${pct}%</strong> din target</span>
+        <div class="sf-bar"><div class="sf-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>` : ''}
+    </div>`;
+}
+
+async function saveTarget(streamer) {
+  const inp = document.getElementById('target-'+streamer);
+  const val = parseInt(inp.value) || 0;
+  await fetch('/api/targets', {method:'POST', body:new URLSearchParams({
+    streamer, year:curYear, month:curMonth+1, views_target:val
+  })});
+  toast('Target salvat!','ok');
+  refreshPage();
 }
 
 // ── Streamer Calendar ──
@@ -2065,6 +2164,67 @@ function renderStreamerCal(prefix, name, sess, progData) {
 // ═══════════════════════════════
 //  CATALIN
 // ═══════════════════════════════
+// ── SEVEN SLOTS (second channel) ──
+async function renderSevenSlots() {
+  const sess = ALL_SESSIONS.filter(s=>s.streamer==='Seven Slots' && sessMonth(s));
+  sess.sort((a,b) => a.date.localeCompare(b.date));
+  const n = sess.length;
+  let target = 0;
+  try {
+    const tr = await fetch(`/api/targets/${curYear}/${curMonth+1}`);
+    const targets = await tr.json();
+    target = targets['Seven Slots'] || 0;
+  } catch(e){}
+
+  const kg = document.getElementById('slots-kpi');
+  const chartsEl = document.getElementById('slots-charts');
+  const footer = document.getElementById('slots-footer');
+
+  if(!n) {
+    kg.innerHTML = kC('Videos','0','','kc-gold');
+    if(chartsEl) chartsEl.style.display = 'none';
+    document.getElementById('slots-table').innerHTML = '';
+    if(footer) footer.innerHTML = renderStatsFooter('Seven Slots', 0, 0, target);
+    renderStreamerCal('slots', 'Seven Slots', [], {});
+    return;
+  }
+  if(chartsEl) chartsEl.style.display = 'grid';
+
+  const tv = sess.reduce((a,s)=>a+(s.views||0),0);
+  const tl = sess.reduce((a,s)=>a+(s.likes||0),0);
+  const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
+  const dArr = sess.filter(s=>durToMin(s.duration)>0).map(s=>durToMin(s.duration));
+  const totalMin = dArr.reduce((a,v)=>a+v,0);
+
+  kg.innerHTML =
+    kC('Videos',n,'luna curenta','kc-gold') +
+    kC('&#9654; Total Views',fmt(tv),'cumulat','kc-gold') +
+    kC('Views Mediu',fmt(Math.round(tv/n)),'per video','') +
+    kC('Total Likes',fmt(tl),'cumulat','') +
+    kC('Abonati Noi',fmt(ts),'total','kc-green');
+
+  setTimeout(() => {
+    svgLine('slots-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#f5c518', 'gslotsV', 'slots-lbl-views', 160);
+    svgLine('slots-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'gslotsL', 'slots-lbl-likes', 120);
+  }, 50);
+
+  renderStreamerCal('slots', 'Seven Slots', sess, {});
+
+  const rows = [...sess].reverse();
+  document.getElementById('slots-table').innerHTML = rows.map(s=>`<tr>
+    <td>${s.date}</td><td class="ttl">${escHtml(s.title)}</td><td>${s.duration||'—'}</td>
+    <td>${s.video_id?`<a href="https://youtube.com/watch?v=${s.video_id}" target="_blank">&#9654;</a>`:''}</td>
+    <td style="font-weight:700;">&#9654; ${fmt(s.views)}</td>
+    <td>${fmt(s.likes)}</td><td>${fmt(s.new_subs)}</td>
+    <td><button class="delbtn" onclick="delSess(${s.id})">&#128465;</button></td>
+  </tr>`).join('');
+
+  if(footer) footer.innerHTML = renderStatsFooter('Seven Slots', tv, totalMin, target);
+
+  document.getElementById('slots-cal-view').style.display = strView['slots']==='cal' ? 'block' : 'none';
+  document.getElementById('slots-list-view').style.display = strView['slots']==='list' ? 'block' : 'none';
+}
+
 async function renderCatalin() {
   const sess = ALL_SESSIONS.filter(s=>s.streamer==='Catalin' && sessMonth(s));
   sess.sort((a,b) => a.date.localeCompare(b.date));
@@ -2205,9 +2365,24 @@ function switchProg(which, btn) {
   document.querySelectorAll('.prog-tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('pp-'+which).classList.add('on');
   btn.classList.add('on');
+  renderP();
 }
 
 async function renderP() {
+  // Populate preset dropdown
+  const presetSel = document.getElementById('prog-preset');
+  if(presetSel && !presetSel.dataset.init) {
+    presetSel.innerHTML = PROG_PRESETS.map(p=>`<option value="${p.label}">${p.label}</option>`).join('');
+    presetSel.dataset.init = '1';
+  }
+  // Populate filter dropdown
+  const filterSel = document.getElementById('prog-filter');
+  if(filterSel && !filterSel.dataset.init) {
+    filterSel.innerHTML = '<option value="">Toate</option>' + PRO.filter(p=>p!=='—'&&p!=='Liber'&&p!=='Fara provider dedicat').map(p=>`<option value="${p}">${p}</option>`).join('');
+    filterSel.dataset.init = '1';
+  }
+  const provFilter = filterSel ? filterSel.value : '';
+
   const days = new Date(curYear, curMonth+1, 0).getDate();
   let progSeven = {}, progProf = {}, progCat = {};
   try {
@@ -2220,48 +2395,92 @@ async function renderP() {
     progProf = await r2.json();
     progCat = await r3.json();
   } catch(e){}
-  renderProgGrid('pl-seven', 'Seven', progSeven, days);
-  renderProgGrid('pl-prof', 'El Profesor', progProf, days);
-  renderProgGrid('pl-catalin', 'Catalin', progCat, days);
+  renderProgGrid('pl-seven', 'Seven', progSeven, days, provFilter);
+  renderProgGrid('pl-prof', 'El Profesor', progProf, days, provFilter);
+  renderProgGrid('pl-catalin', 'Catalin', progCat, days, '');
+}
+
+function applyPreset(label) {
+  const p = PROG_PRESETS.find(x=>x.label===label);
+  if(!p || p.label==='—') return;
+  // Find active panel
+  const active = document.querySelector('.prog-panel.on');
+  if(!active) return;
+  const rows = active.querySelectorAll('.prog-row');
+  rows.forEach(row => {
+    const sels = row.querySelectorAll('.psel');
+    const chk = row.querySelector('.pdone');
+    if(chk && chk.checked) return; // skip done days
+    if(sels[0] && sels[0].tagName==='SELECT') {
+      const casOpt = [...sels[0].options].find(o=>o.value===p.cas);
+      if(casOpt) sels[0].value = p.cas;
+    }
+    if(sels[1] && sels[1].tagName==='SELECT') {
+      const proOpt = [...sels[1].options].find(o=>o.value===p.pro);
+      if(proOpt) sels[1].value = p.pro;
+    }
+  });
+  toast('Preset aplicat! Salveaza manual fiecare zi.','ok');
 }
 
 const VID_TYPES=['—','Video','Short','Reel','Compilatie'];
 
-function renderProgGrid(containerId, streamer, prog, days) {
+function renderProgGrid(containerId, streamer, prog, days, provFilter) {
   const el = document.getElementById(containerId);
   el.innerHTML = '';
   const isCat = streamer === 'Catalin';
   const colorClass = streamer === 'Seven' ? 'rs' : (isCat ? 'rc' : 'rp');
-  for (let d = 1; d <= days; d++) {
-    const r = prog[d] || { casino: '—', provider: '—', done: 0 };
-    const date = new Date(curYear, curMonth, d);
-    const dn = DAYS[date.getDay()];
-    const wk = date.getDay() === 0 || date.getDay() === 6;
-    const hasCasino = r.casino && r.casino !== '—';
-    const isDone = r.done ? true : false;
-    const div = document.createElement('div');
-    div.className = 'prog-row' + (isDone ? ' r-done' : (hasCasino ? ' ' + colorClass : (wk ? ' r-free' : '')));
-    if(isCat) {
-      div.innerHTML = `
-        <div class="pday">${String(d).padStart(2, '0')}<span>${dn}</span></div>
-        <select class="psel" data-d="${d}" data-s="${streamer}" data-f="casino" onchange="updP(this)">
-          ${VID_TYPES.map(c => `<option value="${c}" ${r.casino === c ? 'selected' : ''}>${c}</option>`).join('')}
-        </select>
-        <input type="text" class="psel psel-text" data-d="${d}" data-s="${streamer}" data-f="provider" value="${(r.provider&&r.provider!=='—')?r.provider:''}" placeholder="Nota / descriere" onchange="updP(this)">
-        <div class="pdone-wrap"><input type="checkbox" class="pdone" data-d="${d}" data-s="${streamer}" ${isDone?'checked':''} onchange="updP(this)" title="Publicat"></div>`;
-    } else {
-      div.innerHTML = `
-        <div class="pday">${String(d).padStart(2, '0')}<span>${dn}</span></div>
-        <select class="psel" data-d="${d}" data-s="${streamer}" data-f="casino" onchange="updP(this)">
-          ${CAS.map(c => `<option value="${c}" ${r.casino === c ? 'selected' : ''}>${c}</option>`).join('')}
-        </select>
-        <select class="psel" data-d="${d}" data-s="${streamer}" data-f="provider" onchange="updP(this)">
-          ${PRO.map(p => `<option value="${p}" ${r.provider === p ? 'selected' : ''}>${p}</option>`).join('')}
-        </select>
-        <div class="pdone-wrap"><input type="checkbox" class="pdone" data-d="${d}" data-s="${streamer}" ${isDone?'checked':''} onchange="updP(this)" title="LIVE facut"></div>`;
+
+  // Split into 3 columns: 1-10, 11-20, 21-end
+  const ranges = [[1,10],[11,20],[21,days]];
+  const labels = ['Zilele 1-10','Zilele 11-20',`Zilele 21-${days}`];
+
+  ranges.forEach((range, idx) => {
+    const section = document.createElement('div');
+    section.className = 'prog-3col-section';
+    section.innerHTML = `<div class="prog-3col-hdr">${labels[idx]}</div>`;
+    for (let d = range[0]; d <= range[1]; d++) {
+      const r = prog[d] || { casino: '—', provider: '—', done: 0 };
+      // Apply provider filter
+      if(provFilter && !isCat && r.provider !== provFilter) {
+        const row = document.createElement('div');
+        row.className = 'prog-row';
+        row.style.opacity = '0.2';
+        row.innerHTML = `<div class="pday">${String(d).padStart(2,'0')}<span>${DAYS[new Date(curYear,curMonth,d).getDay()]}</span></div><div style="color:var(--dim);font-size:11px;">—</div><div></div><div></div>`;
+        section.appendChild(row);
+        continue;
+      }
+      const date = new Date(curYear, curMonth, d);
+      const dn = DAYS[date.getDay()];
+      const wk = date.getDay() === 0 || date.getDay() === 6;
+      const hasCasino = r.casino && r.casino !== '—';
+      const isLiber = r.casino === 'Liber';
+      const isDone = r.done ? true : false;
+      const div = document.createElement('div');
+      div.className = 'prog-row' + (isDone ? ' r-done' : (isLiber ? ' r-liber' : (hasCasino ? ' ' + colorClass : (wk ? ' r-free' : ''))));
+      if(isCat) {
+        div.innerHTML = `
+          <div class="pday">${String(d).padStart(2, '0')}<span>${dn}</span></div>
+          <select class="psel" data-d="${d}" data-s="${streamer}" data-f="casino" onchange="updP(this)">
+            ${VID_TYPES.map(c => `<option value="${c}" ${r.casino === c ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+          <input type="text" class="psel psel-text" data-d="${d}" data-s="${streamer}" data-f="provider" value="${(r.provider&&r.provider!=='—')?r.provider:''}" placeholder="Nota / descriere" onchange="updP(this)">
+          <div class="pdone-wrap"><input type="checkbox" class="pdone" data-d="${d}" data-s="${streamer}" ${isDone?'checked':''} onchange="updP(this)" title="Publicat"></div>`;
+      } else {
+        div.innerHTML = `
+          <div class="pday">${String(d).padStart(2, '0')}<span>${dn}</span></div>
+          <select class="psel" data-d="${d}" data-s="${streamer}" data-f="casino" onchange="updP(this)">
+            ${CAS.map(c => `<option value="${c}" ${r.casino === c ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+          <select class="psel" data-d="${d}" data-s="${streamer}" data-f="provider" onchange="updP(this)">
+            ${PRO.map(p => `<option value="${p}" ${r.provider === p ? 'selected' : ''}>${p}</option>`).join('')}
+          </select>
+          <div class="pdone-wrap"><input type="checkbox" class="pdone" data-d="${d}" data-s="${streamer}" ${isDone?'checked':''} onchange="updP(this)" title="LIVE facut"></div>`;
+      }
+      section.appendChild(div);
     }
-    el.appendChild(div);
-  }
+    el.appendChild(section);
+  });
 }
 
 async function updP(el) {
@@ -2280,12 +2499,13 @@ async function updP(el) {
   data.append('done', chk && chk.checked ? 1 : 0);
   await fetch('/api/program', { method: 'POST', body: data });
   const hasCasino = sels[0].value && sels[0].value !== '—';
+  const isLiber = sels[0].value === 'Liber';
   const isDone = chk && chk.checked;
   const dayNum = parseInt(d);
   const date = new Date(curYear, curMonth, dayNum);
   const isWk = date.getDay() === 0 || date.getDay() === 6;
   const colorClass = streamer === 'Seven' ? 'rs' : (streamer === 'Catalin' ? 'rc' : 'rp');
-  row.className = 'prog-row' + (isDone ? ' r-done' : (hasCasino ? ' ' + colorClass : (isWk ? ' r-free' : '')));
+  row.className = 'prog-row' + (isDone ? ' r-done' : (isLiber ? ' r-liber' : (hasCasino ? ' ' + colorClass : (isWk ? ' r-free' : ''))));
 }
 
 // ── IMPORT ──

@@ -496,6 +496,20 @@ async def api_delete_roata(rid: int):
 
 
 
+# ── Targets ──
+
+@app.get("/api/targets/{year}/{month}")
+async def api_get_targets(year: int, month: int):
+    return db.get_all_targets(year, month)
+
+
+@app.post("/api/targets")
+async def api_set_target(streamer: str = Form(...), year: int = Form(...),
+                          month: int = Form(...), views_target: int = Form(0)):
+    db.set_target(streamer, year, month, views_target)
+    return {"ok": True}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)

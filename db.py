@@ -154,6 +154,13 @@ def init_db():
             user_app TEXT DEFAULT '',
             username_cazino TEXT DEFAULT '',
             status TEXT DEFAULT '')""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS targets (
+            id SERIAL PRIMARY KEY,
+            streamer TEXT NOT NULL,
+            year INTEGER NOT NULL,
+            month INTEGER NOT NULL,
+            views_target INTEGER DEFAULT 0,
+            UNIQUE(streamer, year, month))""")
         try:
             _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
         except Exception:
@@ -228,6 +235,13 @@ def init_db():
                 user_app TEXT DEFAULT '',
                 username_cazino TEXT DEFAULT '',
                 status TEXT DEFAULT '');
+            CREATE TABLE IF NOT EXISTS targets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                streamer TEXT NOT NULL,
+                year INTEGER NOT NULL,
+                month INTEGER NOT NULL,
+                views_target INTEGER DEFAULT 0,
+                UNIQUE(streamer, year, month));
         """)
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
@@ -839,3 +853,53 @@ def delete_roata(rid: int):
         conn.execute("DELETE FROM roata WHERE id = ?", (rid,))
         conn.commit()
         conn.close()
+
+
+# ── Targets ──
+
+def get_target(streamer: str, year: int, month: int) -> int:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_rows(conn, "SELECT views_target FROM targets WHERE streamer=:s AND year=:y AND month=:m",
+                         {"s": streamer, "y": year, "m": month})
+        conn.close()
+        return rows[0]["views_target"] if rows else 0
+    else:
+        conn = get_conn()
+        row = conn.execute("SELECT views_target FROM targets WHERE streamer=? AND year=? AND month=?",
+                           (streamer, year, month)).fetchone()
+        conn.close()
+        return row[0] if row else 0
+
+
+def set_target(streamer: str, year: int, month: int, views_target: int):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, """INSERT INTO targets (streamer, year, month, views_target)
+                         VALUES (:s, :y, :m, :v)
+                         ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=:v""",
+                {"s": streamer, "y": year, "m": month, "v": views_target})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("""INSERT INTO targets (streamer, year, month, views_target)
+                        VALUES (?, ?, ?, ?)
+                        ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=excluded.views_target""",
+                     (streamer, year, month, views_target))
+        conn.commit()
+        conn.close()
+
+
+def get_all_targets(year: int, month: int) -> dict:
+    if DATABASE_URL:
+        conn = get_conn()
+        rows = _pg_rows(conn, "SELECT streamer, views_target FROM targets WHERE year=:y AND month=:m",
+                         {"y": year, "m": month})
+        conn.close()
+        return {r["streamer"]: r["views_target"] for r in rows}
+    else:
+        conn = get_conn()
+        rows = conn.execute("SELECT streamer, views_target FROM targets WHERE year=? AND month=?",
+                            (year, month)).fetchall()
+        conn.close()
+        return {r[0]: r[1] for r in rows}
