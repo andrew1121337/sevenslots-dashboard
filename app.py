@@ -66,8 +66,8 @@ def _import_prof_jan26():
         ("2026-01-11","","https://kick.com/sevenslots/videos/e3f6c579","2:06:00",0,0,"",0,0,0,0,0,"Betano","Pateplay",""),
         ("2026-01-12","","https://kick.com/sevenslots/videos/4aafb132","2:12:00",0,0,"",0,0,0,0,0,"","",""),
         ("2026-01-13","","https://kick.com/sevenslots/videos/555a4d81","2:19:00",0,0,"",0,0,0,0,0,"Netbet","Pateplay",""),
-        ("2026-01-14","","","4:00:00",0,0,"",0,0,0,0,0,"","",""),
-        ("2026-01-16","","","2:30:00",0,0,"",0,0,0,0,0,"","Greentube",""),
+        ("2026-01-14","wKwHdkPcRig","https://youtube.com/live/wKwHdkPcRig","4:00:00",8403,5600,"12:20",1088,0,754,0,0,"","",""),
+        ("2026-01-16","utE2Rk42oag","https://youtube.com/live/utE2Rk42oag","2:30:00",3800,2700,"6:07",357,0,259,0,0,"","Greentube",""),
         ("2026-01-17","KY2PDSZOfiA","https://www.youtube.com/watch?v=KY2PDSZOfiA","4:47:00",18100,10100,"15:44",2300,2500,1332,0,0,"","",""),
         ("2026-01-18","_jUwS89UtgM","https://www.youtube.com/watch?v=_jUwS89UtgM","3:13:00",10400,6000,"13:35",1635,1200,1074,0,0,"Joker","Pragmatic",""),
         ("2026-01-19","7PyX-zZw07c","https://www.youtube.com/watch?v=7PyX-zZw07c","3:10:00",11000,6800,"11:18",1503,1230,1097,0,0,"Superbet","",""),
@@ -80,6 +80,10 @@ def _import_prof_jan26():
         ("2026-01-28","1qaNDwEi4Fs","https://youtube.com/live/1qaNDwEi4Fs","12:00:00",30282,14500,"16:28",1849,0,993,0,0,"","Pragmatic",""),
         ("2026-01-30","n5JEz2oWD2A","https://www.youtube.com/live/n5JEz2oWD2A","2:00:00",2300,1600,"7:27",282,0,161,0,0,"WIN2","Pateplay",""),
     ]
+    # Fix: delete old incomplete entries for days 14 and 16 Jan
+    for s in all_sess:
+        if s["date"] in ("2026-01-14","2026-01-16") and not s.get("video_id"):
+            db.delete_session(s["id"])
     count = 0
     for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
         if vid and db.session_exists_by_video_id(vid):
