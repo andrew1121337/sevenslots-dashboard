@@ -1516,7 +1516,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
         <div class="sc-nm">El Profesor</div><div class="sc-sub">Streamer Principal</div>
       </div>
     </div>
-    <form action="/api/sessions" method="POST">
+    <form id="session-form" onsubmit="return submitSession(event)">
       <input type="hidden" name="streamer" id="f-streamer" value="Seven">
       <div class="fg">
         <div class="fg-grp"><label class="flbl">Data Live</label><input type="date" class="fi" name="date" id="f-date"></div>
@@ -2631,6 +2631,25 @@ async function disconnectChannel(name) {
   await fetch('/oauth/channel/'+encodeURIComponent(name), {method:'DELETE'});
   toast('Canal deconectat: '+name);
   loadChannels();
+}
+
+// ── SUBMIT SESSION (AJAX) ──
+async function submitSession(e) {
+  e.preventDefault();
+  const form = document.getElementById('session-form');
+  const data = new URLSearchParams(new FormData(form));
+  const resp = await fetch('/api/sessions', {method:'POST', body:data});
+  if(resp.ok || resp.redirected) {
+    const sr = await fetch('/api/sessions');
+    ALL_SESSIONS = await sr.json();
+    form.reset();
+    const streamer = data.get('streamer');
+    goP(streamer==='Seven'?'seven':'profesor', document.querySelector(streamer==='Seven'?'[onclick*="seven"]':'[onclick*="profesor"]'));
+    toast('Sesiune adaugata!','ok');
+  } else {
+    toast('Eroare la salvare','err');
+  }
+  return false;
 }
 
 // ── DELETE ──
