@@ -156,6 +156,11 @@ def startup():
         db.migrate_program_months()
         # One-time import: El Profesor January 2026
         _import_prof_jan26()
+        # Set default targets if not already set
+        t = db.get_all_targets(2026, 3)
+        if "El Profesor" not in t or not t["El Profesor"].get("hours"):
+            db.set_target("El Profesor", 2026, 3, 0, 60)
+            print("[STARTUP] Set El Profesor target: 60h")
     except Exception as e:
         print(f"[STARTUP] DB init failed: {e}")
 
