@@ -58,6 +58,15 @@ def _pg_to_dicts(conn, rows):
     return [{c: _serialize(v) for c, v in zip(cols, r)} for r in rows]
 
 
+def _safe_add_column(conn, table, column, col_type):
+    """Add column to PG table only if it doesn't already exist."""
+    rows = conn.run(
+        "SELECT 1 FROM information_schema.columns WHERE table_name=:t AND column_name=:c",
+        t=table, c=column)
+    if not rows:
+        conn.run(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}")
+
+
 def init_db():
     if DATABASE_URL:
         conn = get_conn()
@@ -73,14 +82,8 @@ def init_db():
             token_json TEXT NOT NULL,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         # Migrate: add channel columns if missing
-        try:
-            _pg_run(conn, "ALTER TABLE oauth_tokens ADD COLUMN channel_name TEXT NOT NULL DEFAULT 'SevenSlots'")
-        except Exception:
-            pass
-        try:
-            _pg_run(conn, "ALTER TABLE oauth_tokens ADD COLUMN channel_id TEXT DEFAULT ''")
-        except Exception:
-            pass
+        _safe_add_column(conn, "oauth_tokens", "channel_name", "TEXT NOT NULL DEFAULT 'SevenSlots'")
+        _safe_add_column(conn, "oauth_tokens", "channel_id", "TEXT DEFAULT ''")
         # Drop old id=1 constraint if exists
         try:
             _pg_run(conn, "ALTER TABLE oauth_tokens DROP CONSTRAINT IF EXISTS oauth_tokens_id_check")
@@ -119,10 +122,7 @@ def init_db():
             _pg_run(conn, "CREATE INDEX IF NOT EXISTS idx_thumb_date ON thumbnails(date)")
         except Exception:
             pass
-        try:
-            _pg_run(conn, "ALTER TABLE thumbnails ADD COLUMN streamer TEXT NOT NULL DEFAULT 'Seven'")
-        except Exception:
-            pass
+        _safe_add_column(conn, "thumbnails", "streamer", "TEXT NOT NULL DEFAULT 'Seven'")
         # Add done column if missing (existing tables)
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS meetings (
             id SERIAL PRIMARY KEY,
@@ -162,14 +162,9 @@ def init_db():
             views_target INTEGER DEFAULT 0,
             hours_target INTEGER DEFAULT 0,
             UNIQUE(streamer, year, month))""")
-        try:
-            _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
-        except Exception:
-            pass
-        try:
-            _pg_run(conn, "ALTER TABLE targets ADD COLUMN hours_target INTEGER DEFAULT 0")
-        except Exception:
-            pass
+        # Safe column additions — check existence first to avoid transaction abort
+        _safe_add_column(conn, "programs", "done", "INTEGER DEFAULT 0")
+        _safe_add_column(conn, "targets", "hours_target", "INTEGER DEFAULT 0")
         conn.close()
     else:
         conn = get_conn()
@@ -887,7 +882,7 @@ def set_target(streamer: str, year: int, month: int, views_target: int, hours_ta
         conn = get_conn()
         _pg_run(conn, """INSERT INTO targets (streamer, year, month, views_target, hours_target)
                          VALUES (:s, :y, :m, :v, :h)
-                         ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=:v, hours_target=:h""",
+                         ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=EXCLUDED.views_target, hours_target=EXCLUDED.hours_target""",
                 {"s": streamer, "y": year, "m": month, "v": views_target, "h": hours_target})
         conn.close()
     else:
