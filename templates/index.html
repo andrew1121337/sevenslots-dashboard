@@ -2088,6 +2088,7 @@ async function renderStreamer(name) {
 }
 
 function renderStatsFooter(streamer, totalViews, totalMin, targets) {
+  const sid = streamer.replace(/\s+/g,'_');
   const vTarget = targets.views || 0;
   const hTarget = targets.hours || 0;
   const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
@@ -2117,12 +2118,12 @@ function renderStatsFooter(streamer, totalViews, totalMin, targets) {
         <span>&#127919; TARGET ORE LIVE &mdash; LUNA CURENTA</span>
         <div class="tw-inputs">
           <label>TARGET (ORE)</label>
-          <input type="number" id="ht-${streamer}" value="${hTarget||''}" placeholder="0" style="width:70px;">
+          <input type="number" id="ht-${sid}" value="${hTarget||''}" placeholder="0" style="width:70px;">
           <label>ZILE LUNA</label>
           <input type="number" value="${daysInMonth}" disabled style="width:50px;">
           <label>ZIUA</label>
           <input type="number" value="${curDay}" disabled style="width:50px;">
-          <button onclick="saveTarget('${streamer}')">&#128190;</button>
+          <button onclick="saveTarget('${streamer}','${sid}')">&#128190;</button>
         </div>
       </div>
       <div class="tw-stats">
@@ -2159,16 +2160,17 @@ function renderStatsFooter(streamer, totalViews, totalMin, targets) {
       <div class="sf-item">&#9654; <strong>Total Views:</strong> ${fmt(totalViews)}</div>
       <div class="sf-target">
         <span class="sf-item"><strong>Target Views:</strong></span>
-        <input type="number" id="vt-${streamer}" value="${vTarget||''}" placeholder="Views" style="width:100px;">
+        <input type="number" id="vt-${sid}" value="${vTarget||''}" placeholder="Views" style="width:100px;">
         ${vTarget > 0 ? `<span class="sf-item" style="margin-left:8px;"><strong>${vPct}%</strong></span>
           <div class="sf-bar"><div class="sf-bar-fill" style="width:${vPct}%;background:${vBarColor}"></div></div>` : ''}
       </div>
     </div>`;
 }
 
-async function saveTarget(streamer) {
-  const hInp = document.getElementById('ht-'+streamer);
-  const vInp = document.getElementById('vt-'+streamer);
+async function saveTarget(streamer, sid) {
+  if(!sid) sid = streamer.replace(/\s+/g,'_');
+  const hInp = document.getElementById('ht-'+sid);
+  const vInp = document.getElementById('vt-'+sid);
   const hVal = hInp ? (parseInt(hInp.value) || 0) : 0;
   const vVal = vInp ? (parseInt(vInp.value) || 0) : 0;
   await fetch('/api/targets', {method:'POST', body:new URLSearchParams({
