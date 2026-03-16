@@ -865,8 +865,9 @@ def delete_roata(rid: int):
 def get_target(streamer: str, year: int, month: int) -> int:
     if DATABASE_URL:
         conn = get_conn()
-        rows = _pg_rows(conn, "SELECT views_target FROM targets WHERE streamer=:s AND year=:y AND month=:m",
-                         {"s": streamer, "y": year, "m": month})
+        raw = _pg_run(conn, "SELECT views_target FROM targets WHERE streamer=:s AND year=:y AND month=:m",
+                      {"s": streamer, "y": year, "m": month})
+        rows = _pg_to_dicts(conn, raw)
         conn.close()
         return rows[0]["views_target"] if rows else 0
     else:
@@ -907,11 +908,12 @@ def get_all_targets(year: int, month: int) -> dict:
         conn = get_conn()
         has_hours = _pg_has_column(conn, "targets", "hours_target")
         if has_hours:
-            rows = _pg_rows(conn, "SELECT streamer, views_target, hours_target FROM targets WHERE year=:y AND month=:m",
-                             {"y": year, "m": month})
+            raw = _pg_run(conn, "SELECT streamer, views_target, hours_target FROM targets WHERE year=:y AND month=:m",
+                           {"y": year, "m": month})
         else:
-            rows = _pg_rows(conn, "SELECT streamer, views_target FROM targets WHERE year=:y AND month=:m",
-                             {"y": year, "m": month})
+            raw = _pg_run(conn, "SELECT streamer, views_target FROM targets WHERE year=:y AND month=:m",
+                           {"y": year, "m": month})
+        rows = _pg_to_dicts(conn, raw)
         conn.close()
         return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0)} for r in rows}
     else:
