@@ -49,6 +49,50 @@ class AuthMiddleware(BaseHTTPMiddleware):
 app.add_middleware(AuthMiddleware)
 
 
+def _import_prof_jan26():
+    """One-time import of El Profesor January 2026 sessions."""
+    # Check if already imported
+    all_sess = db.get_sessions("El Profesor")
+    jan_dates = [s["date"] for s in all_sess if s["date"].startswith("2026-01")]
+    if len(jan_dates) >= 10:
+        return  # Already imported
+    ROWS = [
+        ("2026-01-03","EYpsGLZOwdk","https://www.youtube.com/live/EYpsGLZOwdk","2:30:00",11000,6600,"9:11",1400,1000,930,0,0,"Superbet","",""),
+        ("2026-01-05","t7kcmcAuUbs","https://www.youtube.com/live/t7kcmcAuUbs","2:35:00",6800,4500,"7:05",666,531,455,0,0,"","",""),
+        ("2026-01-06","RExHYsXluHY","https://www.youtube.com/live/RExHYsXluHY","1:35:00",4900,3300,"5:06",510,232,345,0,0,"","",""),
+        ("2026-01-07","","","4:00:00",0,0,"",0,0,0,0,0,"","",""),
+        ("2026-01-08","6vSdwERKPo4","https://studio.youtube.com/video/6vSdwERKPo4","2:39:00",4427,2900,"5:01",364,320,240,0,0,"Netbet","Pragmatic",""),
+        ("2026-01-09","fE_9cZMY8o8","https://youtube.com/live/fE_9cZMY8o8","2:50:00",7770,4600,"8:42",1067,557,731,0,0,"Betano","Pateplay",""),
+        ("2026-01-11","","https://kick.com/sevenslots/videos/e3f6c579","2:06:00",0,0,"",0,0,0,0,0,"Betano","Pateplay",""),
+        ("2026-01-12","","https://kick.com/sevenslots/videos/4aafb132","2:12:00",0,0,"",0,0,0,0,0,"","",""),
+        ("2026-01-13","","https://kick.com/sevenslots/videos/555a4d81","2:19:00",0,0,"",0,0,0,0,0,"Netbet","Pateplay",""),
+        ("2026-01-14","","","4:00:00",0,0,"",0,0,0,0,0,"","",""),
+        ("2026-01-16","","","2:30:00",0,0,"",0,0,0,0,0,"","Greentube",""),
+        ("2026-01-17","KY2PDSZOfiA","https://www.youtube.com/watch?v=KY2PDSZOfiA","4:47:00",18100,10100,"15:44",2300,2500,1332,0,0,"","",""),
+        ("2026-01-18","_jUwS89UtgM","https://www.youtube.com/watch?v=_jUwS89UtgM","3:13:00",10400,6000,"13:35",1635,1200,1074,0,0,"Joker","Pragmatic",""),
+        ("2026-01-19","7PyX-zZw07c","https://www.youtube.com/watch?v=7PyX-zZw07c","3:10:00",11000,6800,"11:18",1503,1230,1097,0,0,"Superbet","",""),
+        ("2026-01-20","SMptnp__yXY","https://www.youtube.com/watch?v=SMptnp__yXY","3:15:00",9000,5300,"10:39",967,643,643,0,0,"MrBit","Greentube",""),
+        ("2026-01-21","vJbj0Dl6A44","https://www.youtube.com/watch?v=vJbj0Dl6A44","3:11:00",4248,3300,"13:42",1239,0,809,0,0,"Betano","Pragmatic","PRINCIPAL"),
+        ("2026-01-22","","https://kick.com/sevenslots/videos/ea739f0d","3:01:00",0,0,"",0,0,0,0,0,"Superbet","",""),
+        ("2026-01-23","jszr2yyaY5s","https://www.youtube.com/watch?v=jszr2yyaY5s","3:14:00",3000,2000,"",0,243,0,0,0,"Betano","Pragmatic",""),
+        ("2026-01-26","jyoqtCOv9cc","https://youtube.com/live/jyoqtCOv9cc","2:10:00",2700,1900,"4:20",307,0,193,0,0,"","Greentube",""),
+        ("2026-01-27","mDldUoDizUU","https://youtube.com/live/mDldUoDizUU","12:00:00",28896,14700,"21:28",2082,0,1030,0,0,"","Pragmatic",""),
+        ("2026-01-28","1qaNDwEi4Fs","https://youtube.com/live/1qaNDwEi4Fs","12:00:00",30282,14500,"16:28",1849,0,993,0,0,"","Pragmatic",""),
+        ("2026-01-30","n5JEz2oWD2A","https://www.youtube.com/live/n5JEz2oWD2A","2:00:00",2300,1600,"7:27",282,0,161,0,0,"WIN2","Pateplay",""),
+    ]
+    count = 0
+    for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
+        if vid and db.session_exists_by_video_id(vid):
+            continue
+        db.add_session({"streamer":"El Profesor","date":date,"title":title,"link":link,
+            "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
+            "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
+            "discord":disc,"casino":cas,"provider":prov,"video_id":vid,"note":""})
+        count += 1
+    if count:
+        print(f"[STARTUP] Imported {count} El Profesor Jan 2026 sessions")
+
+
 @app.on_event("startup")
 def startup():
     try:
@@ -106,6 +150,8 @@ def startup():
             print(f"[STARTUP] Seeded {len(_PSF)} paysafes")
         # One-time fix: migrate program data from 0-indexed to 1-indexed months
         db.migrate_program_months()
+        # One-time import: El Profesor January 2026
+        _import_prof_jan26()
     except Exception as e:
         print(f"[STARTUP] DB init failed: {e}")
 
