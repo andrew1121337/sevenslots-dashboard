@@ -555,7 +555,10 @@ async def api_delete_roata(rid: int):
 
 @app.get("/api/targets/{year}/{month}")
 async def api_get_targets(year: int, month: int):
-    return db.get_all_targets(year, month)
+    try:
+        return db.get_all_targets(year, month)
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.post("/api/targets")

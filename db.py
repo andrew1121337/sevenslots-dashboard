@@ -880,6 +880,8 @@ def get_target(streamer: str, year: int, month: int) -> int:
 def set_target(streamer: str, year: int, month: int, views_target: int, hours_target: int = 0):
     if DATABASE_URL:
         conn = get_conn()
+        # Ensure hours_target column exists
+        _safe_add_column(conn, "targets", "hours_target", "INTEGER DEFAULT 0")
         _pg_run(conn, """INSERT INTO targets (streamer, year, month, views_target, hours_target)
                          VALUES (:s, :y, :m, :v, :h)
                          ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=EXCLUDED.views_target, hours_target=EXCLUDED.hours_target""",
@@ -895,16 +897,26 @@ def set_target(streamer: str, year: int, month: int, views_target: int, hours_ta
         conn.close()
 
 
+def _pg_has_column(conn, table, column):
+    rows = conn.run("SELECT 1 FROM information_schema.columns WHERE table_name=:t AND column_name=:c", t=table, c=column)
+    return len(rows) > 0
+
+
 def get_all_targets(year: int, month: int) -> dict:
     if DATABASE_URL:
         conn = get_conn()
-        rows = _pg_rows(conn, "SELECT streamer, views_target, hours_target FROM targets WHERE year=:y AND month=:m",
-                         {"y": year, "m": month})
+        has_hours = _pg_has_column(conn, "targets", "hours_target")
+        if has_hours:
+            rows = _pg_rows(conn, "SELECT streamer, views_target, hours_target FROM targets WHERE year=:y AND month=:m",
+                             {"y": year, "m": month})
+        else:
+            rows = _pg_rows(conn, "SELECT streamer, views_target FROM targets WHERE year=:y AND month=:m",
+                             {"y": year, "m": month})
         conn.close()
-        return {r["streamer"]: {"views": r["views_target"], "hours": r["hours_target"]} for r in rows}
+        return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0)} for r in rows}
     else:
         conn = get_conn()
         rows = [dict(r) for r in conn.execute("SELECT streamer, views_target, hours_target FROM targets WHERE year=? AND month=?",
                             (year, month)).fetchall()]
         conn.close()
-        return {r["streamer"]: {"views": r["views_target"], "hours": r["hours_target"]} for r in rows}
+        return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0)} for r in rows}
