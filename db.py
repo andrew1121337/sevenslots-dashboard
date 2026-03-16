@@ -160,9 +160,14 @@ def init_db():
             year INTEGER NOT NULL,
             month INTEGER NOT NULL,
             views_target INTEGER DEFAULT 0,
+            hours_target INTEGER DEFAULT 0,
             UNIQUE(streamer, year, month))""")
         try:
             _pg_run(conn, "ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
+        except Exception:
+            pass
+        try:
+            _pg_run(conn, "ALTER TABLE targets ADD COLUMN hours_target INTEGER DEFAULT 0")
         except Exception:
             pass
         conn.close()
@@ -241,10 +246,15 @@ def init_db():
                 year INTEGER NOT NULL,
                 month INTEGER NOT NULL,
                 views_target INTEGER DEFAULT 0,
+                hours_target INTEGER DEFAULT 0,
                 UNIQUE(streamer, year, month));
         """)
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
+        except Exception:
+            pass
+        try:
+            conn.execute("ALTER TABLE targets ADD COLUMN hours_target INTEGER DEFAULT 0")
         except Exception:
             pass
         conn.commit()
@@ -872,20 +882,20 @@ def get_target(streamer: str, year: int, month: int) -> int:
         return row[0] if row else 0
 
 
-def set_target(streamer: str, year: int, month: int, views_target: int):
+def set_target(streamer: str, year: int, month: int, views_target: int, hours_target: int = 0):
     if DATABASE_URL:
         conn = get_conn()
-        _pg_run(conn, """INSERT INTO targets (streamer, year, month, views_target)
-                         VALUES (:s, :y, :m, :v)
-                         ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=:v""",
-                {"s": streamer, "y": year, "m": month, "v": views_target})
+        _pg_run(conn, """INSERT INTO targets (streamer, year, month, views_target, hours_target)
+                         VALUES (:s, :y, :m, :v, :h)
+                         ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=:v, hours_target=:h""",
+                {"s": streamer, "y": year, "m": month, "v": views_target, "h": hours_target})
         conn.close()
     else:
         conn = get_conn()
-        conn.execute("""INSERT INTO targets (streamer, year, month, views_target)
-                        VALUES (?, ?, ?, ?)
-                        ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=excluded.views_target""",
-                     (streamer, year, month, views_target))
+        conn.execute("""INSERT INTO targets (streamer, year, month, views_target, hours_target)
+                        VALUES (?, ?, ?, ?, ?)
+                        ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=excluded.views_target, hours_target=excluded.hours_target""",
+                     (streamer, year, month, views_target, hours_target))
         conn.commit()
         conn.close()
 
@@ -893,13 +903,13 @@ def set_target(streamer: str, year: int, month: int, views_target: int):
 def get_all_targets(year: int, month: int) -> dict:
     if DATABASE_URL:
         conn = get_conn()
-        rows = _pg_rows(conn, "SELECT streamer, views_target FROM targets WHERE year=:y AND month=:m",
+        rows = _pg_rows(conn, "SELECT streamer, views_target, hours_target FROM targets WHERE year=:y AND month=:m",
                          {"y": year, "m": month})
         conn.close()
-        return {r["streamer"]: r["views_target"] for r in rows}
+        return {r["streamer"]: {"views": r["views_target"], "hours": r["hours_target"]} for r in rows}
     else:
         conn = get_conn()
-        rows = conn.execute("SELECT streamer, views_target FROM targets WHERE year=? AND month=?",
-                            (year, month)).fetchall()
+        rows = [dict(r) for r in conn.execute("SELECT streamer, views_target, hours_target FROM targets WHERE year=? AND month=?",
+                            (year, month)).fetchall()]
         conn.close()
-        return {r[0]: r[1] for r in rows}
+        return {r["streamer"]: {"views": r["views_target"], "hours": r["hours_target"]} for r in rows}

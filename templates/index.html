@@ -414,8 +414,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .pday { font-size:16px; font-weight:900; color:var(--dim2); line-height:1; }
 .pday span { font-size:8px; display:block; font-weight:600; color:var(--dim2); }
 .stats-footer {
-  margin-top:20px; padding:16px; background:var(--bg2); border:1px solid var(--border);
-  border-radius:12px; display:flex; gap:24px; flex-wrap:wrap; align-items:center;
+  margin-top:20px;
 }
 .sf-item { font-size:13px; color:var(--dim); }
 .sf-item strong { color:var(--text); font-weight:800; }
@@ -424,6 +423,63 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 .sf-target button { padding:4px 12px; border:none; border-radius:6px; background:var(--purple); color:#fff; cursor:pointer; font-size:11px; font-weight:700; }
 .sf-bar { width:200px; height:8px; background:var(--bg3); border-radius:4px; overflow:hidden; }
 .sf-bar-fill { height:100%; border-radius:4px; transition:.3s; }
+
+/* Target Widget */
+.target-widget {
+  margin-top:16px; padding:20px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:14px; width:100%;
+}
+.tw-hdr {
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  margin-bottom:18px; font-size:15px; font-weight:900; color:var(--text);
+  letter-spacing:1px;
+}
+.tw-inputs {
+  display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--dim);
+}
+.tw-inputs input {
+  padding:4px 6px; border:1px solid var(--border); border-radius:6px;
+  background:var(--bg3); color:var(--text); font-family:'Nunito',sans-serif; font-size:12px;
+  text-align:center;
+}
+.tw-inputs input:disabled { opacity:.5; }
+.tw-inputs button {
+  padding:5px 12px; border:none; border-radius:6px;
+  background:var(--purple); color:#fff; cursor:pointer; font-size:13px; font-weight:700;
+  transition:.15s;
+}
+.tw-inputs button:hover { background:var(--purple2); }
+.tw-inputs label { text-transform:uppercase; letter-spacing:.5px; }
+.tw-stats {
+  display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:18px;
+}
+.tw-stat {
+  background:var(--bg3); border:1px solid var(--border); border-radius:10px;
+  padding:12px 8px; text-align:center;
+}
+.tw-stat-val { font-size:20px; font-weight:900; color:var(--text); line-height:1.1; }
+.tw-stat-lbl { font-size:10px; font-weight:700; color:var(--dim); text-transform:uppercase; margin-top:4px; letter-spacing:.5px; line-height:1.3; }
+.tw-bar-wrap { margin-bottom:10px; }
+.tw-bar {
+  position:relative; width:100%; height:14px; background:var(--bg4); border-radius:7px; overflow:visible;
+}
+.tw-bar-fill {
+  height:100%; border-radius:7px; transition:width .4s ease;
+}
+.tw-bar-exp {
+  position:absolute; top:-3px; width:2px; height:20px; background:var(--text);
+  border-radius:1px; opacity:.7; transform:translateX(-1px);
+}
+.tw-bar-labels {
+  display:flex; justify-content:space-between; font-size:11px; color:var(--dim);
+  margin-top:6px; position:relative;
+}
+.tw-msg {
+  margin-top:12px; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:700;
+  text-align:center;
+}
+.tw-msg-ok { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+.tw-msg-close { background:rgba(245,197,24,0.1); color:var(--gold); border:1px solid rgba(245,197,24,0.2); }
 .psel {
   width:100%; background:var(--bg3); border:1px solid var(--border);
   color:var(--text2); font-family:'Nunito',sans-serif;
@@ -926,6 +982,15 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   .sh { font-size:8px; letter-spacing:2px; margin-bottom:10px; }
 }
 
+@media(max-width:700px){
+  .tw-stats { grid-template-columns:repeat(3,1fr); }
+  .tw-hdr { flex-direction:column; align-items:flex-start; }
+}
+@media(max-width:480px){
+  .tw-stats { grid-template-columns:repeat(2,1fr); }
+  .tw-stat-val { font-size:16px; }
+  .tw-inputs { flex-wrap:wrap; }
+}
 @media(max-width:380px){
   .krow { grid-template-columns:1fr; }
   .month-nav .mn-label { min-width:110px; font-size:11px; letter-spacing:1px; }
@@ -975,11 +1040,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
   <div class="sb-sep"></div>
   <div class="sb-section">Streameri</div>
   <div class="sb-item sb-seven" onclick="goP('seven',this)">
-    <span class="sb-ico">&#9889;</span> Seven Live
-    <span class="sb-dot"></span>
-  </div>
-  <div class="sb-item sb-seven" onclick="goP('sevenslots',this)">
-    <span class="sb-ico">&#127916;</span> Seven Slots
+    <span class="sb-ico">&#9889;</span> Seven Slots
     <span class="sb-dot"></span>
   </div>
   <div class="sb-item sb-prof" onclick="goP('profesor',this)">
@@ -1150,7 +1211,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
 
   <!-- SEVEN -->
   <div class="page" id="pg-seven">
-    <div class="sh"><div class="dot"></div>Seven Live &mdash; Statistici<div class="ln"></div></div>
+    <div class="sh"><div class="dot"></div>Seven Slots &mdash; Statistici<div class="ln"></div></div>
     <div class="krow" id="seven-kpi"></div>
 
     <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
@@ -1228,40 +1289,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
       </div>
     </div>
     <div class="stats-footer" id="prof-footer"></div>
-  </div>
-
-  <!-- SEVEN SLOTS (second channel) -->
-  <div class="page" id="pg-sevenslots">
-    <div class="sh"><div class="dot"></div>Seven Slots &mdash; Statistici<div class="ln"></div></div>
-    <div class="krow" id="slots-kpi"></div>
-    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
-    <div class="graf-2col" id="slots-charts">
-      <div class="chart-card span2">
-        <div class="cc-head"><div><div class="cc-title">Views per Video</div><div class="cc-sub" id="slots-lbl-views"></div></div></div>
-        <div id="slots-line-views" style="width:100%;height:160px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="slots-lbl-likes"></div></div></div>
-        <div id="slots-line-likes" style="width:100%;height:120px;"></div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
-      <div class="view-toggle">
-        <button class="vtb on" onclick="setStrView('slots','cal',this)">Calendar</button>
-        <button class="vtb" onclick="setStrView('slots','list',this)">Lista</button>
-      </div>
-    </div>
-    <div id="slots-cal-view"></div>
-    <div id="slots-list-view">
-      <div class="tw">
-        <table><thead><tr>
-          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th>
-          <th>Likes</th><th>Abo.</th><th></th>
-        </tr></thead><tbody id="slots-table"></tbody></table>
-      </div>
-    </div>
-    <div class="stats-footer" id="slots-footer"></div>
   </div>
 
   <!-- CATALIN -->
@@ -1577,7 +1604,6 @@ function refreshPage() {
   if(curPage==='overview') renderOverview();
   if(curPage==='program') renderP();
   if(curPage==='seven') renderStreamer('Seven');
-  if(curPage==='sevenslots') renderSevenSlots();
   if(curPage==='profesor') renderStreamer('El Profesor');
   if(curPage==='catalin') renderCatalin();
   if(curPage==='sedinta') renderMeetings();
@@ -1989,7 +2015,7 @@ async function renderStreamer(name) {
   const n = sess.length;
   // Fetch program data + target
   let progData = {};
-  let target = 0;
+  let target = {views:0, hours:0};
   try {
     const [pr, tr] = await Promise.all([
       fetch(`/api/program/${curYear}/${curMonth+1}?streamer=${encodeURIComponent(name)}`),
@@ -1997,7 +2023,7 @@ async function renderStreamer(name) {
     ]);
     progData = await pr.json();
     const targets = await tr.json();
-    target = targets[name] || 0;
+    target = targets[name] || {views:0, hours:0};
   } catch(e){}
 
   const kg = document.getElementById(prefix+'-kpi');
@@ -2061,26 +2087,92 @@ async function renderStreamer(name) {
   document.getElementById(prefix+'-list-view').style.display = strView[prefix]==='list' ? 'block' : 'none';
 }
 
-function renderStatsFooter(streamer, totalViews, totalMin, target) {
-  const pct = target > 0 ? Math.min(100, Math.round(totalViews/target*100)) : 0;
-  const barColor = pct >= 100 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
-  return `
-    <div class="sf-item">&#9654; <strong>Total Views:</strong> ${fmt(totalViews)}</div>
-    <div class="sf-item">&#128338; <strong>Total Ore Live:</strong> ${minToStr(totalMin)}</div>
-    <div class="sf-target">
-      <span class="sf-item"><strong>Target:</strong></span>
-      <input type="number" id="target-${streamer}" value="${target||''}" placeholder="Views target">
-      <button onclick="saveTarget('${streamer}')">Set</button>
-      ${target > 0 ? `<span class="sf-item"><strong>${pct}%</strong> din target</span>
-        <div class="sf-bar"><div class="sf-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>` : ''}
+function renderStatsFooter(streamer, totalViews, totalMin, targets) {
+  const vTarget = targets.views || 0;
+  const hTarget = targets.hours || 0;
+  const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
+  const today = new Date();
+  const curDay = (today.getFullYear()===curYear && today.getMonth()===curMonth) ? today.getDate() : daysInMonth;
+  const totalHours = Math.round(totalMin/60*10)/10;
+
+  // Hours target widget
+  let htWidget = '';
+  if(true) {
+    const expectedToday = hTarget > 0 ? Math.round(hTarget * curDay / daysInMonth * 10)/10 : 0;
+    const diff = Math.round((totalHours - expectedToday)*10)/10;
+    const remaining = Math.max(0, Math.round((hTarget - totalHours)*10)/10);
+    const daysLeft = daysInMonth - curDay;
+    const paceNeeded = daysLeft > 0 && remaining > 0 ? Math.round(remaining/daysLeft*10)/10 : 0;
+    const hPct = hTarget > 0 ? Math.min(100, Math.round(totalHours/hTarget*100)) : 0;
+    const expPct = hTarget > 0 ? Math.min(100, Math.round(expectedToday/hTarget*100)) : 0;
+    const barColor = hPct >= 100 ? '#22c55e' : hPct >= 50 ? '#f5c518' : '#ef4444';
+    const isComplete = hTarget > 0 && totalHours >= hTarget;
+    const diffStr = diff >= 0 ? `+${diff}h` : `${diff}h`;
+    const diffColor = diff >= 0 ? 'var(--green)' : 'var(--red)';
+    const remainStr = isComplete ? '&#10003; Complet' : `${remaining}h`;
+
+    htWidget = `
+    <div class="target-widget">
+      <div class="tw-hdr">
+        <span>&#127919; TARGET ORE LIVE &mdash; LUNA CURENTA</span>
+        <div class="tw-inputs">
+          <label>TARGET (ORE)</label>
+          <input type="number" id="ht-${streamer}" value="${hTarget||''}" placeholder="0" style="width:70px;">
+          <label>ZILE LUNA</label>
+          <input type="number" value="${daysInMonth}" disabled style="width:50px;">
+          <label>ZIUA</label>
+          <input type="number" value="${curDay}" disabled style="width:50px;">
+          <button onclick="saveTarget('${streamer}')">&#128190;</button>
+        </div>
+      </div>
+      <div class="tw-stats">
+        <div class="tw-stat"><div class="tw-stat-val" style="color:var(--green);">${totalHours}h</div><div class="tw-stat-lbl">ORE REALIZATE</div></div>
+        <div class="tw-stat"><div class="tw-stat-val">${hTarget}h</div><div class="tw-stat-lbl">TARGET LUNAR<br><span style="color:var(--gold);font-size:10px;">${expectedToday}h exp.</span></div></div>
+        <div class="tw-stat"><div class="tw-stat-val">${expectedToday}h</div><div class="tw-stat-lbl">ASTEPTAT AZI<br><span style="font-size:10px;">dupa ${curDay} zile</span></div></div>
+        <div class="tw-stat"><div class="tw-stat-val" style="color:${diffColor};">${diffStr}</div><div class="tw-stat-lbl">DIFERENTA<br><span style="font-size:10px;">fata de ritm</span></div></div>
+        <div class="tw-stat"><div class="tw-stat-val" style="color:${isComplete?'var(--green)':'var(--gold)'};">${remainStr}</div><div class="tw-stat-lbl">RAMAS DIN TARGET<br><span style="font-size:10px;">${daysLeft} zile ramase</span></div></div>
+        <div class="tw-stat"><div class="tw-stat-val">${paceNeeded}h/zi</div><div class="tw-stat-lbl">RITM NECESAR<br><span style="font-size:10px;">pt a atinge target</span></div></div>
+      </div>
+      <div class="tw-bar-wrap">
+        <div class="tw-bar">
+          <div class="tw-bar-fill" style="width:${hPct}%;background:${barColor};"></div>
+          <div class="tw-bar-exp" style="left:${expPct}%;"></div>
+        </div>
+        <div class="tw-bar-labels">
+          <span>0h</span>
+          <span style="position:absolute;left:50%;transform:translateX(-50%)">${Math.round(hTarget/2)}h</span>
+          <span style="color:${barColor};font-weight:800;">${hPct}%</span>
+          <span>${hTarget}h target</span>
+        </div>
+      </div>
+      ${isComplete ? `<div class="tw-msg tw-msg-ok">&#127942; TARGET ATINS! Ai depasit targetul lunar de ${hTarget} ore. Excelent!</div>` :
+        hPct >= 80 ? `<div class="tw-msg tw-msg-close">&#128170; Aproape! Mai ai ${remaining}h pana la target.</div>` : ''}
+    </div>`;
+  }
+
+  // Views summary
+  const vPct = vTarget > 0 ? Math.min(100, Math.round(totalViews/vTarget*100)) : 0;
+  const vBarColor = vPct >= 100 ? 'var(--green)' : vPct >= 50 ? 'var(--gold)' : 'var(--red)';
+
+  return htWidget + `
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+      <div class="sf-item">&#9654; <strong>Total Views:</strong> ${fmt(totalViews)}</div>
+      <div class="sf-target">
+        <span class="sf-item"><strong>Target Views:</strong></span>
+        <input type="number" id="vt-${streamer}" value="${vTarget||''}" placeholder="Views" style="width:100px;">
+        ${vTarget > 0 ? `<span class="sf-item" style="margin-left:8px;"><strong>${vPct}%</strong></span>
+          <div class="sf-bar"><div class="sf-bar-fill" style="width:${vPct}%;background:${vBarColor}"></div></div>` : ''}
+      </div>
     </div>`;
 }
 
 async function saveTarget(streamer) {
-  const inp = document.getElementById('target-'+streamer);
-  const val = parseInt(inp.value) || 0;
+  const hInp = document.getElementById('ht-'+streamer);
+  const vInp = document.getElementById('vt-'+streamer);
+  const hVal = hInp ? (parseInt(hInp.value) || 0) : 0;
+  const vVal = vInp ? (parseInt(vInp.value) || 0) : 0;
   await fetch('/api/targets', {method:'POST', body:new URLSearchParams({
-    streamer, year:curYear, month:curMonth+1, views_target:val
+    streamer, year:curYear, month:curMonth+1, views_target:vVal, hours_target:hVal
   })});
   toast('Target salvat!','ok');
   refreshPage();
@@ -2164,67 +2256,6 @@ function renderStreamerCal(prefix, name, sess, progData) {
 // ═══════════════════════════════
 //  CATALIN
 // ═══════════════════════════════
-// ── SEVEN SLOTS (second channel) ──
-async function renderSevenSlots() {
-  const sess = ALL_SESSIONS.filter(s=>s.streamer==='Seven Slots' && sessMonth(s));
-  sess.sort((a,b) => a.date.localeCompare(b.date));
-  const n = sess.length;
-  let target = 0;
-  try {
-    const tr = await fetch(`/api/targets/${curYear}/${curMonth+1}`);
-    const targets = await tr.json();
-    target = targets['Seven Slots'] || 0;
-  } catch(e){}
-
-  const kg = document.getElementById('slots-kpi');
-  const chartsEl = document.getElementById('slots-charts');
-  const footer = document.getElementById('slots-footer');
-
-  if(!n) {
-    kg.innerHTML = kC('Videos','0','','kc-gold');
-    if(chartsEl) chartsEl.style.display = 'none';
-    document.getElementById('slots-table').innerHTML = '';
-    if(footer) footer.innerHTML = renderStatsFooter('Seven Slots', 0, 0, target);
-    renderStreamerCal('slots', 'Seven Slots', [], {});
-    return;
-  }
-  if(chartsEl) chartsEl.style.display = 'grid';
-
-  const tv = sess.reduce((a,s)=>a+(s.views||0),0);
-  const tl = sess.reduce((a,s)=>a+(s.likes||0),0);
-  const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
-  const dArr = sess.filter(s=>durToMin(s.duration)>0).map(s=>durToMin(s.duration));
-  const totalMin = dArr.reduce((a,v)=>a+v,0);
-
-  kg.innerHTML =
-    kC('Videos',n,'luna curenta','kc-gold') +
-    kC('&#9654; Total Views',fmt(tv),'cumulat','kc-gold') +
-    kC('Views Mediu',fmt(Math.round(tv/n)),'per video','') +
-    kC('Total Likes',fmt(tl),'cumulat','') +
-    kC('Abonati Noi',fmt(ts),'total','kc-green');
-
-  setTimeout(() => {
-    svgLine('slots-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#f5c518', 'gslotsV', 'slots-lbl-views', 160);
-    svgLine('slots-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'gslotsL', 'slots-lbl-likes', 120);
-  }, 50);
-
-  renderStreamerCal('slots', 'Seven Slots', sess, {});
-
-  const rows = [...sess].reverse();
-  document.getElementById('slots-table').innerHTML = rows.map(s=>`<tr>
-    <td>${s.date}</td><td class="ttl">${escHtml(s.title)}</td><td>${s.duration||'—'}</td>
-    <td>${s.video_id?`<a href="https://youtube.com/watch?v=${s.video_id}" target="_blank">&#9654;</a>`:''}</td>
-    <td style="font-weight:700;">&#9654; ${fmt(s.views)}</td>
-    <td>${fmt(s.likes)}</td><td>${fmt(s.new_subs)}</td>
-    <td><button class="delbtn" onclick="delSess(${s.id})">&#128465;</button></td>
-  </tr>`).join('');
-
-  if(footer) footer.innerHTML = renderStatsFooter('Seven Slots', tv, totalMin, target);
-
-  document.getElementById('slots-cal-view').style.display = strView['slots']==='cal' ? 'block' : 'none';
-  document.getElementById('slots-list-view').style.display = strView['slots']==='list' ? 'block' : 'none';
-}
-
 async function renderCatalin() {
   const sess = ALL_SESSIONS.filter(s=>s.streamer==='Catalin' && sessMonth(s));
   sess.sort((a,b) => a.date.localeCompare(b.date));
