@@ -1256,24 +1256,16 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
       </div>
     </div>
 
-    <!-- Calendar / List toggle -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
-      <div class="view-toggle">
-        <button class="vtb on" onclick="setStrView('seven','cal',this)">Calendar</button>
-        <button class="vtb" onclick="setStrView('seven','list',this)">Lista</button>
-      </div>
-    </div>
+    <div class="sh"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
     <div id="seven-cal-view"></div>
-    <div id="seven-list-view">
-      <div class="tw">
-        <table><thead><tr>
-          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th><th>Unici</th><th>D.Medie</th>
-          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-        </tr></thead><tbody id="seven-table"></tbody></table>
-      </div>
-    </div>
     <div class="stats-footer" id="seven-footer"></div>
+    <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
+    <div class="tw">
+      <table><thead><tr>
+        <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th><th>Unici</th><th>D.Medie</th>
+        <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+      </tr></thead><tbody id="seven-table"></tbody></table>
+    </div>
   </div>
 
   <!-- EL PROFESOR -->
@@ -1297,24 +1289,16 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Nunito',sans-serif; fo
       </div>
     </div>
 
-    <!-- Calendar / List toggle -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
-      <div class="view-toggle">
-        <button class="vtb on" onclick="setStrView('prof','cal',this)">Calendar</button>
-        <button class="vtb" onclick="setStrView('prof','list',this)">Lista</button>
-      </div>
-    </div>
+    <div class="sh"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
     <div id="prof-cal-view"></div>
-    <div id="prof-list-view">
-      <div class="tw">
-        <table><thead><tr>
-          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
-          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-        </tr></thead><tbody id="prof-table"></tbody></table>
-      </div>
-    </div>
     <div class="stats-footer" id="prof-footer"></div>
+    <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
+    <div class="tw">
+      <table><thead><tr>
+        <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
+        <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+      </tr></thead><tbody id="prof-table"></tbody></table>
+    </div>
   </div>
 
   <!-- CATALIN -->
@@ -2115,9 +2099,6 @@ async function renderStreamer(name) {
 
   // Footer with total views, total hours, target
   if(footer) footer.innerHTML = renderStatsFooter(name, tv, totalMin, target);
-
-  document.getElementById(prefix+'-cal-view').style.display = strView[prefix]==='cal' ? 'block' : 'none';
-  document.getElementById(prefix+'-list-view').style.display = strView[prefix]==='list' ? 'block' : 'none';
 }
 
 function renderStatsFooter(streamer, totalViews, totalMin, targets) {
