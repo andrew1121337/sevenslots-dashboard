@@ -162,6 +162,12 @@ def init_db():
             views_target INTEGER DEFAULT 0,
             hours_target INTEGER DEFAULT 0,
             UNIQUE(streamer, year, month))""")
+        _pg_run(conn, """CREATE TABLE IF NOT EXISTS activity_log (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            action TEXT NOT NULL,
+            details TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         # Safe column additions — check existence first to avoid transaction abort
         _safe_add_column(conn, "programs", "done", "INTEGER DEFAULT 0")
         _safe_add_column(conn, "targets", "hours_target", "INTEGER DEFAULT 0")
@@ -244,6 +250,12 @@ def init_db():
                 hours_target INTEGER DEFAULT 0,
                 UNIQUE(streamer, year, month));
         """)
+        conn.execute("""CREATE TABLE IF NOT EXISTS activity_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            action TEXT NOT NULL,
+            details TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         try:
             conn.execute("ALTER TABLE programs ADD COLUMN done INTEGER DEFAULT 0")
         except Exception:
@@ -922,3 +934,36 @@ def get_all_targets(year: int, month: int) -> dict:
                             (year, month)).fetchall()]
         conn.close()
         return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0)} for r in rows}
+
+
+# ── Activity Log ──
+
+def log_activity(username: str, action: str, details: str = ""):
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, "INSERT INTO activity_log (username, action, details) VALUES (:u, :a, :d)",
+                {"u": username, "a": action, "d": details})
+        conn.close()
+    else:
+        conn = get_conn()
+        conn.execute("INSERT INTO activity_log (username, action, details) VALUES (?, ?, ?)",
+                     (username, action, details))
+        conn.commit()
+        conn.close()
+
+
+def get_activity_log(limit: int = 100) -> list[dict]:
+    if DATABASE_URL:
+        conn = get_conn()
+        raw = _pg_run(conn, "SELECT id, username, action, details, created_at FROM activity_log ORDER BY created_at DESC LIMIT :n",
+                       {"n": limit})
+        rows = _pg_to_dicts(conn, raw)
+        conn.close()
+        return rows
+    else:
+        conn = get_conn()
+        rows = [dict(r) for r in conn.execute(
+            "SELECT id, username, action, details, created_at FROM activity_log ORDER BY created_at DESC LIMIT ?",
+            (limit,)).fetchall()]
+        conn.close()
+        return rows

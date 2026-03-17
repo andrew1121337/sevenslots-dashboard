@@ -16,19 +16,24 @@ app = FastAPI(title="SevenSlots Dashboard")
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
 # Simple token store (in-memory, survives within a single process)
-_valid_tokens: set[str] = set()
+_valid_tokens: dict[str, str] = {}  # token -> username
 
 
 def _make_token(username: str) -> str:
     raw = f"{username}:{SECRET_KEY}:{secrets.token_hex(16)}"
     token = hashlib.sha256(raw.encode()).hexdigest()
-    _valid_tokens.add(token)
+    _valid_tokens[token] = username
     return token
 
 
 def _check_auth(request: Request) -> bool:
     token = request.cookies.get("ss_token")
     return token in _valid_tokens if token else False
+
+
+def _get_user(request: Request) -> str:
+    token = request.cookies.get("ss_token")
+    return _valid_tokens.get(token, "unknown") if token else "unknown"
 
 
 # ── Auth middleware ──
@@ -178,6 +183,7 @@ async def login_page(request: Request, error: str = None):
 async def login_submit(username: str = Form(...), password: str = Form(...)):
     if db.verify_user(username, password):
         token = _make_token(username)
+        db.log_activity(username, "Login")
         resp = RedirectResponse("/", status_code=303)
         resp.set_cookie("ss_token", token, httponly=True, samesite="lax", max_age=86400 * 30)
         return resp
@@ -188,7 +194,7 @@ async def login_submit(username: str = Form(...), password: str = Form(...)):
 async def logout(request: Request):
     token = request.cookies.get("ss_token")
     if token:
-        _valid_tokens.discard(token)
+        _valid_tokens.pop(token, None)
     resp = RedirectResponse("/login")
     resp.delete_cookie("ss_token")
     return resp
@@ -320,6 +326,7 @@ async def api_sessions(streamer: str = None):
 
 @app.post("/api/sessions")
 async def api_add_session(
+    request: Request,
     streamer: str = Form(...),
     date: str = Form(...),
     title: str = Form(""),
@@ -355,11 +362,13 @@ async def api_add_session(
         "video_id": "",
         "note": "",
     })
+    db.log_activity(_get_user(request), "Sesiune adaugata", f"{streamer} — {date} — {title or 'fara titlu'} ({duration})")
     return RedirectResponse("/?tab=stats", status_code=303)
 
 
 @app.delete("/api/sessions/{sid}")
-async def api_delete_session(sid: int):
+async def api_delete_session(request: Request, sid: int):
+    db.log_activity(_get_user(request), "Sesiune stearsa", f"ID #{sid}")
     db.delete_session(sid)
     return {"ok": True}
 
@@ -373,6 +382,7 @@ async def api_get_program(year: int, month: int, streamer: str = None):
 
 @app.post("/api/program")
 async def api_save_program(
+    request: Request,
     year: int = Form(...),
     month: int = Form(...),
     day: int = Form(...),
@@ -382,18 +392,20 @@ async def api_save_program(
     done: int = Form(0),
 ):
     db.save_program_day(year, month, day, streamer, casino, provider, done)
+    db.log_activity(_get_user(request), "Program modificat", f"{day}/{month}/{year} — {streamer} — {casino}/{provider}")
     return {"ok": True}
 
 
 # ── Thumbnails API ──
 
 @app.post("/api/thumbnails/upload")
-async def thumbnail_upload(streamer: str = Form(...), date: str = Form(...), file: UploadFile = File(...)):
+async def thumbnail_upload(request: Request, streamer: str = Form(...), date: str = Form(...), file: UploadFile = File(...)):
     data = await file.read()
     if len(data) > 5 * 1024 * 1024:
         return JSONResponse({"error": "File too large (max 5MB)"}, status_code=400)
     b64 = base64.b64encode(data).decode()
     tid = db.add_thumbnail(streamer, date, file.filename, file.content_type or "image/png", b64)
+    db.log_activity(_get_user(request), "Thumbnail uploadat", f"{streamer} — {date} — {file.filename}")
     return {"ok": True, "id": tid}
 
 
@@ -561,11 +573,17 @@ async def api_get_targets(year: int, month: int):
         return {"error": str(e)}
 
 
+@app.get("/api/activity")
+async def api_activity(limit: int = 100):
+    return db.get_activity_log(limit)
+
+
 @app.post("/api/targets")
-async def api_set_target(streamer: str = Form(...), year: int = Form(...),
+async def api_set_target(request: Request, streamer: str = Form(...), year: int = Form(...),
                           month: int = Form(...), views_target: int = Form(0),
                           hours_target: int = Form(0)):
     db.set_target(streamer, year, month, views_target, hours_target)
+    db.log_activity(_get_user(request), "Target modificat", f"{streamer} — {month}/{year} — views:{views_target} ore:{hours_target}")
     return {"ok": True}
 
 
