@@ -805,7 +805,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 }
 
 /* ─── ADD FORM ─── */
-.stog { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.stog { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px; }
 .scard {
   padding:18px; border:1px solid var(--border);
   background:var(--bg2); cursor:pointer; transition:.25s var(--ease-out-expo);
@@ -814,6 +814,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 .scard:hover { border-color:var(--border2); background:var(--bg3); }
 .scard.sc-s.on { border-color:var(--gold); background:var(--gold-dim); }
 .scard.sc-p.on { border-color:var(--cyan); background:var(--cyan-dim); }
+.scard.sc-c.on { border-color:var(--orange); background:var(--orange-dim); }
 .sc-chk {
   position:absolute; top:10px; right:10px;
   width:20px; height:20px; border-radius:50%;
@@ -822,11 +823,13 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 }
 .scard.sc-s .sc-chk { background:var(--gold); }
 .scard.sc-p .sc-chk { background:var(--cyan); }
+.scard.sc-c .sc-chk { background:var(--orange); }
 .scard.on .sc-chk { opacity:1; }
 .sc-ico { font-size:22px; margin-bottom:6px; }
 .sc-nm { font-size:16px; font-weight:700; }
 .scard.sc-s .sc-nm { color:var(--gold); }
 .scard.sc-p .sc-nm { color:var(--cyan); }
+.scard.sc-c .sc-nm { color:var(--orange); }
 .sc-sub { font-size:10px; color:var(--dim); margin-top:2px; }
 .fg { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-bottom:20px; }
 .ff { grid-column:1/-1; }
@@ -916,7 +919,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
   .cal-badge,.cal-tag,.cal-sess { display:none; }
   .main { padding:18px 14px; }
   .cmp-row { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
-  .stog { grid-template-columns:1fr; }
+  .stog { grid-template-columns:1fr !important; }
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -1566,6 +1569,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
       <div class="scard sc-p" onclick="pickS('El Profesor')">
         <div class="sc-chk">&#10003;</div><div class="sc-ico">&#127919;</div>
         <div class="sc-nm">El Profesor</div><div class="sc-sub">Streamer Principal</div>
+      </div>
+      <div class="scard sc-c" onclick="pickS('Catalin')">
+        <div class="sc-chk">&#10003;</div><div class="sc-ico">&#127916;</div>
+        <div class="sc-nm">Catalin</div><div class="sc-sub">Editor / Creator</div>
       </div>
     </div>
     <form id="session-form" onsubmit="return submitSession(event)">
@@ -2715,7 +2722,8 @@ function pickS(s) {
   selStreamer=s;
   document.getElementById('f-streamer').value=s;
   document.querySelectorAll('.scard').forEach(c=>c.classList.remove('on'));
-  document.querySelector(s==='Seven'?'.sc-s':'.sc-p').classList.add('on');
+  const cls = s==='Seven'?'.sc-s':s==='El Profesor'?'.sc-p':'.sc-c';
+  document.querySelector(cls).classList.add('on');
 }
 
 // ── ROATA APP ──
