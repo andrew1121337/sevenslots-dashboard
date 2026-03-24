@@ -82,7 +82,8 @@ header::after {
   animation: shimmer 8s linear infinite;
 }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-.logo { display:flex; align-items:center; gap:10px; width: var(--sidebar-w); flex-shrink:0; }
+.logo { display:flex; align-items:center; gap:10px; width: var(--sidebar-w); flex-shrink:0; text-decoration:none; }
+.logo:hover .logo-badge { box-shadow: 0 0 20px var(--purple-glow); }
 .logo-badge {
   width:34px; height:34px; border-radius:50%;
   background: linear-gradient(135deg, var(--purple), var(--purple3));
@@ -705,26 +706,26 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 
 /* ─── LICENTE ─── */
 .lic-row {
-  display:flex; align-items:center; gap:12px; padding:10px 16px;
+  display:flex; align-items:center; gap:8px; padding:5px 10px;
   background:var(--bg2); border:1px solid var(--border);
-  border-radius:10px; margin-bottom:4px; transition:.15s var(--ease-out-expo);
+  border-radius:6px; margin-bottom:2px; transition:.15s var(--ease-out-expo);
 }
 .lic-row:hover { background:var(--bg3); border-color:var(--border2); }
 .lic-code {
-  font-family:'Roboto Mono',monospace; font-size:13px;
-  font-weight:700; color:var(--purple2); letter-spacing:0.5px;
-  min-width:180px;
+  font-family:'Roboto Mono',monospace; font-size:10px;
+  font-weight:600; color:var(--purple2); letter-spacing:0.3px;
+  min-width:150px;
 }
-.lic-name { font-size:14px; font-weight:700; color:var(--text); flex:1; }
+.lic-name { font-size:11px; font-weight:600; color:var(--text); flex:1; }
 .lic-copy {
-  padding:5px 14px; border-radius:8px;
+  padding:3px 10px; border-radius:6px;
   background:var(--bg4); border:1px solid var(--border);
-  color:var(--dim); font-size:11px; font-weight:700;
+  color:var(--dim); font-size:9px; font-weight:700;
   cursor:pointer; transition:.18s var(--ease-out-expo); font-family:'Space Grotesk',sans-serif;
 }
 .lic-copy:hover { border-color:var(--purple2); color:var(--purple2); background:var(--purple-dim); }
 .lic-copy.copied { background:rgba(16,185,129,.15); border-color:var(--green); color:var(--green2); }
-.lic-add { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.lic-add { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
 
 /* ─── PAYSAFE ─── */
 .psf-table { width:100%; border-collapse:collapse; }
@@ -1066,10 +1067,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 <!-- HEADER -->
 <header>
   <button class="hamburger" onclick="toggleMobileMenu()" id="hamburger-btn">&#9776;</button>
-  <div class="logo">
+  <a class="logo" href="#" onclick="goP('overview',document.querySelector('.sb-item'));return false;" style="text-decoration:none;cursor:pointer;">
     <div class="logo-badge">7S</div>
     <div class="logo-name">Seven<span>Slots</span></div>
-  </div>
+  </a>
   <div class="month-nav">
     <button class="mn-btn" onclick="prevM()">&#9664;</button>
     <div class="mn-label" id="month-label"></div>
@@ -1090,6 +1091,10 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 
 <!-- SIDEBAR -->
 <div class="sidebar">
+  <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 4px;cursor:pointer;" onclick="goP('overview',document.querySelector('.sb-item'))">
+    <div class="logo-badge" style="width:26px;height:26px;font-size:11px;">7S</div>
+    <div class="logo-name" style="font-size:14px;">Seven<span>Slots</span></div>
+  </div>
   <div class="sb-section" style="margin-top:4px;">Dashboard</div>
   <div class="sb-item on" onclick="goP('overview',this)">
     <span class="sb-ico">&#9671;</span> Overview
@@ -1134,10 +1139,12 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
     <span class="sb-ico">&#11014;</span> Upload
   </div>
   <div class="sb-sep"></div>
+  {% if current_user in ('costi','paul','catalin') %}
   <div class="sb-section">Sistem</div>
   <div class="sb-item" onclick="goP('activity',this)">
     <span class="sb-ico">&#128196;</span> Activity Log
   </div>
+  {% endif %}
   <div class="sb-sep"></div>
   <div class="sb-section">Actiuni</div>
   <div class="sb-item" onclick="goP('import',this)">
@@ -1633,6 +1640,8 @@ const PROG_PRESETS=[{label:'—',cas:'—',pro:'—'},{label:'Betano + Pragmatic
 const DONUT_COLORS=['#9333ea','#f5c518','#06b6d4','#10b981','#ef4444','#f59e0b','#8b5cf6','#22d3ee','#34d399','#fb7185'];
 
 let ALL_SESSIONS = {{ sessions | tojson }};
+const currentUser = '{{ current_user }}';
+const isAdmin = ['costi','paul','catalin'].includes(currentUser);
 let curMonth = new Date().getMonth();
 let curYear = new Date().getFullYear();
 let selStreamer = 'Seven';
@@ -1923,14 +1932,21 @@ function renderOverview() {
   const kg = document.getElementById('ov-kpi');
   const chartsEl = document.getElementById('ov-charts');
 
+  // Hide stats sections for non-admins
+  if(!isAdmin) {
+    kg.style.display = 'none';
+    chartsEl.style.display = 'none';
+    document.querySelectorAll('#pg-overview .sh, #pg-overview .graf-2col, #pg-overview .cmp-filters, #pg-overview .cmp-row, #pg-overview .breakdown-4, #pg-overview .chart-card').forEach(el=>el.style.display='none');
+  }
+
   if(!n && !nc) {
-    kg.innerHTML = kC('Sesiuni Luna','0','','kc-purple');
+    if(isAdmin) kg.innerHTML = kC('Sesiuni Luna','0','','kc-purple');
     chartsEl.style.display = 'none';
     document.getElementById('ov-table').innerHTML = '';
-    renderComparison();
+    if(isAdmin) renderComparison();
     return;
   }
-  chartsEl.style.display = 'grid';
+  if(isAdmin) chartsEl.style.display = 'grid';
 
   const tv = sess.reduce((a,s)=>a+(s.views||0),0);
   const pv = sess.filter(s=>s.peak_concurrent>0);
@@ -1941,41 +1957,43 @@ function renderOverview() {
   const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
   const mv = n ? Math.max(...sess.map(s=>s.views||0)) : 0;
 
-  kg.innerHTML =
-    kC('Live-uri',n,'luna curenta','kc-purple') +
-    kC('Total Views',fmt(tv),'live-uri','kc-gold') +
-    kC('Views Mediu',fmt(n?Math.round(tv/n):0),'per live','') +
-    kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
-    kC('Record Peak',fmt(mp),'max concurrent','kc-cyan') +
-    kC('Likes Mediu',fmt(al),'per live','') +
-    kC('Abonati Noi',fmt(ts),'total luna','kc-green');
+  if(isAdmin) {
+    kg.innerHTML =
+      kC('Live-uri',n,'luna curenta','kc-purple') +
+      kC('Total Views',fmt(tv),'live-uri','kc-gold') +
+      kC('Views Mediu',fmt(n?Math.round(tv/n):0),'per live','') +
+      kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
+      kC('Record Peak',fmt(mp),'max concurrent','kc-cyan') +
+      kC('Likes Mediu',fmt(al),'per live','') +
+      kC('Abonati Noi',fmt(ts),'total luna','kc-green');
 
-  // SVG line charts
-  setTimeout(() => {
-    svgLine('ov-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#a855f7', 'gOvV', 'ov-lbl-views', 160);
-    svgLine('ov-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), '#06b6d4', 'gOvP', 'ov-lbl-peak', 120);
-    svgLine('ov-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#f5c518', 'gOvL', 'ov-lbl-likes', 120);
-  }, 50);
+    // SVG line charts
+    setTimeout(() => {
+      svgLine('ov-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#a855f7', 'gOvV', 'ov-lbl-views', 160);
+      svgLine('ov-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), '#06b6d4', 'gOvP', 'ov-lbl-peak', 120);
+      svgLine('ov-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#f5c518', 'gOvL', 'ov-lbl-likes', 120);
+    }, 50);
 
-  // Donuts
-  const casDist = groupBy(sess, 'casino');
-  const provDist = groupBy(sess, 'provider');
-  donut('ov-donut-casino', 'ov-casino-legend', casDist, casDist.reduce((a,d)=>a+d.v,0)||n);
-  donut('ov-donut-prov', 'ov-prov-legend', provDist, provDist.reduce((a,d)=>a+d.v,0)||n);
-  avgBars('ov-casino-bars', groupAvg(sess,'casino','views'), 'var(--gold)');
-  avgBars('ov-prov-bars', groupAvg(sess,'provider','views'), 'var(--purple2)');
+    // Donuts
+    const casDist = groupBy(sess, 'casino');
+    const provDist = groupBy(sess, 'provider');
+    donut('ov-donut-casino', 'ov-casino-legend', casDist, casDist.reduce((a,d)=>a+d.v,0)||n);
+    donut('ov-donut-prov', 'ov-prov-legend', provDist, provDist.reduce((a,d)=>a+d.v,0)||n);
+    avgBars('ov-casino-bars', groupAvg(sess,'casino','views'), 'var(--gold)');
+    avgBars('ov-prov-bars', groupAvg(sess,'provider','views'), 'var(--purple2)');
 
-  // Top 5
-  topList('ov-top-views', [...sess].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5), s=>fmt(s.views));
-  topList('ov-top-peak', [...sess].filter(s=>s.peak_concurrent>0).sort((a,b)=>b.peak_concurrent-a.peak_concurrent).slice(0,5), s=>fmt(s.peak_concurrent));
-  topList('ov-top-likes', [...sess].filter(s=>s.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,5), s=>fmt(s.likes));
-  topList('ov-top-dur', [...sess].filter(s=>durToMin(s.duration)>0).sort((a,b)=>durToMin(b.duration)-durToMin(a.duration)).slice(0,5), s=>s.duration);
+    // Top 5
+    topList('ov-top-views', [...sess].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5), s=>fmt(s.views));
+    topList('ov-top-peak', [...sess].filter(s=>s.peak_concurrent>0).sort((a,b)=>b.peak_concurrent-a.peak_concurrent).slice(0,5), s=>fmt(s.peak_concurrent));
+    topList('ov-top-likes', [...sess].filter(s=>s.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,5), s=>fmt(s.likes));
+    topList('ov-top-dur', [...sess].filter(s=>durToMin(s.duration)>0).sort((a,b)=>durToMin(b.duration)-durToMin(a.duration)).slice(0,5), s=>s.duration);
 
-  // DOW
-  renderDOW('ov-chart-dow', 'ov-lbl-dow', sess, 'var(--purple2)');
+    // DOW
+    renderDOW('ov-chart-dow', 'ov-lbl-dow', sess, 'var(--purple2)');
 
-  // Comparison
-  renderComparison();
+    // Comparison
+    renderComparison();
+  }
 
   // Table
   const latest = [...sess].reverse();
@@ -2090,15 +2108,25 @@ async function renderStreamer(name) {
   const chartsEl = document.getElementById(prefix+'-charts');
   const footer = document.getElementById(prefix+'-footer');
 
-  if(!n) {
-    kg.innerHTML = kC('Sesiuni','0','','kc-purple');
+  // Hide stats for non-admin users
+  if(!isAdmin) {
+    kg.style.display = 'none';
     if(chartsEl) chartsEl.style.display = 'none';
+  }
+
+  if(!n) {
+    if(isAdmin) kg.innerHTML = kC('Sesiuni','0','','kc-purple');
+    if(chartsEl && !isAdmin) chartsEl.style.display = 'none';
+    else if(chartsEl) chartsEl.style.display = 'none';
     document.getElementById(prefix+'-table').innerHTML = '';
     renderStreamerCal(prefix, name, [], progData);
     if(footer) footer.innerHTML = renderStatsFooter(name, 0, 0, target);
     return;
   }
-  if(chartsEl) chartsEl.style.display = 'grid';
+  if(isAdmin) {
+    kg.style.display = '';
+    if(chartsEl) chartsEl.style.display = 'grid';
+  }
 
   const tv = sess.reduce((a,s)=>a+(s.views||0),0);
   const pv = sess.filter(s=>s.peak_concurrent>0);
@@ -2116,24 +2144,26 @@ async function renderStreamer(name) {
   const er = sess.filter(s=>s.views>0&&s.likes>0);
   const erPct = er.length ? ((er.reduce((a,s)=>a+(s.likes/s.views*100),0)/er.length)).toFixed(1)+'%' : '—';
 
-  kg.innerHTML =
-    kC('Sesiuni',n,'luna curenta', isS?'kc-gold':'kc-cyan') +
-    kC('&#9654; Total Views',fmt(tv),'cumulat', isS?'kc-gold':'kc-cyan') +
-    kC('Views Mediu',fmt(Math.round(tv/n)),'per live','') +
-    kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
-    kC('Record Peak',fmt(mp),'max','kc-cyan') +
-    kC('Likes Mediu',fmt(al),'per live','') +
-    kC('Unici Mediu',fmt(au),'per live','') +
-    kC('Engagement',erPct,'likes/views','') +
-    kC('Durata Medie',avgDur,'per live','') +
-    kC('Total Ore Live',totalDur,'cumulat','kc-purple') +
-    kC('Abonati Noi',fmt(ts),'total','kc-green');
+  if(isAdmin) {
+    kg.innerHTML =
+      kC('Sesiuni',n,'luna curenta', isS?'kc-gold':'kc-cyan') +
+      kC('&#9654; Total Views',fmt(tv),'cumulat', isS?'kc-gold':'kc-cyan') +
+      kC('Views Mediu',fmt(Math.round(tv/n)),'per live','') +
+      kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
+      kC('Record Peak',fmt(mp),'max','kc-cyan') +
+      kC('Likes Mediu',fmt(al),'per live','') +
+      kC('Unici Mediu',fmt(au),'per live','') +
+      kC('Engagement',erPct,'likes/views','') +
+      kC('Durata Medie',avgDur,'per live','') +
+      kC('Total Ore Live',totalDur,'cumulat','kc-purple') +
+      kC('Abonati Noi',fmt(ts),'total','kc-green');
 
-  setTimeout(() => {
-    svgLine(prefix+'-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), lineColor, 'g'+prefix+'V', prefix+'-lbl-views', 160);
-    svgLine(prefix+'-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), isS?'#ffd84d':'#22d3ee', 'g'+prefix+'P', prefix+'-lbl-peak', 120);
-    svgLine(prefix+'-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'g'+prefix+'L', prefix+'-lbl-likes', 120);
-  }, 50);
+    setTimeout(() => {
+      svgLine(prefix+'-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), lineColor, 'g'+prefix+'V', prefix+'-lbl-views', 160);
+      svgLine(prefix+'-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), isS?'#ffd84d':'#22d3ee', 'g'+prefix+'P', prefix+'-lbl-peak', 120);
+      svgLine(prefix+'-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'g'+prefix+'L', prefix+'-lbl-likes', 120);
+    }, 50);
+  }
 
   renderStreamerCal(prefix, name, sess, progData);
 
@@ -2175,12 +2205,12 @@ function renderStatsFooter(streamer, totalViews, totalMin, targets) {
         <span>&#127919; TARGET ORE LIVE &mdash; LUNA CURENTA</span>
         <div class="tw-inputs">
           <label>TARGET (ORE)</label>
-          <input type="number" id="ht-${sid}" value="${hTarget||''}" placeholder="0" style="width:70px;">
+          <input type="number" id="ht-${sid}" value="${hTarget||''}" placeholder="0" style="width:70px;" ${isAdmin?'':'disabled'}>
           <label>ZILE LUNA</label>
           <input type="number" value="${daysInMonth}" disabled style="width:50px;">
           <label>ZIUA</label>
           <input type="number" value="${curDay}" disabled style="width:50px;">
-          <button onclick="saveTarget('${streamer}','${sid}')">&#128190;</button>
+          ${isAdmin?`<button onclick="saveTarget('${streamer}','${sid}')">&#128190;</button>`:''}
         </div>
       </div>
       <div class="tw-stats">
@@ -2217,7 +2247,7 @@ function renderStatsFooter(streamer, totalViews, totalMin, targets) {
       <div class="sf-item">&#9654; <strong>Total Views:</strong> ${fmt(totalViews)}</div>
       <div class="sf-target">
         <span class="sf-item"><strong>Target Views:</strong></span>
-        <input type="number" id="vt-${sid}" value="${vTarget||''}" placeholder="Views" style="width:100px;">
+        <input type="number" id="vt-${sid}" value="${vTarget||''}" placeholder="Views" style="width:100px;" ${isAdmin?'':'disabled'}>
         ${vTarget > 0 ? `<span class="sf-item" style="margin-left:8px;"><strong>${vPct}%</strong></span>
           <div class="sf-bar"><div class="sf-bar-fill" style="width:${vPct}%;background:${vBarColor}"></div></div>` : ''}
       </div>

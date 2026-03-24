@@ -108,7 +108,7 @@ def startup():
         db.init_db()
         print("[STARTUP] DB initialized OK")
         # Ensure required user accounts exist
-        for uname in ("paul", "costi", "sevenslots"):
+        for uname in ("paul", "costi", "sevenslots", "catalin"):
             try:
                 db.create_user(uname, "Liv2026!")
                 print(f"[STARTUP] Created user '{uname}'")
@@ -213,6 +213,7 @@ async def index(request: Request):
             "sessions": sessions,
             "authenticated": authenticated,
             "channels": channels,
+            "current_user": _get_user(request),
         })
         resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return resp
@@ -574,16 +575,23 @@ async def api_get_targets(year: int, month: int):
 
 
 @app.get("/api/activity")
-async def api_activity(limit: int = 100):
+async def api_activity(request: Request, limit: int = 100):
+    if _get_user(request) not in ADMIN_USERS:
+        return JSONResponse({"error": "unauthorized"}, status_code=403)
     return db.get_activity_log(limit)
 
+
+ADMIN_USERS = {"costi", "paul", "catalin"}
 
 @app.post("/api/targets")
 async def api_set_target(request: Request, streamer: str = Form(...), year: int = Form(...),
                           month: int = Form(...), views_target: int = Form(0),
                           hours_target: int = Form(0)):
+    user = _get_user(request)
+    if user not in ADMIN_USERS:
+        return JSONResponse({"error": "unauthorized"}, status_code=403)
     db.set_target(streamer, year, month, views_target, hours_target)
-    db.log_activity(_get_user(request), "Target modificat", f"{streamer} — {month}/{year} — views:{views_target} ore:{hours_target}")
+    db.log_activity(user, "Target modificat", f"{streamer} — {month}/{year} — views:{views_target} ore:{hours_target}")
     return {"ok": True}
 
 
