@@ -1139,7 +1139,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
     <span class="sb-ico">&#11014;</span> Upload
   </div>
   <div class="sb-sep"></div>
-  {% if current_user in ('costi','paul','catalin') %}
+  {% if current_user == 'costi' or current_user == 'paul' or current_user == 'catalin' %}
   <div class="sb-section">Sistem</div>
   <div class="sb-item" onclick="goP('activity',this)">
     <span class="sb-ico">&#128196;</span> Activity Log
