@@ -8,11 +8,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, Resp
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from fastapi.staticfiles import StaticFiles
+
 import db
 import youtube_api as yt
 
 SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 app = FastAPI(title="SevenSlots Dashboard")
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
 # Simple token store (in-memory, survives within a single process)

@@ -96,6 +96,9 @@ header::after {
 .str-tab.on { background:var(--purple); border-color:var(--purple); color:#fff; box-shadow:0 0 14px var(--purple-glow); }
 .str-panel { display:none; }
 .str-panel.on { display:block; }
+.logo-img {
+  width:38px; height:38px; border-radius:50%; object-fit:cover;
+}
 .logo-badge {
   width:34px; height:34px; border-radius:50%;
   background: linear-gradient(135deg, var(--purple), var(--purple3));
@@ -1080,7 +1083,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 <header>
   <button class="hamburger" onclick="toggleMobileMenu()" id="hamburger-btn">&#9776;</button>
   <a class="logo" href="#" onclick="goP('overview',document.querySelector('.sb-item'));return false;" style="text-decoration:none;cursor:pointer;">
-    <div class="logo-badge">7S</div>
+    <img src="/static/logo.webp" alt="SevenSlots" class="logo-img">
     <div class="logo-name">Seven<span>Slots</span></div>
   </a>
   <div class="month-nav">
@@ -1103,10 +1106,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 4px;cursor:pointer;" onclick="goP('overview',document.querySelector('.sb-item'))">
-    <div class="logo-badge" style="width:26px;height:26px;font-size:11px;">7S</div>
-    <div class="logo-name" style="font-size:14px;">Seven<span>Slots</span></div>
-  </div>
   <div class="sb-section" style="margin-top:4px;">Dashboard</div>
   <div class="sb-item on" onclick="goP('overview',this)">
     <span class="sb-ico">&#9671;</span> Overview
