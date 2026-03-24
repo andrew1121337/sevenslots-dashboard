@@ -84,6 +84,18 @@ header::after {
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 .logo { display:flex; align-items:center; gap:10px; width: var(--sidebar-w); flex-shrink:0; text-decoration:none; }
 .logo:hover .logo-badge { box-shadow: 0 0 20px var(--purple-glow); }
+
+/* ─── STREAMER TABS ─── */
+.str-tabs { display:flex; gap:4px; margin-bottom:18px; }
+.str-tab {
+  padding:10px 24px; border-radius:10px; border:1px solid var(--border);
+  background:var(--bg2); color:var(--dim); font-family:'Space Grotesk',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer; transition:.18s var(--ease-out-expo);
+}
+.str-tab:hover { border-color:var(--border2); color:var(--text2); }
+.str-tab.on { background:var(--purple); border-color:var(--purple); color:#fff; box-shadow:0 0 14px var(--purple-glow); }
+.str-panel { display:none; }
+.str-panel.on { display:block; }
 .logo-badge {
   width:34px; height:34px; border-radius:50%;
   background: linear-gradient(135deg, var(--purple), var(--purple3));
@@ -1283,105 +1295,121 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 
   <!-- SEVEN -->
   <div class="page" id="pg-seven">
-    <div class="sh"><div class="dot"></div>Seven Slots &mdash; Statistici<div class="ln"></div></div>
-    <div class="krow" id="seven-kpi"></div>
-
-    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
-    <div class="graf-2col" id="seven-charts">
-      <div class="chart-card span2">
-        <div class="cc-head"><div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="seven-lbl-views"></div></div></div>
-        <div id="seven-line-views" style="width:100%;height:160px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head"><div><div class="cc-title">Peak Live</div><div class="cc-sub" id="seven-lbl-peak"></div></div></div>
-        <div id="seven-line-peak" style="width:100%;height:120px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="seven-lbl-likes"></div></div></div>
-        <div id="seven-line-likes" style="width:100%;height:120px;"></div>
-      </div>
+    <div class="str-tabs" id="seven-tabs"></div>
+    <!-- Panel: Target & Calendar -->
+    <div class="str-panel on" id="seven-panel-target">
+      <div class="sh"><div class="dot"></div>Seven Slots &mdash; Target & Calendar<div class="ln"></div></div>
+      <div id="seven-cal-view"></div>
+      <div class="stats-footer" id="seven-footer"></div>
     </div>
-
-    <div class="sh"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
-    <div id="seven-cal-view"></div>
-    <div class="stats-footer" id="seven-footer"></div>
-    <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
-    <div class="tw">
-      <table><thead><tr>
-        <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th><th>Unici</th><th>D.Medie</th>
-        <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-      </tr></thead><tbody id="seven-table"></tbody></table>
+    <!-- Panel: Statistici -->
+    <div class="str-panel" id="seven-panel-stats">
+      <div class="sh"><div class="dot"></div>Seven Slots &mdash; Statistici<div class="ln"></div></div>
+      <div class="krow" id="seven-kpi"></div>
+      <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+      <div class="graf-2col" id="seven-charts">
+        <div class="chart-card span2">
+          <div class="cc-head"><div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="seven-lbl-views"></div></div></div>
+          <div id="seven-line-views" style="width:100%;height:160px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head"><div><div class="cc-title">Peak Live</div><div class="cc-sub" id="seven-lbl-peak"></div></div></div>
+          <div id="seven-line-peak" style="width:100%;height:120px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="seven-lbl-likes"></div></div></div>
+          <div id="seven-line-likes" style="width:100%;height:120px;"></div>
+        </div>
+      </div>
+      <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th><th>Unici</th><th>D.Medie</th>
+          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+        </tr></thead><tbody id="seven-table"></tbody></table>
+      </div>
     </div>
   </div>
 
   <!-- EL PROFESOR -->
   <div class="page" id="pg-profesor">
-    <div class="sh"><div class="dot"></div>El Profesor &mdash; Statistici<div class="ln"></div></div>
-    <div class="krow" id="prof-kpi"></div>
-
-    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
-    <div class="graf-2col" id="prof-charts">
-      <div class="chart-card span2">
-        <div class="cc-head"><div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="prof-lbl-views"></div></div></div>
-        <div id="prof-line-views" style="width:100%;height:160px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head"><div><div class="cc-title">Peak Live</div><div class="cc-sub" id="prof-lbl-peak"></div></div></div>
-        <div id="prof-line-peak" style="width:100%;height:120px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="prof-lbl-likes"></div></div></div>
-        <div id="prof-line-likes" style="width:100%;height:120px;"></div>
-      </div>
+    <div class="str-tabs" id="prof-tabs"></div>
+    <!-- Panel: Target & Calendar -->
+    <div class="str-panel on" id="prof-panel-target">
+      <div class="sh"><div class="dot"></div>El Profesor &mdash; Target & Calendar<div class="ln"></div></div>
+      <div id="prof-cal-view"></div>
+      <div class="stats-footer" id="prof-footer"></div>
     </div>
-
-    <div class="sh"><div class="dot"></div>Sesiuni<div class="ln"></div></div>
-    <div id="prof-cal-view"></div>
-    <div class="stats-footer" id="prof-footer"></div>
-    <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
-    <div class="tw">
-      <table><thead><tr>
-        <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
-        <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-      </tr></thead><tbody id="prof-table"></tbody></table>
+    <!-- Panel: Statistici -->
+    <div class="str-panel" id="prof-panel-stats">
+      <div class="sh"><div class="dot"></div>El Profesor &mdash; Statistici<div class="ln"></div></div>
+      <div class="krow" id="prof-kpi"></div>
+      <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+      <div class="graf-2col" id="prof-charts">
+        <div class="chart-card span2">
+          <div class="cc-head"><div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="prof-lbl-views"></div></div></div>
+          <div id="prof-line-views" style="width:100%;height:160px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head"><div><div class="cc-title">Peak Live</div><div class="cc-sub" id="prof-lbl-peak"></div></div></div>
+          <div id="prof-line-peak" style="width:100%;height:120px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="prof-lbl-likes"></div></div></div>
+          <div id="prof-line-likes" style="width:100%;height:120px;"></div>
+        </div>
+      </div>
+      <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
+          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+        </tr></thead><tbody id="prof-table"></tbody></table>
+      </div>
     </div>
   </div>
 
   <!-- CATALIN -->
   <div class="page" id="pg-catalin">
-    <div class="sh"><div class="dot"></div>Catalin &mdash; Videos &amp; Shorts<div class="ln"></div></div>
-    <div class="krow" id="catalin-kpi"></div>
-
-    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
-    <div class="graf-2col" id="catalin-charts">
-      <div class="chart-card span2">
-        <div class="cc-head"><div><div class="cc-title">Views per Video</div><div class="cc-sub" id="catalin-lbl-views"></div></div></div>
-        <div id="catalin-line-views" style="width:100%;height:160px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="catalin-lbl-likes"></div></div></div>
-        <div id="catalin-line-likes" style="width:100%;height:120px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head"><div><div class="cc-title">Durata</div><div class="cc-sub" id="catalin-lbl-dur"></div></div></div>
-        <div id="catalin-line-dur" style="width:100%;height:120px;"></div>
-      </div>
+    <div class="str-tabs" id="catalin-tabs"></div>
+    <!-- Panel: Target & Calendar -->
+    <div class="str-panel on" id="catalin-panel-target">
+      <div class="sh"><div class="dot"></div>Catalin &mdash; Target & Calendar<div class="ln"></div></div>
+      <div id="catalin-cal-view"></div>
     </div>
-
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-      <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Videoclipuri<div class="ln"></div></div>
-      <div class="view-toggle">
-        <button class="vtb on" onclick="setStrView('catalin','cal',this)">Calendar</button>
-        <button class="vtb" onclick="setStrView('catalin','list',this)">Lista</button>
+    <!-- Panel: Statistici -->
+    <div class="str-panel" id="catalin-panel-stats">
+      <div class="sh"><div class="dot"></div>Catalin &mdash; Statistici<div class="ln"></div></div>
+      <div class="krow" id="catalin-kpi"></div>
+      <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
+      <div class="graf-2col" id="catalin-charts">
+        <div class="chart-card span2">
+          <div class="cc-head"><div><div class="cc-title">Views per Video</div><div class="cc-sub" id="catalin-lbl-views"></div></div></div>
+          <div id="catalin-line-views" style="width:100%;height:160px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="catalin-lbl-likes"></div></div></div>
+          <div id="catalin-line-likes" style="width:100%;height:120px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head"><div><div class="cc-title">Durata</div><div class="cc-sub" id="catalin-lbl-dur"></div></div></div>
+          <div id="catalin-line-dur" style="width:100%;height:120px;"></div>
+        </div>
       </div>
-    </div>
-    <div id="catalin-cal-view"></div>
-    <div id="catalin-list-view">
-      <div class="tw">
-        <table><thead><tr>
-          <th>Data</th><th>Titlu</th><th>Tip</th><th>Durata</th><th>Link</th><th>Views</th>
-          <th>Likes</th><th>Abo.</th><th></th>
-        </tr></thead><tbody id="catalin-table"></tbody></table>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Videoclipuri<div class="ln"></div></div>
+        <div class="view-toggle">
+          <button class="vtb on" onclick="setStrView('catalin','cal',this)">Calendar</button>
+          <button class="vtb" onclick="setStrView('catalin','list',this)">Lista</button>
+        </div>
+      </div>
+      <div id="catalin-list-view">
+        <div class="tw">
+          <table><thead><tr>
+            <th>Data</th><th>Titlu</th><th>Tip</th><th>Durata</th><th>Link</th><th>Views</th>
+            <th>Likes</th><th>Abo.</th><th></th>
+          </tr></thead><tbody id="catalin-table"></tbody></table>
+        </div>
       </div>
     </div>
   </div>
@@ -1642,6 +1670,36 @@ const DONUT_COLORS=['#9333ea','#f5c518','#06b6d4','#10b981','#ef4444','#f59e0b',
 let ALL_SESSIONS = {{ sessions | tojson }};
 const currentUser = '{{ current_user }}';
 const isAdmin = ['costi','paul','catalin'].includes(currentUser);
+
+// ── Streamer page tabs ──
+function initStreamerTabs() {
+  ['seven','prof','catalin'].forEach(prefix => {
+    const tabsEl = document.getElementById(prefix+'-tabs');
+    if(!tabsEl) return;
+    if(isAdmin) {
+      tabsEl.innerHTML = `
+        <button class="str-tab on" onclick="switchStrTab('${prefix}','target',this)">&#127919; Target & Calendar</button>
+        <button class="str-tab" onclick="switchStrTab('${prefix}','stats',this)">&#128202; Statistici</button>`;
+    } else {
+      tabsEl.innerHTML = '';
+      // Force target panel visible, hide stats
+      const tp = document.getElementById(prefix+'-panel-target');
+      const sp = document.getElementById(prefix+'-panel-stats');
+      if(tp) tp.classList.add('on');
+      if(sp) sp.classList.remove('on');
+    }
+  });
+}
+function switchStrTab(prefix, panel, btn) {
+  const page = btn.closest('.page');
+  page.querySelectorAll('.str-panel').forEach(p=>p.classList.remove('on'));
+  page.querySelectorAll('.str-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(prefix+'-panel-'+panel).classList.add('on');
+  btn.classList.add('on');
+  if(panel==='stats') refreshPage();
+}
+document.addEventListener('DOMContentLoaded', initStreamerTabs);
+
 let curMonth = new Date().getMonth();
 let curYear = new Date().getFullYear();
 let selStreamer = 'Seven';
@@ -2108,25 +2166,15 @@ async function renderStreamer(name) {
   const chartsEl = document.getElementById(prefix+'-charts');
   const footer = document.getElementById(prefix+'-footer');
 
-  // Hide stats for non-admin users
-  if(!isAdmin) {
-    kg.style.display = 'none';
-    if(chartsEl) chartsEl.style.display = 'none';
-  }
-
   if(!n) {
-    if(isAdmin) kg.innerHTML = kC('Sesiuni','0','','kc-purple');
-    if(chartsEl && !isAdmin) chartsEl.style.display = 'none';
-    else if(chartsEl) chartsEl.style.display = 'none';
+    kg.innerHTML = kC('Sesiuni','0','','kc-purple');
+    if(chartsEl) chartsEl.style.display = 'none';
     document.getElementById(prefix+'-table').innerHTML = '';
     renderStreamerCal(prefix, name, [], progData);
     if(footer) footer.innerHTML = renderStatsFooter(name, 0, 0, target);
     return;
   }
-  if(isAdmin) {
-    kg.style.display = '';
-    if(chartsEl) chartsEl.style.display = 'grid';
-  }
+  if(chartsEl) chartsEl.style.display = 'grid';
 
   const tv = sess.reduce((a,s)=>a+(s.views||0),0);
   const pv = sess.filter(s=>s.peak_concurrent>0);
@@ -2144,26 +2192,24 @@ async function renderStreamer(name) {
   const er = sess.filter(s=>s.views>0&&s.likes>0);
   const erPct = er.length ? ((er.reduce((a,s)=>a+(s.likes/s.views*100),0)/er.length)).toFixed(1)+'%' : '—';
 
-  if(isAdmin) {
-    kg.innerHTML =
-      kC('Sesiuni',n,'luna curenta', isS?'kc-gold':'kc-cyan') +
-      kC('&#9654; Total Views',fmt(tv),'cumulat', isS?'kc-gold':'kc-cyan') +
-      kC('Views Mediu',fmt(Math.round(tv/n)),'per live','') +
-      kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
-      kC('Record Peak',fmt(mp),'max','kc-cyan') +
-      kC('Likes Mediu',fmt(al),'per live','') +
-      kC('Unici Mediu',fmt(au),'per live','') +
-      kC('Engagement',erPct,'likes/views','') +
-      kC('Durata Medie',avgDur,'per live','') +
-      kC('Total Ore Live',totalDur,'cumulat','kc-purple') +
-      kC('Abonati Noi',fmt(ts),'total','kc-green');
+  kg.innerHTML =
+    kC('Sesiuni',n,'luna curenta', isS?'kc-gold':'kc-cyan') +
+    kC('&#9654; Total Views',fmt(tv),'cumulat', isS?'kc-gold':'kc-cyan') +
+    kC('Views Mediu',fmt(Math.round(tv/n)),'per live','') +
+    kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
+    kC('Record Peak',fmt(mp),'max','kc-cyan') +
+    kC('Likes Mediu',fmt(al),'per live','') +
+    kC('Unici Mediu',fmt(au),'per live','') +
+    kC('Engagement',erPct,'likes/views','') +
+    kC('Durata Medie',avgDur,'per live','') +
+    kC('Total Ore Live',totalDur,'cumulat','kc-purple') +
+    kC('Abonati Noi',fmt(ts),'total','kc-green');
 
-    setTimeout(() => {
-      svgLine(prefix+'-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), lineColor, 'g'+prefix+'V', prefix+'-lbl-views', 160);
-      svgLine(prefix+'-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), isS?'#ffd84d':'#22d3ee', 'g'+prefix+'P', prefix+'-lbl-peak', 120);
-      svgLine(prefix+'-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'g'+prefix+'L', prefix+'-lbl-likes', 120);
-    }, 50);
-  }
+  setTimeout(() => {
+    svgLine(prefix+'-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), lineColor, 'g'+prefix+'V', prefix+'-lbl-views', 160);
+    svgLine(prefix+'-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), isS?'#ffd84d':'#22d3ee', 'g'+prefix+'P', prefix+'-lbl-peak', 120);
+    svgLine(prefix+'-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#a855f7', 'g'+prefix+'L', prefix+'-lbl-likes', 120);
+  }, 50);
 
   renderStreamerCal(prefix, name, sess, progData);
 
