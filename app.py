@@ -197,6 +197,48 @@ def _import_seven_mar26():
         print(f"[STARTUP] Imported {count} Seven Mar 2026 sessions")
 
 
+def _import_prof_feb26():
+    """Import El Profesor February 2026 sessions (always replaces)."""
+    for s in db.get_sessions("El Profesor"):
+        if s["date"].startswith("2026-02"):
+            db.delete_session(s["id"])
+    ROWS = [
+        # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
+        ("2026-02-03","","https://kick.com/sevenslots/videos/9980273e-128a-4728-9e82-73005422f25e","2:30:00",0,0,"",0,0,0,0,0,"","",""),
+        ("2026-02-04","zYfvHTbUb7Y","https://www.youtube.com/watch?v=zYfvHTbUb7Y","2:20:00",1800,1300,"5:00:00",232,150,135,0,0,"","",""),
+        ("2026-02-05","Dr6G08l-glI","https://www.youtube.com/watch?v=Dr6G08l-glI","2:20:00",2800,1800,"5:11:00",234,159,172,0,0,"","",""),
+        ("2026-02-07","2UpNN27XfXk","https://www.youtube.com/watch?v=2UpNN27XfXk","3:34:00",10396,6100,"11:33:00",1565,933,865,0,0,"","",""),
+        ("2026-02-08","mMewXnbZV9E","https://www.youtube.com/watch?v=mMewXnbZV9E","3:06:00",11282,6900,"10:53:00",1589,1110,1089,0,0,"","",""),
+        ("2026-02-09","W1nHmMj6dzY","https://www.youtube.com/watch?v=W1nHmMj6dzY","2:40:00",2560,1900,"4:43:00",335,200,214,0,0,"","",""),
+        ("2026-02-10","KrKQT1cfYbk","https://youtube.com/live/KrKQT1cfYbk","2:10:00",3569,2300,"8:55:00",334,0,226,0,0,"","",""),
+        ("2026-02-12","mNiM50y4BJw","https://youtube.com/live/mNiM50y4BJw","2:12:00",6100,4300,"12:29:00",732,526,442,0,0,"","",""),
+        ("2026-02-14","","https://youtube.com/live/wKwHdkPcRig","3:01:00",8500,5400,"12:40:00",1088,712,754,0,0,"","",""),
+        ("2026-02-16","","https://youtube.com/live/utE2Rk42oag","2:24:00",0,2700,"6:19",359,232,262,0,0,"","",""),
+        ("2026-02-17","r7S5s6sLC0M","https://youtube.com/live/r7S5s6sLC0M","2:11:00",0,3000,"9:24:00",452,214,309,0,0,"","",""),
+        ("2026-02-19","","","5:00:00",0,0,"",0,0,0,0,0,"","",""),
+        ("2026-02-21","EcEyhfXOals","https://youtube.com/live/EcEyhfXOals","3:15:00",11000,7600,"12:20:00",1645,1053,1017,0,0,"","",""),
+        ("2026-02-23","Yet7SBQziEo","https://youtube.com/live/Yet7SBQziEo","2:19:00",5700,4000,"8:59:00",707,449,438,0,0,"","",""),
+        ("2026-02-24","HYGCfl2mzbA","https://youtube.com/live/HYGCfl2mzbA","2:36:00",4300,2700,"6:14:00",447,0,248,0,0,"","",""),
+        ("2026-02-25","","https://youtube.com/live/9JntKpBhsB4","4:00:00",15000,0,"",0,0,0,0,0,"","",""),
+        ("2026-02-26","","","2:37:00",0,0,"",0,0,0,0,0,"","",""),
+        ("2026-02-28","","","3:19:00",0,0,"",0,0,0,0,0,"","",""),
+    ]
+    # Delete any session with conflicting video_ids
+    vids = {r[1] for r in ROWS if r[1]}
+    for s in db.get_sessions():
+        if s.get("video_id") and s["video_id"] in vids:
+            db.delete_session(s["id"])
+    count = 0
+    for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
+        db.add_session({"streamer":"El Profesor","date":date,"title":title,"link":link,
+            "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
+            "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
+            "discord":disc,"casino":cas,"provider":prov,"video_id":vid,"note":""})
+        count += 1
+    if count:
+        print(f"[STARTUP] Imported {count} El Profesor Feb 2026 sessions")
+
+
 def _import_prof_mar26():
     """Import El Profesor March 2026 sessions (always replaces)."""
     for s in db.get_sessions("El Profesor"):
@@ -299,6 +341,7 @@ def startup():
         db.migrate_program_months()
         # One-time imports
         _import_prof_jan26()
+        _import_prof_feb26()
         _import_seven_feb26()
         _import_seven_mar26()
         _import_prof_mar26()
