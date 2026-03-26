@@ -140,6 +140,11 @@ def _import_seven_feb26():
         ("2026-02-27","ghIuuLBf5zI","https://www.youtube.com/watch?v=ghIuuLBf5zI","4:10:00",20600,11600,"17:37:00",2470,1775,1797,20300,0,"Betano","",""),
         ("2026-02-28","JVARun-vDds","https://www.youtube.com/watch?v=JVARun-vDds","3:00:00",15600,9200,"16:56:00",1227,1273,833,20350,0,"","",""),
     ]
+    # Delete any session with conflicting video_ids (from YouTube API imports)
+    vids = {r[1] for r in ROWS if r[1]}
+    for s in db.get_sessions():
+        if s.get("video_id") and s["video_id"] in vids:
+            db.delete_session(s["id"])
     count = 0
     for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
         db.add_session({"streamer":"Seven","date":date,"title":title,"link":link,
@@ -184,6 +189,11 @@ def _import_seven_mar26():
         ("2026-03-24","G-0kzeVNHsU","https://www.youtube.com/watch?v=G-0kzeVNHsU","5:05:00",20000,0,"",1567,0,0,22100,0,"Mrbit","",""),
         ("2026-03-25","pbaqk1KQQJE","https://www.youtube.com/live/pbaqk1KQQJE","3:35:21",17000,0,"",1383,0,0,22150,0,"Napoleon","",""),
     ]
+    # Delete any session with conflicting video_ids
+    vids = {r[1] for r in ROWS if r[1]}
+    for s in db.get_sessions():
+        if s.get("video_id") and s["video_id"] in vids:
+            db.delete_session(s["id"])
     count = 0
     for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
         db.add_session({"streamer":"Seven","date":date,"title":title,"link":link,
@@ -226,6 +236,11 @@ def _import_prof_mar26():
         ("2026-03-24","XgexN9mPWl8","https://youtube.com/live/XgexN9mPWl8","2:30:00",4000,2700,"10:47:00",350,0,250,0,0,"Unibet","",""),
         ("2026-03-25","","https://youtube.com/live/pbaqk1KQQJE","3:36:00",17000,7100,"",2392,0,1809,0,0,"","",""),
     ]
+    # Delete any session with conflicting video_ids
+    vids = {r[1] for r in ROWS if r[1]}
+    for s in db.get_sessions():
+        if s.get("video_id") and s["video_id"] in vids:
+            db.delete_session(s["id"])
     count = 0
     for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
         db.add_session({"streamer":"El Profesor","date":date,"title":title,"link":link,
