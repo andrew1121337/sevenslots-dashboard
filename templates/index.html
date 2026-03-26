@@ -1298,8 +1298,8 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
     <!-- Panel: Target & Calendar -->
     <div class="str-panel on" id="seven-panel-target">
       <div class="sh"><div class="dot"></div>Seven Slots &mdash; Target & Calendar<div class="ln"></div></div>
-      <div id="seven-cal-view"></div>
       <div class="stats-footer" id="seven-footer"></div>
+      <div id="seven-cal-view"></div>
     </div>
     <!-- Panel: Statistici -->
     <div class="str-panel" id="seven-panel-stats">
@@ -1336,8 +1336,8 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
     <!-- Panel: Target & Calendar -->
     <div class="str-panel on" id="prof-panel-target">
       <div class="sh"><div class="dot"></div>El Profesor &mdash; Target & Calendar<div class="ln"></div></div>
-      <div id="prof-cal-view"></div>
       <div class="stats-footer" id="prof-footer"></div>
+      <div id="prof-cal-view"></div>
     </div>
     <!-- Panel: Statistici -->
     <div class="str-panel" id="prof-panel-stats">
@@ -1702,7 +1702,7 @@ document.addEventListener('DOMContentLoaded', initStreamerTabs);
 let curMonth = new Date().getMonth();
 let curYear = new Date().getFullYear();
 let selStreamer = 'Seven';
-let curPage = 'overview';
+let curPage = localStorage.getItem('ss_page') || 'overview';
 let cmpMetric = 'views';
 let strView = { seven:'cal', prof:'cal', catalin:'cal', slots:'cal' };
 
@@ -1721,6 +1721,7 @@ function goP(id, el) {
   document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('on'));
   if(el) el.classList.add('on');
   curPage = id;
+  localStorage.setItem('ss_page', id);
   refreshPage();
   if(id==='add') document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
 }
@@ -3356,7 +3357,18 @@ const urlP=new URLSearchParams(window.location.search);
 if(urlP.get('msg')==='youtube_connected') setTimeout(()=>toast('YouTube conectat!','ok'),500);
 
 // ── Init ──
-renderOverview();
+if(curPage !== 'overview') {
+  const pgEl = document.getElementById('pg-'+curPage);
+  if(pgEl) {
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    pgEl.classList.add('on');
+    document.querySelectorAll('.sb-item').forEach(s=>{
+      s.classList.remove('on');
+      if(s.getAttribute('onclick')&&s.getAttribute('onclick').includes("'"+curPage+"'")) s.classList.add('on');
+    });
+  } else { curPage='overview'; }
+}
+refreshPage();
 loadChannels();
 </script>
 </body>
