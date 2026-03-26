@@ -153,9 +153,12 @@ def _import_seven_feb26():
 def _import_seven_mar26():
     """One-time import of Seven March 2026 sessions."""
     all_sess = db.get_sessions("Seven")
-    mar_dates = [s["date"] for s in all_sess if s["date"].startswith("2026-03")]
-    if len(mar_dates) >= 10:
+    mar_sess = [s for s in all_sess if s["date"].startswith("2026-03")]
+    if len(mar_sess) >= 21:
         return  # Already imported
+    # Delete existing Mar sessions (fix peak/likes column swap)
+    for s in mar_sess:
+        db.delete_session(s["id"])
     ROWS = [
         # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
         ("2026-03-01","oYcP0O9Znr8","https://www.youtube.com/watch?v=oYcP0O9Znr8","4:41:30",27900,15800,"18:17:00",3526,2362,2523,20500,0,"","",""),
@@ -170,20 +173,18 @@ def _import_seven_mar26():
         ("2026-03-12","TG2ZxsiJIUE","https://www.youtube.com/watch?v=TG2ZxsiJIUE","6:03:00",23500,12500,"17:33:00",2522,2481,1807,21200,0,"Maxbet","",""),
         ("2026-03-13","BOw8BuehSrg","https://www.youtube.com/watch?v=BOw8BuehSrg","4:27:00",21000,11800,"19:30:00",2323,1360,1728,21200,0,"Win2","",""),
         ("2026-03-16","el5fkCD78SU","https://www.youtube.com/watch?v=el5fkCD78SU","5:13:00",20000,0,"31:42:00",2459,1700,1888,21200,0,"Gets","",""),
-        ("2026-03-17","dPhirpKxYgI","https://www.youtube.com/watch?v=dPhirpKxYgI","4:35:00",22900,0,"",0,1562,0,21400,0,"Maxbet","",""),
-        ("2026-03-18","OlHsGlIYOm4","https://www.youtube.com/live/OlHsGlIYOm4","3:50:00",18500,0,"",0,1120,0,21500,0,"Joker","",""),
-        ("2026-03-19","8QJ6PDLfwkI","https://www.youtube.com/live/8QJ6PDLfwkI","3:08:00",17500,0,"",0,1355,0,21500,0,"Superbet&Napoleon","",""),
-        ("2026-03-20","DUBAjhzhyN4","https://www.youtube.com/live/DUBAjhzhyN4","5:04:00",25900,0,"",0,1468,0,21800,0,"MrBit","",""),
-        ("2026-03-21","","","3:04:30",31000,0,"",0,2608,0,0,0,"","",""),
-        ("2026-03-22","EQXG8tTChwg","https://www.youtube.com/live/EQXG8tTChwg","4:11:00",27000,0,"",0,2269,0,21900,0,"Netbet","",""),
-        ("2026-03-23","0DrWi-uPz4w","https://www.youtube.com/live/0DrWi-uPz4w","3:58:00",25700,0,"",0,1819,0,21900,0,"Betano","",""),
-        ("2026-03-24","G-0kzeVNHsU","https://www.youtube.com/watch?v=G-0kzeVNHsU","5:05:00",20000,0,"",0,1567,0,22100,0,"Mrbit","",""),
-        ("2026-03-25","pbaqk1KQQJE","https://www.youtube.com/live/pbaqk1KQQJE","3:35:21",17000,0,"",0,1383,0,22150,0,"Napoleon","",""),
+        ("2026-03-17","dPhirpKxYgI","https://www.youtube.com/watch?v=dPhirpKxYgI","4:35:00",22900,0,"",1562,0,0,21400,0,"Maxbet","",""),
+        ("2026-03-18","OlHsGlIYOm4","https://www.youtube.com/live/OlHsGlIYOm4","3:50:00",18500,0,"",1120,0,0,21500,0,"Joker","",""),
+        ("2026-03-19","8QJ6PDLfwkI","https://www.youtube.com/live/8QJ6PDLfwkI","3:08:00",17500,0,"",1355,0,0,21500,0,"Superbet&Napoleon","",""),
+        ("2026-03-20","DUBAjhzhyN4","https://www.youtube.com/live/DUBAjhzhyN4","5:04:00",25900,0,"",1468,0,0,21800,0,"MrBit","",""),
+        ("2026-03-21","","","3:04:30",31000,0,"",2608,0,0,0,0,"","",""),
+        ("2026-03-22","EQXG8tTChwg","https://www.youtube.com/live/EQXG8tTChwg","4:11:00",27000,0,"",2269,0,0,21900,0,"Netbet","",""),
+        ("2026-03-23","0DrWi-uPz4w","https://www.youtube.com/live/0DrWi-uPz4w","3:58:00",25700,0,"",1819,0,0,21900,0,"Betano","",""),
+        ("2026-03-24","G-0kzeVNHsU","https://www.youtube.com/watch?v=G-0kzeVNHsU","5:05:00",20000,0,"",1567,0,0,22100,0,"Mrbit","",""),
+        ("2026-03-25","pbaqk1KQQJE","https://www.youtube.com/live/pbaqk1KQQJE","3:35:21",17000,0,"",1383,0,0,22150,0,"Napoleon","",""),
     ]
     count = 0
     for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
-        if vid and db.session_exists_by_video_id(vid):
-            continue
         db.add_session({"streamer":"Seven","date":date,"title":title,"link":link,
             "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
             "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
@@ -196,9 +197,12 @@ def _import_seven_mar26():
 def _import_prof_mar26():
     """One-time import of El Profesor March 2026 sessions."""
     all_sess = db.get_sessions("El Profesor")
-    mar_dates = [s["date"] for s in all_sess if s["date"].startswith("2026-03")]
-    if len(mar_dates) >= 10:
+    mar_sess = [s for s in all_sess if s["date"].startswith("2026-03")]
+    if len(mar_sess) >= 19:
         return  # Already imported
+    # Delete existing Mar sessions (may have partial YouTube API imports)
+    for s in mar_sess:
+        db.delete_session(s["id"])
     ROWS = [
         # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
         ("2026-03-01","mJHDtoKIc9Q","https://youtube.com/live/mJHDtoKIc9Q","3:18:00",9000,5400,"12:43:00",1229,670,699,0,0,"","",""),
@@ -223,8 +227,6 @@ def _import_prof_mar26():
     ]
     count = 0
     for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
-        if vid and db.session_exists_by_video_id(vid):
-            continue
         db.add_session({"streamer":"El Profesor","date":date,"title":title,"link":link,
             "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
             "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
