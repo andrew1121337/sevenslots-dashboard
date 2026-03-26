@@ -106,14 +106,10 @@ def _import_prof_jan26():
 
 
 def _import_seven_feb26():
-    """One-time import of Seven February 2026 sessions."""
-    all_sess = db.get_sessions("Seven")
-    feb_sess = [s for s in all_sess if s["date"].startswith("2026-02")]
-    if len(feb_sess) >= 23:
-        return  # Already imported
-    # Delete existing Feb sessions (may have partial YouTube API imports)
-    for s in feb_sess:
-        db.delete_session(s["id"])
+    """Import Seven February 2026 sessions (always replaces)."""
+    for s in db.get_sessions("Seven"):
+        if s["date"].startswith("2026-02"):
+            db.delete_session(s["id"])
     ROWS = [
         # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
         ("2026-02-01","1LLjnXHFTwU","https://www.youtube.com/live/1LLjnXHFTwU","3:30:00",8006,4000,"14:54:00",1222,810,826,19250,0,"Betano","",""),
@@ -157,14 +153,10 @@ def _import_seven_feb26():
 
 
 def _import_seven_mar26():
-    """One-time import of Seven March 2026 sessions."""
-    all_sess = db.get_sessions("Seven")
-    mar_sess = [s for s in all_sess if s["date"].startswith("2026-03")]
-    if len(mar_sess) >= 21:
-        return  # Already imported
-    # Delete existing Mar sessions (fix peak/likes column swap)
-    for s in mar_sess:
-        db.delete_session(s["id"])
+    """Import Seven March 2026 sessions (always replaces)."""
+    for s in db.get_sessions("Seven"):
+        if s["date"].startswith("2026-03"):
+            db.delete_session(s["id"])
     ROWS = [
         # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
         ("2026-03-01","oYcP0O9Znr8","https://www.youtube.com/watch?v=oYcP0O9Znr8","4:41:30",27900,15800,"18:17:00",3526,2362,2523,20500,0,"","",""),
@@ -206,14 +198,10 @@ def _import_seven_mar26():
 
 
 def _import_prof_mar26():
-    """One-time import of El Profesor March 2026 sessions."""
-    all_sess = db.get_sessions("El Profesor")
-    mar_sess = [s for s in all_sess if s["date"].startswith("2026-03")]
-    if len(mar_sess) >= 19:
-        return  # Already imported
-    # Delete existing Mar sessions (may have partial YouTube API imports)
-    for s in mar_sess:
-        db.delete_session(s["id"])
+    """Import El Profesor March 2026 sessions (always replaces)."""
+    for s in db.get_sessions("El Profesor"):
+        if s["date"].startswith("2026-03"):
+            db.delete_session(s["id"])
     ROWS = [
         # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
         ("2026-03-01","mJHDtoKIc9Q","https://youtube.com/live/mJHDtoKIc9Q","3:18:00",9000,5400,"12:43:00",1229,670,699,0,0,"","",""),
