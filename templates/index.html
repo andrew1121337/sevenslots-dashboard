@@ -2213,8 +2213,7 @@ async function renderStreamer(name) {
 
   renderStreamerCal(prefix, name, sess, progData);
 
-  const rows = [...sess].reverse();
-  document.getElementById(prefix+'-table').innerHTML = rows.map(s=>sessRow(s,false)).join('');
+  document.getElementById(prefix+'-table').innerHTML = sess.map(s=>sessRow(s,false)).join('');
 
   // Footer with total views, total hours, target
   if(footer) footer.innerHTML = renderStatsFooter(name, tv, totalMin, target);
