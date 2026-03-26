@@ -105,6 +105,49 @@ def _import_prof_jan26():
         print(f"[STARTUP] Imported {count} El Profesor Jan 2026 sessions")
 
 
+def _import_seven_mar26():
+    """One-time import of Seven March 2026 sessions."""
+    all_sess = db.get_sessions("Seven")
+    mar_dates = [s["date"] for s in all_sess if s["date"].startswith("2026-03")]
+    if len(mar_dates) >= 10:
+        return  # Already imported
+    ROWS = [
+        # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
+        ("2026-03-01","oYcP0O9Znr8","https://www.youtube.com/watch?v=oYcP0O9Znr8","4:41:30",27900,15800,"18:17:00",3526,2362,2523,20500,0,"","",""),
+        ("2026-03-02","25veVpoZM_I","https://www.youtube.com/watch?v=25veVpoZM_I","7:20:00",27000,13800,"22:06:00",3038,2299,2009,20500,0,"MrBit","",""),
+        ("2026-03-03","lh44lNU7iVU","https://www.youtube.com/watch?v=lh44lNU7iVU","3:50:00",22600,13000,"14:46:00",2748,1638,1971,20500,0,"Winboss","",""),
+        ("2026-03-04","Wg8NCbVYjLE","https://www.youtube.com/watch?v=Wg8NCbVYjLE","3:31:00",21500,12700,"12:44:00",2655,1673,1905,20500,0,"Netbet","",""),
+        ("2026-03-05","AQ7H-ZfUaT8","https://www.youtube.com/watch?v=AQ7H-ZfUaT8","4:00:00",35300,18900,"14:12:00",3903,3212,2650,21100,0,"Superbet","",""),
+        ("2026-03-06","rvlAIY5Olw4","https://www.youtube.com/watch?v=rvlAIY5Olw4","3:42:00",19500,11000,"14:00:00",1786,1200,1319,21100,0,"Win2","",""),
+        ("2026-03-09","orFYHxxgNQQ","https://www.youtube.com/watch?v=orFYHxxgNQQ","4:50:00",22000,12900,"19:59:00",2730,1800,2088,21150,0,"Conti","",""),
+        ("2026-03-10","DKgt1bsyqg4","https://www.youtube.com/watch?v=DKgt1bsyqg4","4:00:00",21000,12200,"12:19:00",2036,1253,1447,21200,0,"Winboss","",""),
+        ("2026-03-11","hkLlpmmp1Io","https://www.youtube.com/watch?v=hkLlpmmp1Io","3:36:00",10000,5700,"15:54:00",1294,640,934,21200,0,"Win2","",""),
+        ("2026-03-12","TG2ZxsiJIUE","https://www.youtube.com/watch?v=TG2ZxsiJIUE","6:03:00",23500,12500,"17:33:00",2522,2481,1807,21200,0,"Maxbet","",""),
+        ("2026-03-13","BOw8BuehSrg","https://www.youtube.com/watch?v=BOw8BuehSrg","4:27:00",21000,11800,"19:30:00",2323,1360,1728,21200,0,"Win2","",""),
+        ("2026-03-16","el5fkCD78SU","https://www.youtube.com/watch?v=el5fkCD78SU","5:13:00",20000,0,"31:42:00",2459,1700,1888,21200,0,"Gets","",""),
+        ("2026-03-17","dPhirpKxYgI","https://www.youtube.com/watch?v=dPhirpKxYgI","4:35:00",22900,0,"",0,1562,0,21400,0,"Maxbet","",""),
+        ("2026-03-18","OlHsGlIYOm4","https://www.youtube.com/live/OlHsGlIYOm4","3:50:00",18500,0,"",0,1120,0,21500,0,"Joker","",""),
+        ("2026-03-19","8QJ6PDLfwkI","https://www.youtube.com/live/8QJ6PDLfwkI","3:08:00",17500,0,"",0,1355,0,21500,0,"Superbet&Napoleon","",""),
+        ("2026-03-20","DUBAjhzhyN4","https://www.youtube.com/live/DUBAjhzhyN4","5:04:00",25900,0,"",0,1468,0,21800,0,"MrBit","",""),
+        ("2026-03-21","","","3:04:30",31000,0,"",0,2608,0,0,0,"","",""),
+        ("2026-03-22","EQXG8tTChwg","https://www.youtube.com/live/EQXG8tTChwg","4:11:00",27000,0,"",0,2269,0,21900,0,"Netbet","",""),
+        ("2026-03-23","0DrWi-uPz4w","https://www.youtube.com/live/0DrWi-uPz4w","3:58:00",25700,0,"",0,1819,0,21900,0,"Betano","",""),
+        ("2026-03-24","G-0kzeVNHsU","https://www.youtube.com/watch?v=G-0kzeVNHsU","5:05:00",20000,0,"",0,1567,0,22100,0,"Mrbit","",""),
+        ("2026-03-25","pbaqk1KQQJE","https://www.youtube.com/live/pbaqk1KQQJE","3:35:21",17000,0,"",0,1383,0,22150,0,"Napoleon","",""),
+    ]
+    count = 0
+    for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
+        if vid and db.session_exists_by_video_id(vid):
+            continue
+        db.add_session({"streamer":"Seven","date":date,"title":title,"link":link,
+            "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
+            "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
+            "discord":disc,"casino":cas,"provider":prov,"video_id":vid,"note":""})
+        count += 1
+    if count:
+        print(f"[STARTUP] Imported {count} Seven Mar 2026 sessions")
+
+
 @app.on_event("startup")
 def startup():
     try:
@@ -162,8 +205,9 @@ def startup():
             print(f"[STARTUP] Seeded {len(_PSF)} paysafes")
         # One-time fix: migrate program data from 0-indexed to 1-indexed months
         db.migrate_program_months()
-        # One-time import: El Profesor January 2026
+        # One-time imports
         _import_prof_jan26()
+        _import_seven_mar26()
         # Set default targets if not already set
         t = db.get_all_targets(2026, 3)
         if "El Profesor" not in t or not t["El Profesor"].get("hours"):
