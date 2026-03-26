@@ -1260,7 +1260,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
     <div class="sh"><div class="dot"></div>Toate Sesiunile<div class="ln"></div></div>
     <div class="tw">
       <table><thead><tr>
-        <th>Data</th><th>Streamer</th><th>Titlu</th><th>Link</th><th>Views</th><th>Peak</th><th>Unici</th><th>D.Medie</th><th>Likes</th>
+        <th>Data</th><th>Streamer</th><th>Titlu</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th><th>Peak</th><th>Likes</th>
       </tr></thead><tbody id="ov-table"></tbody></table>
     </div>
   </div>
@@ -1969,9 +1969,9 @@ function sessRow(s, showStreamer) {
     ${showStreamer ? '' : `<td>${s.duration||'—'}</td>`}
     <td>${s.link?`<a class="lnk" href="${s.link}" target="_blank">Watch</a>`:'—'}</td>
     <td class="pos">${fmt(s.views)}</td>
-    <td class="hi">${fmt(s.peak_concurrent)||'—'}</td>
     <td>${fmt(s.unique_viewers)||'—'}</td>
     <td>${s.avg_duration||'—'}</td>
+    <td class="hi">${fmt(s.peak_concurrent)||'—'}</td>
     <td>${fmt(s.likes)||'—'}</td>
     ${showStreamer ? '' : `<td>${fmt(s.avg_viewers)||'—'}</td><td>${s.new_subs||'—'}</td><td class="gld">${s.casino||'—'}</td><td style="color:var(--dim);font-size:10px;">${s.provider||'—'}</td><td><button class="delbtn" onclick="delS(${s.id})">&#10005;</button></td>`}
   </tr>`;
