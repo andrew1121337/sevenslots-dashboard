@@ -434,6 +434,26 @@ def get_sessions(streamer: str = None) -> list[dict]:
         return [dict(r) for r in rows]
 
 
+def update_session(sid: int, data: dict):
+    cols = ["date","title","link","duration","views","unique_viewers",
+            "avg_duration","peak_concurrent","likes","avg_viewers","new_subs",
+            "discord","casino","provider"]
+    if DATABASE_URL:
+        conn = get_conn()
+        sets = ", ".join(f"{c} = :{c}" for c in cols)
+        params = {c: data.get(c, "") for c in cols}
+        params["id"] = sid
+        _pg_run(conn, f"UPDATE sessions SET {sets} WHERE id = :id", params)
+        conn.close()
+    else:
+        conn = get_conn()
+        sets = ", ".join(f"{c} = ?" for c in cols)
+        vals = [data.get(c, "") for c in cols] + [sid]
+        conn.execute(f"UPDATE sessions SET {sets} WHERE id = ?", vals)
+        conn.commit()
+        conn.close()
+
+
 def delete_session(sid: int):
     if DATABASE_URL:
         conn = get_conn()

@@ -398,6 +398,8 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 .bdg-p { background:rgba(6,182,212,.1); color:var(--cyan); border:1px solid rgba(6,182,212,.22); }
 .lnk { color:var(--purple2); text-decoration:none; font-size:11px; font-family:'Space Grotesk',sans-serif; font-weight:700; }
 .lnk:hover { color:var(--cyan2); }
+.editbtn { color:var(--dim2); cursor:pointer; transition:.15s var(--ease-out-expo); font-size:13px; background:none; border:none; margin-right:4px; }
+.editbtn:hover { color:var(--purple2); }
 .delbtn { color:var(--dim2); cursor:pointer; transition:.15s var(--ease-out-expo); font-size:12px; background:none; border:none; }
 .delbtn:hover { color:var(--red); }
 .ndb { text-align:center; padding:50px 20px; color:var(--dim); }
@@ -1300,6 +1302,13 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
       <div class="sh"><div class="dot"></div>Seven Slots &mdash; Target & Calendar<div class="ln"></div></div>
       <div class="stats-footer" id="seven-footer"></div>
       <div id="seven-cal-view"></div>
+      <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th><th>Unici</th><th>D.Medie</th>
+          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+        </tr></thead><tbody id="seven-table"></tbody></table>
+      </div>
     </div>
     <!-- Panel: Statistici -->
     <div class="str-panel" id="seven-panel-stats">
@@ -1320,13 +1329,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
           <div id="seven-line-likes" style="width:100%;height:120px;"></div>
         </div>
       </div>
-      <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
-      <div class="tw">
-        <table><thead><tr>
-          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>&#9654; Views</th><th>Unici</th><th>D.Medie</th>
-          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-        </tr></thead><tbody id="seven-table"></tbody></table>
-      </div>
     </div>
   </div>
 
@@ -1338,6 +1340,13 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
       <div class="sh"><div class="dot"></div>El Profesor &mdash; Target & Calendar<div class="ln"></div></div>
       <div class="stats-footer" id="prof-footer"></div>
       <div id="prof-cal-view"></div>
+      <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
+          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
+        </tr></thead><tbody id="prof-table"></tbody></table>
+      </div>
     </div>
     <!-- Panel: Statistici -->
     <div class="str-panel" id="prof-panel-stats">
@@ -1358,13 +1367,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
           <div id="prof-line-likes" style="width:100%;height:120px;"></div>
         </div>
       </div>
-      <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
-      <div class="tw">
-        <table><thead><tr>
-          <th>Data</th><th>Titlu</th><th>Durata</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th>
-          <th>Peak</th><th>Likes</th><th>Medie</th><th>Abo.</th><th>Cazino</th><th>Provider</th><th></th>
-        </tr></thead><tbody id="prof-table"></tbody></table>
-      </div>
     </div>
   </div>
 
@@ -1375,6 +1377,13 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
     <div class="str-panel on" id="catalin-panel-target">
       <div class="sh"><div class="dot"></div>Catalin &mdash; Target & Calendar<div class="ln"></div></div>
       <div id="catalin-cal-view"></div>
+      <div class="sh" style="margin-top:20px;"><div class="dot"></div>Lista Sesiuni<div class="ln"></div></div>
+      <div class="tw">
+        <table><thead><tr>
+          <th>Data</th><th>Titlu</th><th>Tip</th><th>Durata</th><th>Link</th><th>Views</th>
+          <th>Likes</th><th>Abo.</th><th></th>
+        </tr></thead><tbody id="catalin-table"></tbody></table>
+      </div>
     </div>
     <!-- Panel: Statistici -->
     <div class="str-panel" id="catalin-panel-stats">
@@ -1393,21 +1402,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
         <div class="chart-card">
           <div class="cc-head"><div><div class="cc-title">Durata</div><div class="cc-sub" id="catalin-lbl-dur"></div></div></div>
           <div id="catalin-line-dur" style="width:100%;height:120px;"></div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-        <div class="sh" style="margin-bottom:0;flex:1;"><div class="dot"></div>Videoclipuri<div class="ln"></div></div>
-        <div class="view-toggle">
-          <button class="vtb on" onclick="setStrView('catalin','cal',this)">Calendar</button>
-          <button class="vtb" onclick="setStrView('catalin','list',this)">Lista</button>
-        </div>
-      </div>
-      <div id="catalin-list-view">
-        <div class="tw">
-          <table><thead><tr>
-            <th>Data</th><th>Titlu</th><th>Tip</th><th>Durata</th><th>Link</th><th>Views</th>
-            <th>Likes</th><th>Abo.</th><th></th>
-          </tr></thead><tbody id="catalin-table"></tbody></table>
         </div>
       </div>
     </div>
@@ -1973,7 +1967,7 @@ function sessRow(s, showStreamer) {
     <td>${s.avg_duration||'—'}</td>
     <td class="hi">${s.peak_concurrent ? fmt(s.peak_concurrent) : '—'}</td>
     <td>${s.likes ? fmt(s.likes) : '—'}</td>
-    ${showStreamer ? '' : `<td>${fmt(s.avg_viewers)||'—'}</td><td>${s.new_subs||'—'}</td><td class="gld">${s.casino||'—'}</td><td style="color:var(--dim);font-size:10px;">${s.provider||'—'}</td><td><button class="delbtn" onclick="delS(${s.id})">&#10005;</button></td>`}
+    ${showStreamer ? '' : `<td>${fmt(s.avg_viewers)||'—'}</td><td>${s.new_subs||'—'}</td><td class="gld">${s.casino||'—'}</td><td style="color:var(--dim);font-size:10px;">${s.provider||'—'}</td><td style="white-space:nowrap;"><button class="editbtn" onclick="openEditS(${s.id})" title="Edit">&#9998;</button><button class="delbtn" onclick="delS(${s.id})">&#10005;</button></td>`}
   </tr>`;
 }
 
@@ -2447,7 +2441,7 @@ async function renderCatalin() {
       <td><span style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;${isShort?'background:rgba(249,115,22,.15);color:var(--orange);':'background:rgba(147,51,234,.15);color:var(--purple2);'}">${isShort?'Short':'Video'}</span></td>
       <td>${s.duration||''}</td><td>${link}</td><td>${fmt(s.views)}</td>
       <td>${fmt(s.likes)}</td><td>${fmt(s.new_subs)}</td>
-      <td><button onclick="delS(${s.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">&#128465;</button></td>
+      <td style="white-space:nowrap;"><button class="editbtn" onclick="openEditS(${s.id})" title="Edit">&#9998;</button><button onclick="delS(${s.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">&#128465;</button></td>
     </tr>`;
   }).join('');
 }
@@ -3369,6 +3363,66 @@ if(curPage !== 'overview') {
 }
 refreshPage();
 loadChannels();
+</script>
+
+<!-- Edit Session Modal -->
+<div id="edit-sess-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;justify-content:center;align-items:center;" onclick="if(event.target===this)closeEditS();">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:420px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font-weight:700;font-size:14px;color:var(--text);">Edit Sesiune</span>
+      <button onclick="closeEditS()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;">&times;</button>
+    </div>
+    <input type="hidden" id="es-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <label style="font-size:11px;color:var(--dim);">Data<input id="es-date" class="fi" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Titlu<input id="es-title" class="fi" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Durata<input id="es-duration" class="fi" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Link<input id="es-link" class="fi" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Views<input id="es-views" class="fi" type="number" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Unici<input id="es-unique_viewers" class="fi" type="number" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">D. Medie<input id="es-avg_duration" class="fi" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Peak<input id="es-peak_concurrent" class="fi" type="number" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Likes<input id="es-likes" class="fi" type="number" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Medie<input id="es-avg_viewers" class="fi" type="number" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Abonati noi<input id="es-new_subs" class="fi" type="number" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Discord<input id="es-discord" class="fi" type="number" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Cazino<input id="es-casino" class="fi" style="width:100%;margin-top:2px;"></label>
+      <label style="font-size:11px;color:var(--dim);">Provider<input id="es-provider" class="fi" style="width:100%;margin-top:2px;"></label>
+    </div>
+    <button onclick="saveEditS()" style="margin-top:16px;width:100%;padding:10px;border:none;border-radius:10px;background:var(--purple);color:#fff;font-weight:700;cursor:pointer;">Salveaza</button>
+  </div>
+</div>
+
+<script>
+function openEditS(id) {
+  const s = ALL_SESSIONS.find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('es-id').value = id;
+  ['date','title','duration','link','views','unique_viewers','avg_duration','peak_concurrent','likes','avg_viewers','new_subs','discord','casino','provider'].forEach(f=>{
+    document.getElementById('es-'+f).value = s[f]||'';
+  });
+  const ov = document.getElementById('edit-sess-overlay');
+  ov.style.display = 'flex';
+}
+function closeEditS() {
+  document.getElementById('edit-sess-overlay').style.display = 'none';
+}
+async function saveEditS() {
+  const id = document.getElementById('es-id').value;
+  const data = {};
+  ['date','title','duration','link','avg_duration','casino','provider'].forEach(f=>{
+    data[f] = document.getElementById('es-'+f).value;
+  });
+  ['views','unique_viewers','peak_concurrent','likes','avg_viewers','new_subs','discord'].forEach(f=>{
+    data[f] = parseInt(document.getElementById('es-'+f).value)||0;
+  });
+  await fetch(`/api/sessions/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const s = ALL_SESSIONS.find(x=>x.id==id);
+  if(s) Object.assign(s, data);
+  closeEditS();
+  refreshPage();
+  toast('Sesiune actualizata');
+}
 </script>
 </body>
 </html>

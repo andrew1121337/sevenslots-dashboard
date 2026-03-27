@@ -597,6 +597,14 @@ async def api_add_session(
     return RedirectResponse("/?tab=stats", status_code=303)
 
 
+@app.put("/api/sessions/{sid}")
+async def api_update_session(request: Request, sid: int):
+    data = await request.json()
+    db.update_session(sid, data)
+    db.log_activity(_get_user(request), "Sesiune editata", f"ID #{sid} — {data.get('date','')} {data.get('title','')}")
+    return {"ok": True}
+
+
 @app.delete("/api/sessions/{sid}")
 async def api_delete_session(request: Request, sid: int):
     db.log_activity(_get_user(request), "Sesiune stearsa", f"ID #{sid}")
