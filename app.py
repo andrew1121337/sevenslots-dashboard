@@ -105,6 +105,51 @@ def _import_prof_jan26():
         print(f"[STARTUP] Imported {count} El Profesor Jan 2026 sessions")
 
 
+def _import_seven_jan26():
+    """Import Seven January 2026 sessions (always replaces)."""
+    for s in db.get_sessions("Seven"):
+        if s["date"].startswith("2026-01"):
+            db.delete_session(s["id"])
+    ROWS = [
+        # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
+        ("2026-01-02","yNz2l9UJEuA","https://www.youtube.com/live/yNz2l9UJEuA","4:06:33",19400,10700,"21:45:00",2235,1721,1746,18700,0,"Betano","Pragmatic",""),
+        ("2026-01-04","I_r6l3Y1hTE","https://www.youtube.com/live/I_r6l3Y1hTE","3:30:00",20300,11000,"13:26:00",2478,1531,1675,18700,0,"Betano","Greentube",""),
+        ("2026-01-05","i8ko_thCWTc","https://www.youtube.com/live/i8ko_thCWTc","3:53:53",21300,11500,"18:15:00",2825,1810,2080,18700,0,"MrBit","",""),
+        ("2026-01-06","4QQmc9NmAo8","https://www.youtube.com/live/4QQmc9NmAo8","3:53:35",24800,11800,"17:28:00",3463,2322,2417,18700,0,"Win2","",""),
+        ("2026-01-07","S3pkIPag-bE","https://youtube.com/live/S3pkIPag-bE","4:00:00",0,0,"",0,0,0,0,0,"Joker","Pragmatic",""),
+        ("2026-01-08","gB_JBdsoHtQ","https://www.youtube.com/live/gB_JBdsoHtQ","4:53:00",14188,7100,"18:21:00",2071,1335,1218,18850,0,"","",""),
+        ("2026-01-09","Ux-YhA0_G5Y","https://www.youtube.com/watch?v=Ux-YhA0_G5Y","2:43:00",15689,9300,"14:46:00",2113,1214,1320,18850,0,"Conti","Greentube",""),
+        ("2026-01-11","_7RMmOD6EZ4","https://www.youtube.com/live/_7RMmOD6EZ4","4:00:00",12314,6600,"13:52:00",1665,1200,1098,18850,0,"Betano","Pragmatic",""),
+        ("2026-01-12","BGXSx0T2cpg","https://www.youtube.com/live/BGXSx0T2cpg","3:28:39",12652,7000,"11:50:00",1839,1189,1188,18850,0,"Win2","Greentube",""),
+        ("2026-01-13","z7AO0BGVJy8","https://www.youtube.com/live/z7AO0BGVJy8","3:32:00",11661,6400,"15:57:00",2023,1103,1507,18850,0,"MrBit","",""),
+        ("2026-01-14","1cyvzSwyubQ","https://www.youtube.com/live/1cyvzSwyubQ","4:01:43",11500,6100,"17:39:00",1547,1112,1158,18850,0,"Joker","",""),
+        ("2026-01-15","QkpvcUoaCcg","https://www.youtube.com/watch?v=QkpvcUoaCcg","6:05:19",23700,12900,"22:27:00",2230,1826,1577,18900,0,"","Pragmatic",""),
+        ("2026-01-16","QhAPPt7HDtA","https://www.youtube.com/watch?v=QhAPPt7HDtA","3:42:09",25400,14800,"15:03",2382,1472,1721,18900,0,"Betano","",""),
+        ("2026-01-17","b9WUDkVjHsk","https://www.youtube.com/watch?v=b9WUDkVjHsk","2:23:10",7000,4200,"",784,536,480,18900,0,"GetsBet","Greentube",""),
+        ("2026-01-24","2BzxI0R5B5E","https://www.youtube.com/live/2BzxI0R5B5E","3:25:00",7758,4100,"14:03:00",877,733,607,19100,0,"Win2","Pragmatic",""),
+        ("2026-01-25","WmP6UgSJB68","https://www.youtube.com/live/WmP6UgSJB68","3:00:00",6780,3700,"8:12:00",855,648,590,19100,0,"Betano","Greentube",""),
+        ("2026-01-26","ZfORMFRlt_4","https://www.youtube.com/live/ZfORMFRlt_4","4:03:00",7942,4000,"17:49:00",1185,1071,903,19100,0,"Joker","",""),
+        ("2026-01-27","1qaNDwEi4Fs","https://www.youtube.com/live/1qaNDwEi4Fs","12:00:00",29500,1400,"15:35:00",1862,2471,1001,19100,0,"Superbet","Pragmatic",""),
+        ("2026-01-28","mDldUoDizUU","https://www.youtube.com/live/mDldUoDizUU","12:00:00",28000,13800,"22:15:00",2094,3270,1040,19100,0,"Betano","Pragmatic",""),
+        ("2026-01-30","ZhR7UMm9bG0","https://www.youtube.com/live/ZhR7UMm9bG0","4:27:00",13000,0,"20:16:00",1580,1300,1139,19100,0,"MrBit","Greentube",""),
+        ("2026-01-31","uNhfy4UtcL4","https://www.youtube.com/watch?v=uNhfy4UtcL4","6:52:00",8200,0,"",803,0,0,0,0,"Topbet/Netbet","",""),
+    ]
+    # Delete any session with conflicting video_ids
+    vids = {r[1] for r in ROWS if r[1]}
+    for s in db.get_sessions():
+        if s.get("video_id") and s["video_id"] in vids:
+            db.delete_session(s["id"])
+    count = 0
+    for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
+        db.add_session({"streamer":"Seven","date":date,"title":title,"link":link,
+            "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
+            "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
+            "discord":disc,"casino":cas,"provider":prov,"video_id":vid,"note":""})
+        count += 1
+    if count:
+        print(f"[STARTUP] Imported {count} Seven Jan 2026 sessions")
+
+
 def _import_seven_feb26():
     """Import Seven February 2026 sessions (always replaces)."""
     for s in db.get_sessions("Seven"):
@@ -342,6 +387,7 @@ def startup():
         # One-time imports
         _import_prof_jan26()
         _import_prof_feb26()
+        _import_seven_jan26()
         _import_seven_feb26()
         _import_seven_mar26()
         _import_prof_mar26()
