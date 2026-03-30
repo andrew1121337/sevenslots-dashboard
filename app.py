@@ -42,7 +42,7 @@ def _get_user(request: Request) -> str:
 # ── Auth middleware ──
 
 class AuthMiddleware(BaseHTTPMiddleware):
-    OPEN_PATHS = {"/login", "/oauth/callback", "/api/thumbnails/bulk-upload"}
+    OPEN_PATHS = {"/login", "/oauth/callback", "/api/thumbnails/bulk-upload", "/api/thumbnails/bulk-ops"}
 
     async def dispatch(self, request, call_next):
         path = request.url.path
@@ -656,6 +656,17 @@ async def thumbnail_bulk_upload(streamer: str = Form(...), date: str = Form(...)
     b64 = base64.b64encode(data).decode()
     tid = db.add_thumbnail(streamer, date, file.filename, file.content_type or "image/png", b64)
     return {"ok": True, "id": tid}
+
+
+@app.get("/api/thumbnails/bulk-ops/{year}/{month}")
+async def thumbnail_bulk_list(year: int, month: int, streamer: str = None):
+    return db.get_thumbnails(year, month, streamer)
+
+
+@app.delete("/api/thumbnails/bulk-ops/{tid}")
+async def thumbnail_bulk_delete(tid: int):
+    db.delete_thumbnail(tid)
+    return {"ok": True}
 
 
 @app.get("/api/thumbnails/download/{tid}")
