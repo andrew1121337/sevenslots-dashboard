@@ -591,6 +591,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
   border-radius:10px; padding:6px; position:relative; cursor:pointer; transition:.18s var(--ease-out-expo);
 }
 .thumb-cell:hover { border-color:var(--border2); background:var(--bg3); }
+.thumb-cell:not(.has-thumb):not(.empty):hover::after { content:'+'; position:absolute; bottom:8px; right:10px; font-size:18px; color:var(--dim2); font-weight:700; }
 .thumb-cell.empty { background:transparent; border-color:transparent; pointer-events:none; }
 .thumb-cell.today { border-color:var(--purple2); }
 .thumb-cell.has-thumb { border-color:rgba(249,115,22,.4); background:linear-gradient(160deg,rgba(249,115,22,.05) 0%,var(--bg2) 60%); }
@@ -3210,7 +3211,6 @@ async function renderThumbnails() {
 
 function showThumbDay(dateStr) {
   const thumbs = _thumbCache.filter(t => t.date === dateStr);
-  if(!thumbs.length) return;
   const overlay = document.createElement('div');
   overlay.className = 'thumb-modal-overlay';
   overlay.onclick = e => { if(e.target === overlay) overlay.remove(); };
@@ -3223,12 +3223,64 @@ function showThumbDay(dateStr) {
       </div>
     </div>`
   ).join('');
+  const uploadHtml = `<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:14px;">
+    <div class="upload-zone" id="thumb-day-zone" onclick="document.getElementById('thumb-day-file').click()" style="padding:16px;">
+      <div class="uz-ico" style="font-size:24px;">&#128444;</div>
+      <div class="uz-txt" style="font-size:12px;">Click sau trage imaginea</div>
+      <div class="uz-sub" style="font-size:10px;">Max 5MB - PNG, JPG, WEBP</div>
+    </div>
+    <input type="file" id="thumb-day-file" accept="image/*" style="display:none">
+    <img id="thumb-day-preview" style="display:none;max-width:100%;border-radius:8px;margin-top:10px;">
+    <button id="thumb-day-btn" onclick="uploadThumbDay('${dateStr}')" style="display:none;margin-top:10px;width:100%;padding:8px;border:none;border-radius:8px;background:var(--purple);color:#fff;font-weight:700;cursor:pointer;">Upload</button>
+  </div>`;
   overlay.innerHTML = `<div class="thumb-modal">
     <button class="thumb-modal-close" onclick="this.closest('.thumb-modal-overlay').remove()">&times;</button>
     <div style="font-size:14px;font-weight:700;margin-bottom:14px;">${dateStr} &mdash; ${_thumbStreamer}</div>
-    <div style="max-height:75vh;overflow-y:auto;">${imgs}</div>
+    <div style="max-height:75vh;overflow-y:auto;">${imgs}${uploadHtml}</div>
   </div>`;
   document.body.appendChild(overlay);
+  // Setup drag/drop + file input for inline upload
+  const zone = overlay.querySelector('#thumb-day-zone');
+  const fi = overlay.querySelector('#thumb-day-file');
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('dragover'); };
+  zone.ondragleave = () => zone.classList.remove('dragover');
+  zone.ondrop = e => { e.preventDefault(); zone.classList.remove('dragover'); if(e.dataTransfer.files.length) thumbDayFile(overlay, e.dataTransfer.files[0]); };
+  fi.onchange = () => { if(fi.files.length) thumbDayFile(overlay, fi.files[0]); };
+}
+
+let _thumbDayUploadFile = null;
+function thumbDayFile(overlay, file) {
+  if(file.size > 5*1024*1024) { toast('Max 5MB'); return; }
+  _thumbDayUploadFile = file;
+  const preview = overlay.querySelector('#thumb-day-preview');
+  const btn = overlay.querySelector('#thumb-day-btn');
+  const reader = new FileReader();
+  reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+  reader.readAsDataURL(file);
+  btn.style.display = 'block';
+}
+
+async function uploadThumbDay(dateStr) {
+  if(!_thumbDayUploadFile) return;
+  const btn = document.getElementById('thumb-day-btn');
+  btn.disabled = true; btn.textContent = 'Se uploadeaza...';
+  try {
+    const fd = new FormData();
+    fd.append('streamer', _thumbStreamer);
+    fd.append('date', dateStr);
+    fd.append('file', _thumbDayUploadFile);
+    const r = await fetch('/api/thumbnails/upload', {method:'POST', body:fd});
+    if(r.ok) {
+      toast('Thumbnail uploadat!','ok');
+      _thumbDayUploadFile = null;
+      document.querySelector('.thumb-modal-overlay')?.remove();
+      renderThumbnails();
+    } else {
+      const d = await r.json();
+      toast(d.error||'Eroare');
+    }
+  } catch(e) { toast('Eroare: '+e.message); }
+  if(btn) { btn.disabled = false; btn.textContent = 'Upload'; }
 }
 
 // ── UPLOAD ──
