@@ -623,6 +623,12 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
   font-size:12px; font-weight:700; cursor:pointer; text-decoration:none;
 }
 .thumb-dl-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px var(--purple-glow); }
+.thumb-del-btn {
+  padding:8px 20px; border-radius:999px;
+  background:rgba(239,68,68,.15); border:none; color:var(--red);
+  font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; cursor:pointer;
+}
+.thumb-del-btn:hover { background:rgba(239,68,68,.3); }
 .upload-zone {
   border:2px dashed var(--border2); border-radius:14px; padding:40px 20px;
   text-align:center; color:var(--dim); cursor:pointer; transition:.25s var(--ease-out-expo);
@@ -3220,6 +3226,7 @@ function showThumbDay(dateStr) {
       <div class="thumb-modal-actions">
         <div style="font-size:11px;color:var(--dim);margin-right:auto;">${t.filename}</div>
         <a href="/api/thumbnails/download/${t.id}" class="thumb-dl-btn" download>Descarca</a>
+        <button class="thumb-del-btn" onclick="deleteThumbDay(${t.id},'${dateStr}')">Sterge</button>
       </div>
     </div>`
   ).join('');
@@ -3281,6 +3288,13 @@ async function uploadThumbDay(dateStr) {
     }
   } catch(e) { toast('Eroare: '+e.message); }
   if(btn) { btn.disabled = false; btn.textContent = 'Upload'; }
+}
+
+async function deleteThumbDay(id, dateStr) {
+  await fetch(`/api/thumbnails/${id}`, {method:'DELETE'});
+  toast('Thumbnail sters');
+  await renderThumbnails();
+  showThumbDay(dateStr);
 }
 
 // ── UPLOAD ──
