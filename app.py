@@ -42,7 +42,7 @@ def _get_user(request: Request) -> str:
 # ── Auth middleware ──
 
 class AuthMiddleware(BaseHTTPMiddleware):
-    OPEN_PATHS = {"/login", "/oauth/callback"}
+    OPEN_PATHS = {"/login", "/oauth/callback", "/api/thumbnails/bulk-upload"}
 
     async def dispatch(self, request, call_next):
         path = request.url.path
@@ -645,6 +645,16 @@ async def thumbnail_upload(request: Request, streamer: str = Form(...), date: st
     b64 = base64.b64encode(data).decode()
     tid = db.add_thumbnail(streamer, date, file.filename, file.content_type or "image/png", b64)
     db.log_activity(_get_user(request), "Thumbnail uploadat", f"{streamer} — {date} — {file.filename}")
+    return {"ok": True, "id": tid}
+
+
+@app.post("/api/thumbnails/bulk-upload")
+async def thumbnail_bulk_upload(streamer: str = Form(...), date: str = Form(...), file: UploadFile = File(...)):
+    data = await file.read()
+    if len(data) > 5 * 1024 * 1024:
+        return JSONResponse({"error": "File too large"}, status_code=400)
+    b64 = base64.b64encode(data).decode()
+    tid = db.add_thumbnail(streamer, date, file.filename, file.content_type or "image/png", b64)
     return {"ok": True, "id": tid}
 
 
