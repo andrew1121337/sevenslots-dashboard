@@ -46,7 +46,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request, call_next):
         path = request.url.path
-        if path in self.OPEN_PATHS or path.startswith("/static"):
+        if path in self.OPEN_PATHS or path.startswith("/static") or path.startswith("/api/thumbnails/bulk"):
             return await call_next(request)
         if not _check_auth(request):
             if path.startswith("/api/") or path == "/oauth/status":
