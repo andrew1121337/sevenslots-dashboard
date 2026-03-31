@@ -3232,6 +3232,12 @@ async function dropThumb(e, newDate) {
   if(!_dragThumbId) return;
   const id = _dragThumbId;
   _dragThumbId = null;
+  // Delete existing thumbnail on target date
+  const existing = _thumbCache.filter(t => t.date === newDate && t.id !== id);
+  for(const ex of existing) {
+    await fetch(`/api/thumbnails/${ex.id}`, {method:'DELETE'});
+    _thumbCache = _thumbCache.filter(t => t.id !== ex.id);
+  }
   await fetch(`/api/thumbnails/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({date:newDate})});
   const t = _thumbCache.find(x=>x.id===id);
   if(t) t.date = newDate;
@@ -3298,6 +3304,11 @@ async function uploadThumbDay(dateStr) {
   const btn = document.getElementById('thumb-day-btn');
   btn.disabled = true; btn.textContent = 'Se uploadeaza...';
   try {
+    // Delete existing thumbnail on this date (max 1 per day)
+    const existing = _thumbCache.filter(t => t.date === dateStr && t.streamer === _thumbStreamer);
+    for(const ex of existing) {
+      await fetch(`/api/thumbnails/${ex.id}`, {method:'DELETE'});
+    }
     const fd = new FormData();
     fd.append('streamer', _thumbStreamer);
     fd.append('date', dateStr);
