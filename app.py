@@ -688,6 +688,13 @@ async def thumbnail_view(tid: int):
     return Response(content=data, media_type=t["content_type"])
 
 
+@app.put("/api/thumbnails/{tid}")
+async def thumbnail_update(request: Request, tid: int):
+    data = await request.json()
+    db.update_thumbnail(tid, data)
+    return {"ok": True}
+
+
 @app.delete("/api/thumbnails/{tid}")
 async def thumbnail_delete(tid: int):
     db.delete_thumbnail(tid)

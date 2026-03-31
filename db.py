@@ -123,6 +123,7 @@ def init_db():
         except Exception:
             pass
         _safe_add_column(conn, "thumbnails", "streamer", "TEXT NOT NULL DEFAULT 'Seven'")
+        _safe_add_column(conn, "thumbnails", "used", "INTEGER DEFAULT 0")
         # Add done column if missing (existing tables)
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS meetings (
             id SERIAL PRIMARY KEY,
@@ -210,6 +211,7 @@ def init_db():
                 filename TEXT NOT NULL,
                 content_type TEXT DEFAULT 'image/png',
                 image_data TEXT NOT NULL,
+                used INTEGER DEFAULT 0,
                 uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             CREATE INDEX IF NOT EXISTS idx_thumb_date ON thumbnails(date);
             CREATE TABLE IF NOT EXISTS meetings (
@@ -552,10 +554,10 @@ def get_thumbnails_for_month(year: int, month: int, streamer: str = None) -> lis
     if DATABASE_URL:
         conn = get_conn()
         if streamer:
-            rows = _pg_run(conn, "SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= :s AND date < :e AND streamer = :st ORDER BY date",
+            rows = _pg_run(conn, "SELECT id, streamer, date, filename, content_type, COALESCE(used,0) as used FROM thumbnails WHERE date >= :s AND date < :e AND streamer = :st ORDER BY date",
                            {"s": start, "e": end, "st": streamer})
         else:
-            rows = _pg_run(conn, "SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= :s AND date < :e ORDER BY date",
+            rows = _pg_run(conn, "SELECT id, streamer, date, filename, content_type, COALESCE(used,0) as used FROM thumbnails WHERE date >= :s AND date < :e ORDER BY date",
                            {"s": start, "e": end})
         result = _pg_to_dicts(conn, rows)
         conn.close()
@@ -563,10 +565,10 @@ def get_thumbnails_for_month(year: int, month: int, streamer: str = None) -> lis
     else:
         conn = get_conn()
         if streamer:
-            rows = conn.execute("SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= ? AND date < ? AND streamer = ? ORDER BY date",
+            rows = conn.execute("SELECT id, streamer, date, filename, content_type, COALESCE(used,0) as used FROM thumbnails WHERE date >= ? AND date < ? AND streamer = ? ORDER BY date",
                                 (start, end, streamer)).fetchall()
         else:
-            rows = conn.execute("SELECT id, streamer, date, filename, content_type FROM thumbnails WHERE date >= ? AND date < ? ORDER BY date",
+            rows = conn.execute("SELECT id, streamer, date, filename, content_type, COALESCE(used,0) as used FROM thumbnails WHERE date >= ? AND date < ? ORDER BY date",
                                 (start, end)).fetchall()
         conn.close()
         return [dict(r) for r in rows]
@@ -594,6 +596,31 @@ def delete_thumbnail(tid: int):
     else:
         conn = get_conn()
         conn.execute("DELETE FROM thumbnails WHERE id = ?", (tid,))
+        conn.commit()
+        conn.close()
+
+
+def update_thumbnail(tid: int, data: dict):
+    sets, params = [], {}
+    for col in ("date", "used"):
+        if col in data:
+            sets.append(f"{col} = :{col}")
+            params[col] = data[col]
+    if not sets:
+        return
+    params["id"] = tid
+    if DATABASE_URL:
+        conn = get_conn()
+        _pg_run(conn, f"UPDATE thumbnails SET {', '.join(sets)} WHERE id = :id", params)
+        conn.close()
+    else:
+        conn = get_conn()
+        sql = f"UPDATE thumbnails SET {', '.join(s.replace(':','?') for s in sets)} WHERE id = ?"
+        vals = [data.get(col) for col in ("date", "used") if col in data] + [tid]
+        # SQLite uses ? placeholders
+        set_parts = [f"{col} = ?" for col in ("date", "used") if col in data]
+        vals = [data[col] for col in ("date", "used") if col in data] + [tid]
+        conn.execute(f"UPDATE thumbnails SET {', '.join(set_parts)} WHERE id = ?", vals)
         conn.commit()
         conn.close()
 

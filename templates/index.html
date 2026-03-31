@@ -592,6 +592,9 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 }
 .thumb-cell:hover { border-color:var(--border2); background:var(--bg3); }
 .thumb-cell:not(.has-thumb):not(.empty):hover::after { content:'+'; position:absolute; bottom:8px; right:10px; font-size:18px; color:var(--dim2); font-weight:700; }
+.thumb-cell.thumb-used { opacity:.4; }
+.thumb-cell.thumb-used:hover { opacity:.7; }
+.thumb-cell.drag-over { border-color:var(--purple2)!important; background:rgba(147,51,234,.1)!important; }
 .thumb-cell.empty { background:transparent; border-color:transparent; pointer-events:none; }
 .thumb-cell.today { border-color:var(--purple2); }
 .thumb-cell.has-thumb { border-color:rgba(249,115,22,.4); background:linear-gradient(160deg,rgba(249,115,22,.05) 0%,var(--bg2) 60%); }
@@ -3200,13 +3203,15 @@ async function renderThumbnails() {
     const ds = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const thumbs = byDate[ds] || [];
     const isToday = ds === todayStr;
+    const allUsed = thumbs.length > 0 && thumbs.every(t => t.used);
     const cls = ['thumb-cell'];
     if(isToday) cls.push('today');
     if(thumbs.length) cls.push('has-thumb');
-    h += `<div class="${cls.join(' ')}" onclick="showThumbDay('${ds}')" ${thumbs.length ? `style="border-color:${accentColor}33;"` : ''}>`;
+    if(allUsed) cls.push('thumb-used');
+    h += `<div class="${cls.join(' ')}" data-date="${ds}" onclick="showThumbDay('${ds}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropThumb(event,'${ds}')" ${thumbs.length ? `style="border-color:${accentColor}33;"` : ''}>`;
     h += `<div class="thumb-num" ${thumbs.length ? `style="color:${accentColor};"` : ''}>${d}</div>`;
     if(thumbs.length > 0) {
-      h += `<img class="thumb-img" src="/api/thumbnails/view/${thumbs[0].id}" loading="lazy">`;
+      h += `<img class="thumb-img" src="/api/thumbnails/view/${thumbs[0].id}" loading="lazy" draggable="true" ondragstart="dragThumb(event,${thumbs[0].id})" onclick="event.stopPropagation();showThumbDay('${ds}')">`;
       if(thumbs.length > 1) h += `<div class="thumb-count">${thumbs.length}</div>`;
     }
     h += '</div>';
@@ -3215,16 +3220,37 @@ async function renderThumbnails() {
   el.innerHTML = h;
 }
 
+let _dragThumbId = null;
+function dragThumb(e, id) {
+  _dragThumbId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', id);
+}
+async function dropThumb(e, newDate) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(!_dragThumbId) return;
+  const id = _dragThumbId;
+  _dragThumbId = null;
+  await fetch(`/api/thumbnails/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({date:newDate})});
+  const t = _thumbCache.find(x=>x.id===id);
+  if(t) t.date = newDate;
+  renderThumbnails();
+  toast('Thumbnail mutat');
+}
+
 function showThumbDay(dateStr) {
   const thumbs = _thumbCache.filter(t => t.date === dateStr);
   const overlay = document.createElement('div');
   overlay.className = 'thumb-modal-overlay';
   overlay.onclick = e => { if(e.target === overlay) overlay.remove(); };
   let imgs = thumbs.map(t =>
-    `<div style="margin-bottom:16px;">
+    `<div style="margin-bottom:16px;${t.used ? 'opacity:.4;' : ''}">
       <img src="/api/thumbnails/view/${t.id}" style="max-width:100%;max-height:60vh;border-radius:10px;">
       <div class="thumb-modal-actions">
-        <div style="font-size:11px;color:var(--dim);margin-right:auto;">${t.filename}</div>
+        <label style="font-size:12px;color:var(--dim);margin-right:auto;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" ${t.used ? 'checked' : ''} onchange="toggleThumbUsed(${t.id},this.checked,'${dateStr}')"> Folosit
+        </label>
         <a href="/api/thumbnails/download/${t.id}" class="thumb-dl-btn" download>Descarca</a>
         <button class="thumb-del-btn" onclick="deleteThumbDay(${t.id},'${dateStr}')">Sterge</button>
       </div>
@@ -3294,6 +3320,17 @@ async function deleteThumbDay(id, dateStr) {
   await fetch(`/api/thumbnails/${id}`, {method:'DELETE'});
   toast('Thumbnail sters');
   await renderThumbnails();
+  showThumbDay(dateStr);
+}
+
+async function toggleThumbUsed(id, used, dateStr) {
+  await fetch(`/api/thumbnails/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({used: used?1:0})});
+  const t = _thumbCache.find(x=>x.id===id);
+  if(t) t.used = used?1:0;
+  // Re-render calendar behind modal
+  renderThumbnails();
+  // Re-open modal to reflect change
+  document.querySelector('.thumb-modal-overlay')?.remove();
   showThumbDay(dateStr);
 }
 
