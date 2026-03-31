@@ -333,14 +333,14 @@ def startup():
         db.init_db()
         print("[STARTUP] DB initialized OK")
         # Ensure required user accounts exist
-        for uname in ("paul", "costi", "sevenslots", "catalin"):
+        for uname in ("paul", "costi", "catalin", "cata", "edi", "andrei"):
             try:
                 db.create_user(uname, "Liv2026!")
                 print(f"[STARTUP] Created user '{uname}'")
             except Exception:
                 pass  # already exists
         # Remove old accounts
-        for old in ("streamers", "managers"):
+        for old in ("streamers", "managers", "sevenslots"):
             db.delete_user(old)
         # Seed licente if empty
         if db.licente_count() == 0:
