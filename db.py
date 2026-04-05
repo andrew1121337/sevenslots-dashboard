@@ -277,25 +277,33 @@ def create_user(username: str, password: str):
     pw_hash = hashlib.sha256(password.encode()).hexdigest()
     if DATABASE_URL:
         conn = get_conn()
-        _pg_run(conn, "INSERT INTO users (username, password_hash) VALUES (:u, :p)", {"u": username, "p": pw_hash})
-        conn.close()
+        try:
+            _pg_run(conn, "INSERT INTO users (username, password_hash) VALUES (:u, :p)", {"u": username, "p": pw_hash})
+        finally:
+            conn.close()
     else:
         conn = get_conn()
-        conn.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, pw_hash))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("INSERT OR IGNORE INTO users (username, password_hash) VALUES (?, ?)", (username, pw_hash))
+            conn.commit()
+        finally:
+            conn.close()
 
 
 def delete_user(username: str):
     if DATABASE_URL:
         conn = get_conn()
-        _pg_run(conn, "DELETE FROM users WHERE username = :u", {"u": username})
-        conn.close()
+        try:
+            _pg_run(conn, "DELETE FROM users WHERE username = :u", {"u": username})
+        finally:
+            conn.close()
     else:
         conn = get_conn()
-        conn.execute("DELETE FROM users WHERE username = ?", (username,))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("DELETE FROM users WHERE username = ?", (username,))
+            conn.commit()
+        finally:
+            conn.close()
 
 
 def verify_user(username: str, password: str) -> bool:
@@ -397,20 +405,24 @@ def add_session(data: dict) -> int:
             "discord","casino","provider","video_id","note"]
     if DATABASE_URL:
         conn = get_conn()
-        placeholders = ", ".join(f":{c}" for c in cols)
-        params = {c: data[c] for c in cols}
-        rows = _pg_run(conn, f"INSERT INTO sessions ({','.join(cols)}) VALUES ({placeholders}) RETURNING id", params)
-        sid = rows[0][0]
-        conn.close()
-        return sid
+        try:
+            placeholders = ", ".join(f":{c}" for c in cols)
+            params = {c: data[c] for c in cols}
+            rows = _pg_run(conn, f"INSERT INTO sessions ({','.join(cols)}) VALUES ({placeholders}) RETURNING id", params)
+            sid = rows[0][0]
+            return sid
+        finally:
+            conn.close()
     else:
         conn = get_conn()
-        vals = [data[c] for c in cols]
-        cur = conn.execute(f"INSERT INTO sessions ({','.join(cols)}) VALUES ({','.join(['?']*len(cols))})", vals)
-        conn.commit()
-        sid = cur.lastrowid
-        conn.close()
-        return sid
+        try:
+            vals = [data[c] for c in cols]
+            cur = conn.execute(f"INSERT INTO sessions ({','.join(cols)}) VALUES ({','.join(['?']*len(cols))})", vals)
+            conn.commit()
+            sid = cur.lastrowid
+            return sid
+        finally:
+            conn.close()
 
 
 def get_sessions(streamer: str = None) -> list[dict]:
@@ -419,21 +431,24 @@ def get_sessions(streamer: str = None) -> list[dict]:
             "discord","casino","provider","video_id","note","created_at"]
     if DATABASE_URL:
         conn = get_conn()
-        if streamer:
-            rows = _pg_run(conn, "SELECT * FROM sessions WHERE streamer = :s ORDER BY date DESC", {"s": streamer})
-        else:
-            rows = _pg_run(conn, "SELECT * FROM sessions ORDER BY date DESC")
-        result = _pg_to_dicts(conn, rows)
-        conn.close()
-        return result
+        try:
+            if streamer:
+                rows = _pg_run(conn, "SELECT * FROM sessions WHERE streamer = :s ORDER BY date DESC", {"s": streamer})
+            else:
+                rows = _pg_run(conn, "SELECT * FROM sessions ORDER BY date DESC")
+            return _pg_to_dicts(conn, rows)
+        finally:
+            conn.close()
     else:
         conn = get_conn()
-        if streamer:
-            rows = conn.execute("SELECT * FROM sessions WHERE streamer = ? ORDER BY date DESC", (streamer,)).fetchall()
-        else:
-            rows = conn.execute("SELECT * FROM sessions ORDER BY date DESC").fetchall()
-        conn.close()
-        return [dict(r) for r in rows]
+        try:
+            if streamer:
+                rows = conn.execute("SELECT * FROM sessions WHERE streamer = ? ORDER BY date DESC", (streamer,)).fetchall()
+            else:
+                rows = conn.execute("SELECT * FROM sessions ORDER BY date DESC").fetchall()
+            return [dict(r) for r in rows]
+        finally:
+            conn.close()
 
 
 def update_session(sid: int, data: dict):
@@ -459,13 +474,17 @@ def update_session(sid: int, data: dict):
 def delete_session(sid: int):
     if DATABASE_URL:
         conn = get_conn()
-        _pg_run(conn, "DELETE FROM sessions WHERE id = :id", {"id": sid})
-        conn.close()
+        try:
+            _pg_run(conn, "DELETE FROM sessions WHERE id = :id", {"id": sid})
+        finally:
+            conn.close()
     else:
         conn = get_conn()
-        conn.execute("DELETE FROM sessions WHERE id = ?", (sid,))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("DELETE FROM sessions WHERE id = ?", (sid,))
+            conn.commit()
+        finally:
+            conn.close()
 
 
 def session_exists_by_video_id(video_id: str) -> bool:
