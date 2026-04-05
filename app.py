@@ -42,7 +42,7 @@ def _get_user(request: Request) -> str:
 # ── Auth middleware ──
 
 class AuthMiddleware(BaseHTTPMiddleware):
-    OPEN_PATHS = {"/login", "/oauth/callback", "/api/thumbnails/bulk-upload", "/api/thumbnails/bulk-ops"}
+    OPEN_PATHS = {"/login", "/health", "/oauth/callback", "/api/thumbnails/bulk-upload", "/api/thumbnails/bulk-ops"}
 
     async def dispatch(self, request, call_next):
         path = request.url.path
@@ -402,6 +402,15 @@ def startup():
 
 # ── Auth ──
 
+@app.get("/health")
+async def health():
+    try:
+        n = db.user_count()
+        return JSONResponse({"status": "ok", "users": n, "db": "pg" if db.DATABASE_URL else "sqlite"})
+    except Exception as e:
+        return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, error: str = None):
     if _check_auth(request):
@@ -411,12 +420,19 @@ async def login_page(request: Request, error: str = None):
 
 @app.post("/login")
 async def login_submit(username: str = Form(...), password: str = Form(...)):
-    if db.verify_user(username, password):
-        token = _make_token(username)
-        db.log_activity(username, "Login")
-        resp = RedirectResponse("/", status_code=303)
-        resp.set_cookie("ss_token", token, httponly=True, samesite="lax", max_age=86400 * 30)
-        return resp
+    try:
+        if db.verify_user(username, password):
+            token = _make_token(username)
+            try:
+                db.log_activity(username, "Login")
+            except Exception:
+                pass
+            resp = RedirectResponse("/", status_code=303)
+            resp.set_cookie("ss_token", token, httponly=True, samesite="lax", max_age=86400 * 30)
+            return resp
+    except Exception as e:
+        print(f"[LOGIN ERROR] {e}")
+        return RedirectResponse("/login?error=1", status_code=303)
     return RedirectResponse("/login?error=1", status_code=303)
 
 
