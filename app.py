@@ -327,6 +327,63 @@ def _import_prof_mar26():
         print(f"[STARTUP] Imported {count} El Profesor Mar 2026 sessions")
 
 
+def _import_seven_apr26():
+    """Import Seven April 2026 sessions (always replaces)."""
+    for s in db.get_sessions("Seven"):
+        if s["date"].startswith("2026-04"):
+            db.delete_session(s["id"])
+    ROWS = [
+        ("2026-04-01","mZVk0plUHcY","https://www.youtube.com/watch?v=mZVk0plUHcY","6:00:00",0,0,"",0,0,0,0,0,"Betano","Pragmatic",""),
+        ("2026-04-02","uBuvU6pJDR8","https://www.youtube.com/watch?v=uBuvU6pJDR8","4:30:00",0,0,"",0,0,0,0,0,"Netbet","",""),
+        ("2026-04-03","IbN-eXiYXeE","https://www.youtube.com/watch?v=IbN-eXiYXeE","3:30:00",0,0,"",0,0,0,0,0,"Mrbit","Greentube",""),
+        ("2026-04-04","","","",0,0,"",0,0,0,0,0,"Conti","","mutat vineri"),
+        ("2026-04-05","AAiMBnBDT4E","https://www.youtube.com/watch?v=AAiMBnBDT4E","4:00:00",0,0,"",0,0,0,0,0,"Don","Pragmatic",""),
+    ]
+    vids = {r[1] for r in ROWS if r[1]}
+    for s in db.get_sessions():
+        if s.get("video_id") and s["video_id"] in vids:
+            db.delete_session(s["id"])
+    count = 0
+    for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
+        db.add_session({"streamer":"Seven","date":date,"title":title,"link":link,
+            "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
+            "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
+            "discord":disc,"casino":cas,"provider":prov,"video_id":vid,"note":""})
+        count += 1
+    if count:
+        print(f"[STARTUP] Imported {count} Seven Apr 2026 sessions")
+
+
+def _import_program_apr26():
+    """Import April 2026 program for El Profesor and Seven."""
+    # El Profesor
+    PROF = [
+        (1,"",""),(2,"","Pragmatic"),(3,"",""),(4,"Netbet",""),(5,"MrBit","Pragmatic"),
+        (6,"Don","Greentube"),(7,"","Pragmatic"),(8,"","Pragmatic"),(9,"Betano","Pragmatic"),
+        (10,"",""),(11,"",""),(12,"",""),(13,"Win2","Greentube"),(14,"",""),
+        (15,"",""),(16,"",""),(17,"",""),(18,"Joker",""),(19,"",""),
+        (20,"","Greentube"),(21,"",""),(22,"",""),(23,"",""),(24,"",""),
+        (25,"",""),(26,"Betano","Greentube"),(27,"Superbet","Pragmatic"),
+        (28,"Napoleon",""),(29,"Netbet",""),(30,"Don","Pragmatic"),
+    ]
+    for day, cas, prov in PROF:
+        db.save_program_day(2026, 4, day, "El Profesor", cas, prov)
+    print(f"[STARTUP] Imported {len(PROF)} El Profesor Apr 2026 program days")
+    # Seven
+    SEVEN = [
+        (1,"Betano","Pragmatic"),(2,"Netbet",""),(3,"Mrbit","Greentube"),(4,"Conti",""),
+        (5,"Don","Pragmatic"),(6,"Joker","Pragmatic"),(7,"Zinx?",""),(8,"Maxbet","Greentube"),
+        (9,"Win2","Pragmatic"),(10,"Superbet",""),(11,"",""),(12,"Betano","Greentube"),
+        (13,"MrBit",""),(14,"Joker","Pragmatic"),(15,"Get's",""),(16,"Maxbet","Greentube"),
+        (17,"Betano",""),(18,"",""),(19,"Win2","Pragmatic"),(20,"MrBit",""),
+        (21,"Betano",""),(22,"Maxbet","Greentube"),(23,"Zinx?","Pragmatic"),(24,"Win2",""),
+        (25,"Joker","Greentube"),(26,"",""),(27,"",""),(28,"",""),(29,"",""),(30,"",""),
+    ]
+    for day, cas, prov in SEVEN:
+        db.save_program_day(2026, 4, day, "Seven", cas, prov)
+    print(f"[STARTUP] Imported {len(SEVEN)} Seven Apr 2026 program days")
+
+
 @app.on_event("startup")
 def startup():
     try:
@@ -391,6 +448,8 @@ def startup():
         _import_seven_feb26()
         _import_seven_mar26()
         _import_prof_mar26()
+        _import_seven_apr26()
+        _import_program_apr26()
         # Set default targets if not already set
         t = db.get_all_targets(2026, 3)
         if "El Profesor" not in t or not t["El Profesor"].get("hours"):
