@@ -368,12 +368,12 @@ def _import_program_apr26():
     print(f"[STARTUP] Imported {len(PROF)} El Profesor Apr 2026 program days")
     # Seven
     SEVEN = [
-        (1,"Betano","Pragmatic"),(2,"Netbet",""),(3,"Mrbit","Greentube"),(4,"Conti",""),
-        (5,"Don","Pragmatic"),(6,"Joker","Pragmatic"),(7,"Zinx?",""),(8,"Maxbet","Greentube"),
-        (9,"Win2","Pragmatic"),(10,"Superbet",""),(11,"",""),(12,"Betano","Greentube"),
-        (13,"MrBit",""),(14,"Joker","Pragmatic"),(15,"Get's",""),(16,"Maxbet","Greentube"),
-        (17,"Betano",""),(18,"",""),(19,"Win2","Pragmatic"),(20,"MrBit",""),
-        (21,"Betano",""),(22,"Maxbet","Greentube"),(23,"Zinx?","Pragmatic"),(24,"Win2",""),
+        (1,"Betano","Pragmatic Play"),(2,"Netbet",""),(3,"Mrbit","Greentube"),(4,"Conti",""),
+        (5,"Don","Pragmatic Play"),(6,"Joker","Pragmatic Play"),(7,"Zinx",""),(8,"Maxbet","Greentube"),
+        (9,"Win2","Pragmatic Play"),(10,"",""),(11,"",""),(12,"Betano","Greentube"),
+        (13,"MrBit","Pragmatic Play"),(14,"Joker","Pragmatic Play"),(15,"Get's bet",""),(16,"Maxbet","Greentube"),
+        (17,"Betano","Pragmatic Play"),(18,"",""),(19,"Win2","Pragmatic Play"),(20,"MrBit",""),
+        (21,"Betano","Pragmatic Play"),(22,"Maxbet","Greentube"),(23,"Zinx","Pragmatic Play"),(24,"Win2",""),
         (25,"Joker","Greentube"),(26,"",""),(27,"",""),(28,"",""),(29,"",""),(30,"",""),
     ]
     for day, cas, prov in SEVEN:
