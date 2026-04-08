@@ -355,13 +355,13 @@ def _import_program_apr26():
     """Import April 2026 program for El Profesor and Seven."""
     # El Profesor
     PROF = [
-        (1,"",""),(2,"","Pragmatic"),(3,"",""),(4,"Netbet",""),(5,"MrBit","Pragmatic"),
-        (6,"Don","Greentube"),(7,"","Pragmatic"),(8,"","Pragmatic"),(9,"Betano","Pragmatic"),
+        (1,"",""),(2,"","Pragmatic Play"),(3,"",""),(4,"Netbet",""),(5,"MrBit","Pragmatic Play"),
+        (6,"Don","Pragmatic Play"),(7,"Superbet","Greentube"),(8,"Napoleon","Pragmatic Play"),(9,"Betano","Pragmatic Play"),
         (10,"",""),(11,"",""),(12,"",""),(13,"Win2","Greentube"),(14,"",""),
         (15,"",""),(16,"",""),(17,"",""),(18,"Joker",""),(19,"",""),
         (20,"","Greentube"),(21,"",""),(22,"",""),(23,"",""),(24,"",""),
-        (25,"",""),(26,"Betano","Greentube"),(27,"Superbet","Pragmatic"),
-        (28,"Napoleon",""),(29,"Netbet",""),(30,"Don","Pragmatic"),
+        (25,"",""),(26,"Betano","Greentube"),(27,"Superbet","Pragmatic Play"),
+        (28,"Napoleon",""),(29,"Netbet",""),(30,"Don","Pragmatic Play"),
     ]
     for day, cas, prov in PROF:
         db.save_program_day(2026, 4, day, "El Profesor", cas, prov)
