@@ -328,10 +328,7 @@ def _import_prof_mar26():
 
 
 def _import_seven_apr26():
-    """Import Seven April 2026 sessions (always replaces)."""
-    for s in db.get_sessions("Seven"):
-        if s["date"].startswith("2026-04"):
-            db.delete_session(s["id"])
+    """Import Seven April 2026 sessions (one-time seed)."""
     ROWS = [
         ("2026-04-01","mZVk0plUHcY","https://www.youtube.com/watch?v=mZVk0plUHcY","6:00:00",0,0,"",0,0,0,0,0,"Betano","Pragmatic",""),
         ("2026-04-02","uBuvU6pJDR8","https://www.youtube.com/watch?v=uBuvU6pJDR8","4:30:00",0,0,"",0,0,0,0,0,"Netbet","",""),
@@ -441,15 +438,32 @@ def startup():
             print(f"[STARTUP] Seeded {len(_PSF)} paysafes")
         # One-time fix: migrate program data from 0-indexed to 1-indexed months
         db.migrate_program_months()
-        # One-time imports
-        _import_prof_jan26()
-        _import_prof_feb26()
-        _import_seven_jan26()
-        _import_seven_feb26()
-        _import_seven_mar26()
-        _import_prof_mar26()
-        _import_seven_apr26()
-        _import_program_apr26()
+        # One-time imports — only seed if data doesn't already exist
+        prof_sessions = db.get_sessions("El Profesor")
+        seven_sessions = db.get_sessions("Seven")
+        prof_jan = any(s["date"].startswith("2026-01") for s in prof_sessions)
+        prof_feb = any(s["date"].startswith("2026-02") for s in prof_sessions)
+        prof_mar = any(s["date"].startswith("2026-03") for s in prof_sessions)
+        seven_jan = any(s["date"].startswith("2026-01") for s in seven_sessions)
+        seven_feb = any(s["date"].startswith("2026-02") for s in seven_sessions)
+        seven_mar = any(s["date"].startswith("2026-03") for s in seven_sessions)
+        seven_apr = any(s["date"].startswith("2026-04") for s in seven_sessions)
+        if not prof_jan:
+            _import_prof_jan26()
+        if not prof_feb:
+            _import_prof_feb26()
+        if not seven_jan:
+            _import_seven_jan26()
+        if not seven_feb:
+            _import_seven_feb26()
+        if not seven_mar:
+            _import_seven_mar26()
+        if not prof_mar:
+            _import_prof_mar26()
+        if not seven_apr:
+            _import_seven_apr26()
+        if not db.get_program(2026, 4):
+            _import_program_apr26()
         # Set default targets if not already set
         t = db.get_all_targets(2026, 3)
         if "El Profesor" not in t or not t["El Profesor"].get("hours"):
