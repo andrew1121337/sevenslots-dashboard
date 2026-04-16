@@ -327,14 +327,60 @@ def _import_prof_mar26():
         print(f"[STARTUP] Imported {count} El Profesor Mar 2026 sessions")
 
 
-def _import_seven_apr26():
-    """Import Seven April 2026 sessions (one-time seed)."""
+def _import_prof_apr26():
+    """Import El Profesor April 2026 sessions (always replaces)."""
+    for s in db.get_sessions("El Profesor"):
+        if s["date"].startswith("2026-04"):
+            db.delete_session(s["id"])
     ROWS = [
-        ("2026-04-01","mZVk0plUHcY","https://www.youtube.com/watch?v=mZVk0plUHcY","6:00:00",0,0,"",0,0,0,0,0,"Betano","Pragmatic",""),
-        ("2026-04-02","uBuvU6pJDR8","https://www.youtube.com/watch?v=uBuvU6pJDR8","4:30:00",0,0,"",0,0,0,0,0,"Netbet","",""),
-        ("2026-04-03","IbN-eXiYXeE","https://www.youtube.com/watch?v=IbN-eXiYXeE","3:30:00",0,0,"",0,0,0,0,0,"Mrbit","Greentube",""),
+        # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
+        ("2026-04-02","hma6lC38w90","https://youtube.com/live/hma6lC38w90","2:46:00",5100,3500,"8:37:00",421,267,295,0,0,"","Pragmatic",""),
+        ("2026-04-04","qSqAOXrPRtQ","https://youtube.com/live/qSqAOXrPRtQ","3:27:00",9600,5900,"14:18:00",978,614,759,0,0,"Netbet","",""),
+        ("2026-04-05","IX_8owtRWL0","https://youtube.com/live/IX_8owtRWL0","2:23:00",4800,3500,"11:18:00",396,236,285,0,0,"MrBit","Pragmatic",""),
+        ("2026-04-06","V5U_jjYMC4Q","https://youtube.com/live/V5U_jjYMC4Q","3:18:00",4800,3200,"7:39:00",343,247,253,0,0,"Don","Pragmatic",""),
+        ("2026-04-07","oXqrUrSa_LI","https://youtube.com/live/oXqrUrSa_LI","3:05:00",3800,2600,"5:43:00",298,229,201,0,0,"Superbet","Greentube",""),
+        ("2026-04-08","hsBVTYXdYDc","https://www.youtube.com/watch?v=hsBVTYXdYDc","3:19:00",4700,3300,"10:12:00",382,230,239,0,0,"Napoleon","Pragmatic",""),
+        ("2026-04-09","pNfLUTb_78s","https://www.youtube.com/watch?v=pNfLUTb_78s","3:22:00",4600,3100,"12:05:00",415,289,278,0,0,"Betano","Pragmatic",""),
+        ("2026-04-12","Wuk6Ym7eQkE","https://www.youtube.com/watch?v=Wuk6Ym7eQkE","3:20:00",4300,2900,"10:38:00",339,274,264,0,0,"","Pragmatic",""),
+        ("2026-04-13","z2ANcj_FpTo","https://www.youtube.com/watch?v=z2ANcj_FpTo","3:00:00",5100,3400,"8:37:00",491,273,329,0,0,"Win2","",""),
+        ("2026-04-14","HuYAUfiNO4U","https://www.youtube.com/watch?v=HuYAUfiNO4U","3:06:00",3300,1200,"7:27:00",263,187,158,0,0,"Netbet","Greentube",""),
+        ("2026-04-15","knETw6-1r3g","https://www.youtube.com/watch?v=knETw6-1r3g","3:03:00",3800,0,"11:39:00",288,211,186,0,0,"Mrbit","",""),
+    ]
+    vids = {r[1] for r in ROWS if r[1]}
+    for s in db.get_sessions():
+        if s.get("video_id") and s["video_id"] in vids:
+            db.delete_session(s["id"])
+    count = 0
+    for date,vid,link,dur,views,uniq,avgd,peak,likes,avgv,subs,disc,cas,prov,title in ROWS:
+        db.add_session({"streamer":"El Profesor","date":date,"title":title,"link":link,
+            "duration":dur,"views":views,"unique_viewers":uniq,"avg_duration":avgd,
+            "peak_concurrent":peak,"likes":likes,"avg_viewers":avgv,"new_subs":subs,
+            "discord":disc,"casino":cas,"provider":prov,"video_id":vid,"note":""})
+        count += 1
+    if count:
+        print(f"[STARTUP] Imported {count} El Profesor Apr 2026 sessions")
+
+
+def _import_seven_apr26():
+    """Import Seven April 2026 sessions (always replaces)."""
+    for s in db.get_sessions("Seven"):
+        if s["date"].startswith("2026-04"):
+            db.delete_session(s["id"])
+    ROWS = [
+        # (date, video_id, link, duration, views, unique_viewers, avg_duration, peak, likes, avg_viewers, new_subs, discord, casino, provider, title)
+        ("2026-04-01","mZVk0plUHcY","https://www.youtube.com/watch?v=mZVk0plUHcY","6:00:00",15000,7800,"18:35:00",1545,1200,1175,22200,0,"Betano","Pragmatic",""),
+        ("2026-04-02","uBuvU6pJDR8","https://www.youtube.com/watch?v=uBuvU6pJDR8","4:30:00",14700,7400,"17:54:00",1634,1600,1263,22200,0,"Netbet","",""),
+        ("2026-04-03","IbN-eXiYXeE","https://www.youtube.com/watch?v=IbN-eXiYXeE","3:30:00",13200,7400,"11:43:00",1478,1100,1005,22200,0,"Mrbit","Greentube",""),
         ("2026-04-04","","","",0,0,"",0,0,0,0,0,"Conti","","mutat vineri"),
-        ("2026-04-05","AAiMBnBDT4E","https://www.youtube.com/watch?v=AAiMBnBDT4E","4:00:00",0,0,"",0,0,0,0,0,"Don","Pragmatic",""),
+        ("2026-04-05","AAiMBnBDT4E","https://www.youtube.com/watch?v=AAiMBnBDT4E","4:00:00",12500,6800,"18:15:00",1691,1050,1221,22200,0,"Don","Pragmatic",""),
+        ("2026-04-06","DyMowXjIJyc","https://www.youtube.com/watch?v=DyMowXjIJyc","5:04:00",13800,7000,"17:09:00",1700,1500,1193,22200,0,"Joker","Pragmatic",""),
+        ("2026-04-07","wYBvTFbVIQE","https://www.youtube.com/watch?v=wYBvTFbVIQE","4:30:00",14300,7000,"15:03:00",1601,1100,1134,22200,0,"Zinx","",""),
+        ("2026-04-08","K7euGmhypFo","https://www.youtube.com/watch?v=K7euGmhypFo","4:00:00",12500,6000,"15:11:00",1240,1000,926,22200,0,"Maxbet","Greentube",""),
+        ("2026-04-09","ZEnhlcwFHUo","https://www.youtube.com/watch?v=ZEnhlcwFHUo","3:30:00",10000,0,"23:51:00",1336,1100,1013,22200,0,"Win2","Pragmatic",""),
+        ("2026-04-12","yzHZ9wMtrd0","https://www.youtube.com/watch?v=yzHZ9wMtrd0","4:30:00",0,0,"",0,0,0,0,0,"MrBit","Pragmatic",""),
+        ("2026-04-13","riXtnus9oGQ","https://www.youtube.com/watch?v=riXtnus9oGQ","4:36:00",0,0,"",0,0,0,0,0,"Betano","Greentube",""),
+        ("2026-04-14","","","",0,0,"",0,0,0,0,0,"Joker","Pragmatic","STRIKE"),
+        ("2026-04-15","p4psFIVp3dg","https://www.youtube.com/watch?v=p4psFIVp3dg","5:00:00",0,0,"",0,0,0,0,0,"Get's","",""),
     ]
     vids = {r[1] for r in ROWS if r[1]}
     for s in db.get_sessions():
@@ -447,7 +493,6 @@ def startup():
         seven_jan = any(s["date"].startswith("2026-01") for s in seven_sessions)
         seven_feb = any(s["date"].startswith("2026-02") for s in seven_sessions)
         seven_mar = any(s["date"].startswith("2026-03") for s in seven_sessions)
-        seven_apr = any(s["date"].startswith("2026-04") for s in seven_sessions)
         if not prof_jan:
             _import_prof_jan26()
         if not prof_feb:
@@ -460,8 +505,9 @@ def startup():
             _import_seven_mar26()
         if not prof_mar:
             _import_prof_mar26()
-        if not seven_apr:
-            _import_seven_apr26()
+        # Apr 2026: always replace (data updated frequently)
+        _import_prof_apr26()
+        _import_seven_apr26()
         if not db.get_program(2026, 4):
             _import_program_apr26()
         # Set default targets if not already set
