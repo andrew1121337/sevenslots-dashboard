@@ -433,7 +433,7 @@ def startup():
         db.init_db()
         print("[STARTUP] DB initialized OK")
         # Ensure required user accounts exist
-        for uname in ("paul", "costi", "catalin", "cata", "edi", "andrei"):
+        for uname in ("paul", "costi", "catalin", "cata", "edi", "andrei", "kono", "dragos"):
             try:
                 db.create_user(uname, "Liv2026!")
                 print(f"[STARTUP] Created user '{uname}'")
