@@ -162,6 +162,7 @@ def init_db():
             month INTEGER NOT NULL,
             views_target INTEGER DEFAULT 0,
             hours_target INTEGER DEFAULT 0,
+            days_target INTEGER DEFAULT 0,
             UNIQUE(streamer, year, month))""")
         _pg_run(conn, """CREATE TABLE IF NOT EXISTS activity_log (
             id SERIAL PRIMARY KEY,
@@ -172,6 +173,7 @@ def init_db():
         # Safe column additions — check existence first to avoid transaction abort
         _safe_add_column(conn, "programs", "done", "INTEGER DEFAULT 0")
         _safe_add_column(conn, "targets", "hours_target", "INTEGER DEFAULT 0")
+        _safe_add_column(conn, "targets", "days_target", "INTEGER DEFAULT 0")
         conn.close()
     else:
         conn = get_conn()
@@ -250,6 +252,7 @@ def init_db():
                 month INTEGER NOT NULL,
                 views_target INTEGER DEFAULT 0,
                 hours_target INTEGER DEFAULT 0,
+                days_target INTEGER DEFAULT 0,
                 UNIQUE(streamer, year, month));
         """)
         conn.execute("""CREATE TABLE IF NOT EXISTS activity_log (
@@ -264,6 +267,10 @@ def init_db():
             pass
         try:
             conn.execute("ALTER TABLE targets ADD COLUMN hours_target INTEGER DEFAULT 0")
+        except Exception:
+            pass
+        try:
+            conn.execute("ALTER TABLE targets ADD COLUMN days_target INTEGER DEFAULT 0")
         except Exception:
             pass
         conn.commit()
@@ -956,22 +963,22 @@ def get_target(streamer: str, year: int, month: int) -> int:
         return row[0] if row else 0
 
 
-def set_target(streamer: str, year: int, month: int, views_target: int, hours_target: int = 0):
+def set_target(streamer: str, year: int, month: int, views_target: int, hours_target: int = 0, days_target: int = 0):
     if DATABASE_URL:
         conn = get_conn()
-        # Ensure hours_target column exists
         _safe_add_column(conn, "targets", "hours_target", "INTEGER DEFAULT 0")
-        _pg_run(conn, """INSERT INTO targets (streamer, year, month, views_target, hours_target)
-                         VALUES (:s, :y, :m, :v, :h)
-                         ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=EXCLUDED.views_target, hours_target=EXCLUDED.hours_target""",
-                {"s": streamer, "y": year, "m": month, "v": views_target, "h": hours_target})
+        _safe_add_column(conn, "targets", "days_target", "INTEGER DEFAULT 0")
+        _pg_run(conn, """INSERT INTO targets (streamer, year, month, views_target, hours_target, days_target)
+                         VALUES (:s, :y, :m, :v, :h, :d)
+                         ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=EXCLUDED.views_target, hours_target=EXCLUDED.hours_target, days_target=EXCLUDED.days_target""",
+                {"s": streamer, "y": year, "m": month, "v": views_target, "h": hours_target, "d": days_target})
         conn.close()
     else:
         conn = get_conn()
-        conn.execute("""INSERT INTO targets (streamer, year, month, views_target, hours_target)
-                        VALUES (?, ?, ?, ?, ?)
-                        ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=excluded.views_target, hours_target=excluded.hours_target""",
-                     (streamer, year, month, views_target, hours_target))
+        conn.execute("""INSERT INTO targets (streamer, year, month, views_target, hours_target, days_target)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (streamer, year, month) DO UPDATE SET views_target=excluded.views_target, hours_target=excluded.hours_target, days_target=excluded.days_target""",
+                     (streamer, year, month, views_target, hours_target, days_target))
         conn.commit()
         conn.close()
 
@@ -985,21 +992,25 @@ def get_all_targets(year: int, month: int) -> dict:
     if DATABASE_URL:
         conn = get_conn()
         has_hours = _pg_has_column(conn, "targets", "hours_target")
-        if has_hours:
-            raw = _pg_run(conn, "SELECT streamer, views_target, hours_target FROM targets WHERE year=:y AND month=:m",
-                           {"y": year, "m": month})
-        else:
-            raw = _pg_run(conn, "SELECT streamer, views_target FROM targets WHERE year=:y AND month=:m",
-                           {"y": year, "m": month})
+        has_days = _pg_has_column(conn, "targets", "days_target")
+        cols = "streamer, views_target"
+        if has_hours: cols += ", hours_target"
+        if has_days: cols += ", days_target"
+        raw = _pg_run(conn, f"SELECT {cols} FROM targets WHERE year=:y AND month=:m",
+                       {"y": year, "m": month})
         rows = _pg_to_dicts(conn, raw)
         conn.close()
-        return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0)} for r in rows}
+        return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0), "days": r.get("days_target", 0)} for r in rows}
     else:
         conn = get_conn()
-        rows = [dict(r) for r in conn.execute("SELECT streamer, views_target, hours_target FROM targets WHERE year=? AND month=?",
-                            (year, month)).fetchall()]
+        try:
+            rows = [dict(r) for r in conn.execute("SELECT streamer, views_target, hours_target, days_target FROM targets WHERE year=? AND month=?",
+                                (year, month)).fetchall()]
+        except Exception:
+            rows = [dict(r) for r in conn.execute("SELECT streamer, views_target, hours_target FROM targets WHERE year=? AND month=?",
+                                (year, month)).fetchall()]
         conn.close()
-        return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0)} for r in rows}
+        return {r["streamer"]: {"views": r.get("views_target", 0), "hours": r.get("hours_target", 0), "days": r.get("days_target", 0)} for r in rows}
 
 
 # ── Activity Log ──

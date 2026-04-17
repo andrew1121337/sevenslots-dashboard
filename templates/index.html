@@ -1141,6 +1141,9 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
   </div>
   <div class="sb-sep"></div>
   <div class="sb-section">Management</div>
+  <div class="sb-item" onclick="goP('reports',this)">
+    <span class="sb-ico">&#128202;</span> Reports
+  </div>
   <div class="sb-item" onclick="goP('sedinta',this)">
     <span class="sb-ico">&#128203;</span> Sedinta
   </div>
@@ -1183,30 +1186,7 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
 
   <!-- OVERVIEW -->
   <div class="page on" id="pg-overview">
-    <div class="sh"><div class="dot"></div>Overview<div class="ln"></div></div>
-    <div class="krow" id="ov-kpi"></div>
-
-    <div class="sh"><div class="dot"></div>Grafice Evolutie<div class="ln"></div></div>
-    <div class="graf-2col" id="ov-charts">
-      <div class="chart-card span2">
-        <div class="cc-head">
-          <div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="ov-lbl-views"></div></div>
-        </div>
-        <div id="ov-line-views" style="width:100%;height:160px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head">
-          <div><div class="cc-title">Peak Live</div><div class="cc-sub" id="ov-lbl-peak"></div></div>
-        </div>
-        <div id="ov-line-peak" style="width:100%;height:120px;"></div>
-      </div>
-      <div class="chart-card">
-        <div class="cc-head">
-          <div><div class="cc-title">Likes</div><div class="cc-sub" id="ov-lbl-likes"></div></div>
-        </div>
-        <div id="ov-line-likes" style="width:100%;height:120px;"></div>
-      </div>
-    </div>
+    <div id="ov-channels"></div>
 
     <!-- Month Comparison -->
     <div class="sh"><div class="dot"></div>Comparare Luna<div class="ln"></div></div>
@@ -1227,45 +1207,6 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
         </div>
       </div>
       <div id="cmp-chart" style="width:100%;height:140px;"></div>
-    </div>
-
-    <!-- Donuts + breakdown -->
-    <div class="sh"><div class="dot"></div>Distributie Cazino & Provider<div class="ln"></div></div>
-    <div class="breakdown-4" style="margin-bottom:22px;">
-      <div class="bd-card">
-        <div class="bd-head">Sesiuni per Cazino</div>
-        <div id="ov-donut-casino" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
-        <div id="ov-casino-legend"></div>
-      </div>
-      <div class="bd-card">
-        <div class="bd-head">Sesiuni per Provider</div>
-        <div id="ov-donut-prov" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
-        <div id="ov-prov-legend"></div>
-      </div>
-      <div class="bd-card">
-        <div class="bd-head">Medie Views per Cazino</div>
-        <div id="ov-casino-bars"></div>
-      </div>
-      <div class="bd-card">
-        <div class="bd-head">Medie Views per Provider</div>
-        <div id="ov-prov-bars"></div>
-      </div>
-    </div>
-
-    <!-- Top 5 -->
-    <div class="sh"><div class="dot"></div>Top Sesiuni<div class="ln"></div></div>
-    <div class="breakdown-4" style="margin-bottom:22px;">
-      <div class="bd-card"><div class="bd-head">Top 5 Views</div><div id="ov-top-views"></div></div>
-      <div class="bd-card"><div class="bd-head">Top 5 Peak</div><div id="ov-top-peak"></div></div>
-      <div class="bd-card"><div class="bd-head">Top 5 Likes</div><div id="ov-top-likes"></div></div>
-      <div class="bd-card"><div class="bd-head">Top 5 Durata</div><div id="ov-top-dur"></div></div>
-    </div>
-
-    <!-- DOW heatmap -->
-    <div class="sh"><div class="dot"></div>Activitate per Zi<div class="ln"></div></div>
-    <div class="chart-card" style="margin-bottom:22px;">
-      <div class="cc-head"><div class="cc-title">Views Mediu per Zi</div><div class="cc-sub" id="ov-lbl-dow"></div></div>
-      <div id="ov-chart-dow" style="width:100%;height:100px;"></div>
     </div>
 
     <!-- Table -->
@@ -1415,6 +1356,16 @@ td.gld { color:var(--gold); font-weight:700; font-family:'Space Grotesk',sans-se
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="page" id="pg-reports">
+    <div class="sh"><div class="dot"></div>Reports<div class="ln"></div></div>
+    <div class="prog-tabs" style="margin-bottom:18px;">
+      <button class="prog-tab on" onclick="setReportTab('providers',this)">Provideri</button>
+      <button class="prog-tab" onclick="setReportTab('operators',this)">Operatori</button>
+    </div>
+    <div id="report-panel"></div>
   </div>
 
   <!-- LICENTE -->
@@ -1736,6 +1687,7 @@ function refreshPage() {
   if(curPage==='seven') renderStreamer('Seven');
   if(curPage==='profesor') renderStreamer('El Profesor');
   if(curPage==='catalin') renderCatalin();
+  if(curPage==='reports') renderReports();
   if(curPage==='sedinta') renderMeetings();
   if(curPage==='licente') renderLicente();
   if(curPage==='paysafe') renderPaysafes();
@@ -1982,86 +1934,126 @@ function sessRow(s, showStreamer) {
 }
 
 // ═══════════════════════════════
-//  OVERVIEW
+//  OVERVIEW (per-channel blocks)
 // ═══════════════════════════════
-function renderOverview() {
-  const allSess = ALL_SESSIONS.filter(sessMonth);
-  const sess = allSess.filter(s=>s.streamer!=='Catalin');
-  const catSess = allSess.filter(s=>s.streamer==='Catalin');
-  sess.sort((a,b) => a.date.localeCompare(b.date));
+const OV_CHANNELS = [
+  {name:'Seven',       prefix:'seven', color:'#f5c518', dotBg:'var(--gold)',   barColor:'var(--gold)'},
+  {name:'El Profesor', prefix:'prof',  color:'#06b6d4', dotBg:'var(--cyan)',   barColor:'var(--cyan)'},
+];
+
+function channelBlockHTML(ch) {
+  const p = ch.prefix;
+  return `
+    <div class="sh"><div class="dot" style="background:${ch.dotBg};"></div>${ch.name}<div class="ln"></div></div>
+    <div class="krow" id="ov-${p}-kpi"></div>
+    <div class="graf-2col" id="ov-${p}-charts">
+      <div class="chart-card span2">
+        <div class="cc-head"><div><div class="cc-title">Views per Sesiune</div><div class="cc-sub" id="ov-${p}-lbl-views"></div></div></div>
+        <div id="ov-${p}-line-views" style="width:100%;height:160px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Peak Live</div><div class="cc-sub" id="ov-${p}-lbl-peak"></div></div></div>
+        <div id="ov-${p}-line-peak" style="width:100%;height:120px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div><div class="cc-title">Likes</div><div class="cc-sub" id="ov-${p}-lbl-likes"></div></div></div>
+        <div id="ov-${p}-line-likes" style="width:100%;height:120px;"></div>
+      </div>
+    </div>
+    <div class="breakdown-4" style="margin-bottom:18px;">
+      <div class="bd-card">
+        <div class="bd-head">Sesiuni per Cazino</div>
+        <div id="ov-${p}-donut-casino" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+        <div id="ov-${p}-casino-legend"></div>
+      </div>
+      <div class="bd-card">
+        <div class="bd-head">Sesiuni per Provider</div>
+        <div id="ov-${p}-donut-prov" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+        <div id="ov-${p}-prov-legend"></div>
+      </div>
+      <div class="bd-card"><div class="bd-head">Medie Views per Cazino</div><div id="ov-${p}-casino-bars"></div></div>
+      <div class="bd-card"><div class="bd-head">Medie Views per Provider</div><div id="ov-${p}-prov-bars"></div></div>
+    </div>
+    <div class="breakdown-4" style="margin-bottom:18px;">
+      <div class="bd-card"><div class="bd-head">Top 5 Views</div><div id="ov-${p}-top-views"></div></div>
+      <div class="bd-card"><div class="bd-head">Top 5 Peak</div><div id="ov-${p}-top-peak"></div></div>
+      <div class="bd-card"><div class="bd-head">Top 5 Likes</div><div id="ov-${p}-top-likes"></div></div>
+      <div class="bd-card"><div class="bd-head">Top 5 Durata</div><div id="ov-${p}-top-dur"></div></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:24px;">
+      <div class="cc-head"><div class="cc-title">Views Mediu per Zi</div><div class="cc-sub" id="ov-${p}-lbl-dow"></div></div>
+      <div id="ov-${p}-chart-dow" style="width:100%;height:100px;"></div>
+    </div>
+  `;
+}
+
+function renderChannelData(ch) {
+  const p = ch.prefix;
+  const sess = ALL_SESSIONS.filter(s=>s.streamer===ch.name && sessMonth(s)).sort((a,b)=>a.date.localeCompare(b.date));
   const n = sess.length;
-  const nc = catSess.length;
-  const kg = document.getElementById('ov-kpi');
-  const chartsEl = document.getElementById('ov-charts');
-
-  // Hide stats sections for non-admins
-  if(!isAdmin) {
-    kg.style.display = 'none';
-    chartsEl.style.display = 'none';
-    document.querySelectorAll('#pg-overview .sh, #pg-overview .graf-2col, #pg-overview .cmp-filters, #pg-overview .cmp-row, #pg-overview .breakdown-4, #pg-overview .chart-card').forEach(el=>el.style.display='none');
-  }
-
-  if(!n && !nc) {
-    if(isAdmin) kg.innerHTML = kC('Sesiuni Luna','0','','kc-purple');
-    chartsEl.style.display = 'none';
-    document.getElementById('ov-table').innerHTML = '';
-    if(isAdmin) renderComparison();
+  const kg = document.getElementById('ov-'+p+'-kpi');
+  const chartsEl = document.getElementById('ov-'+p+'-charts');
+  if(!kg) return;
+  if(!n) {
+    kg.innerHTML = kC('Sesiuni Luna','0','','kc-purple');
+    if(chartsEl) chartsEl.style.display = 'none';
     return;
   }
-  if(isAdmin) chartsEl.style.display = 'grid';
-
+  if(chartsEl) chartsEl.style.display = 'grid';
   const tv = sess.reduce((a,s)=>a+(s.views||0),0);
   const pv = sess.filter(s=>s.peak_concurrent>0);
   const ap = pv.length ? Math.round(pv.reduce((a,s)=>a+s.peak_concurrent,0)/pv.length) : 0;
-  const mp = n ? Math.max(...sess.map(s=>s.peak_concurrent||0)) : 0;
+  const mp = Math.max(...sess.map(s=>s.peak_concurrent||0));
   const lv = sess.filter(s=>s.likes>0);
   const al = lv.length ? Math.round(lv.reduce((a,s)=>a+s.likes,0)/lv.length) : 0;
   const ts = sess.reduce((a,s)=>a+(s.new_subs||0),0);
-  const mv = n ? Math.max(...sess.map(s=>s.views||0)) : 0;
 
+  kg.innerHTML =
+    kC('Live-uri',n,'luna curenta','kc-purple') +
+    kC('Total Views',fmt(tv),'live-uri','kc-gold') +
+    kC('Views Mediu',fmt(n?Math.round(tv/n):0),'per live','') +
+    kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
+    kC('Record Peak',fmt(mp),'max concurrent','kc-cyan') +
+    kC('Likes Mediu',fmt(al),'per live','') +
+    kC('Abonati Noi',fmt(ts),'total luna','kc-green');
+
+  setTimeout(() => {
+    svgLine('ov-'+p+'-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#a855f7', 'gOvV'+p, 'ov-'+p+'-lbl-views', 160);
+    svgLine('ov-'+p+'-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), '#06b6d4', 'gOvP'+p, 'ov-'+p+'-lbl-peak', 120);
+    svgLine('ov-'+p+'-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#f5c518', 'gOvL'+p, 'ov-'+p+'-lbl-likes', 120);
+  }, 50);
+
+  const casDist = groupBy(sess, 'casino');
+  const provDist = groupBy(sess, 'provider');
+  donut('ov-'+p+'-donut-casino', 'ov-'+p+'-casino-legend', casDist, casDist.reduce((a,d)=>a+d.v,0)||n);
+  donut('ov-'+p+'-donut-prov', 'ov-'+p+'-prov-legend', provDist, provDist.reduce((a,d)=>a+d.v,0)||n);
+  avgBars('ov-'+p+'-casino-bars', groupAvg(sess,'casino','views'), 'var(--gold)');
+  avgBars('ov-'+p+'-prov-bars', groupAvg(sess,'provider','views'), 'var(--purple2)');
+
+  topList('ov-'+p+'-top-views', [...sess].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5), s=>fmt(s.views));
+  topList('ov-'+p+'-top-peak', [...sess].filter(s=>s.peak_concurrent>0).sort((a,b)=>b.peak_concurrent-a.peak_concurrent).slice(0,5), s=>fmt(s.peak_concurrent));
+  topList('ov-'+p+'-top-likes', [...sess].filter(s=>s.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,5), s=>fmt(s.likes));
+  topList('ov-'+p+'-top-dur', [...sess].filter(s=>durToMin(s.duration)>0).sort((a,b)=>durToMin(b.duration)-durToMin(a.duration)).slice(0,5), s=>s.duration);
+
+  renderDOW('ov-'+p+'-chart-dow', 'ov-'+p+'-lbl-dow', sess, ch.barColor);
+}
+
+function renderOverview() {
+  const container = document.getElementById('ov-channels');
   if(isAdmin) {
-    kg.innerHTML =
-      kC('Live-uri',n,'luna curenta','kc-purple') +
-      kC('Total Views',fmt(tv),'live-uri','kc-gold') +
-      kC('Views Mediu',fmt(n?Math.round(tv/n):0),'per live','') +
-      kC('Peak Mediu',fmt(ap),'concurrent','kc-cyan') +
-      kC('Record Peak',fmt(mp),'max concurrent','kc-cyan') +
-      kC('Likes Mediu',fmt(al),'per live','') +
-      kC('Abonati Noi',fmt(ts),'total luna','kc-green');
-
-    // SVG line charts
-    setTimeout(() => {
-      svgLine('ov-line-views', sess.map(s=>({v:s.views||0, lbl:s.date})), '#a855f7', 'gOvV', 'ov-lbl-views', 160);
-      svgLine('ov-line-peak', sess.map(s=>({v:s.peak_concurrent||0, lbl:s.date})), '#06b6d4', 'gOvP', 'ov-lbl-peak', 120);
-      svgLine('ov-line-likes', sess.map(s=>({v:s.likes||0, lbl:s.date})), '#f5c518', 'gOvL', 'ov-lbl-likes', 120);
-    }, 50);
-
-    // Donuts
-    const casDist = groupBy(sess, 'casino');
-    const provDist = groupBy(sess, 'provider');
-    donut('ov-donut-casino', 'ov-casino-legend', casDist, casDist.reduce((a,d)=>a+d.v,0)||n);
-    donut('ov-donut-prov', 'ov-prov-legend', provDist, provDist.reduce((a,d)=>a+d.v,0)||n);
-    avgBars('ov-casino-bars', groupAvg(sess,'casino','views'), 'var(--gold)');
-    avgBars('ov-prov-bars', groupAvg(sess,'provider','views'), 'var(--purple2)');
-
-    // Top 5
-    topList('ov-top-views', [...sess].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5), s=>fmt(s.views));
-    topList('ov-top-peak', [...sess].filter(s=>s.peak_concurrent>0).sort((a,b)=>b.peak_concurrent-a.peak_concurrent).slice(0,5), s=>fmt(s.peak_concurrent));
-    topList('ov-top-likes', [...sess].filter(s=>s.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,5), s=>fmt(s.likes));
-    topList('ov-top-dur', [...sess].filter(s=>durToMin(s.duration)>0).sort((a,b)=>durToMin(b.duration)-durToMin(a.duration)).slice(0,5), s=>s.duration);
-
-    // DOW
-    renderDOW('ov-chart-dow', 'ov-lbl-dow', sess, 'var(--purple2)');
-
-    // Comparison
+    container.innerHTML = OV_CHANNELS.map(channelBlockHTML).join('');
+    OV_CHANNELS.forEach(renderChannelData);
     renderComparison();
+  } else {
+    container.innerHTML = '';
+    document.querySelectorAll('#pg-overview .sh, #pg-overview .cmp-filters, #pg-overview .cmp-row, #pg-overview .chart-card').forEach(el=>el.style.display='none');
   }
 
-  // Table
+  // Combined sessions table (both channels)
+  const sess = ALL_SESSIONS.filter(s=>s.streamer!=='Catalin' && sessMonth(s)).sort((a,b)=>a.date.localeCompare(b.date));
   const latest = [...sess].reverse();
   document.getElementById('ov-table').innerHTML = latest.map(s=>sessRow(s,true)).join('');
 
-  // Animate bars
   setTimeout(()=>document.querySelectorAll('[data-w]').forEach(e=>{e.style.width=e.dataset.w+'%';}),120);
 }
 
@@ -2131,6 +2123,89 @@ function renderComparison() {
   const sub = document.getElementById('cmp-chart-sub');
   if(sub) sub.textContent = curSess.length + ' vs ' + prevSess.length + ' sesiuni';
   setTimeout(() => svgCompare('cmp-chart', curChartData, prevChartData, '#a855f7', '#4a3d6b', 140), 60);
+}
+
+// ═══════════════════════════════
+//  REPORTS (per provider / per operator)
+// ═══════════════════════════════
+let reportTab = 'providers';
+let reportSelected = null;
+
+function setReportTab(tab, btn) {
+  reportTab = tab;
+  reportSelected = null;
+  document.querySelectorAll('#pg-reports .prog-tab').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  renderReports();
+}
+
+function reportPick(name) {
+  reportSelected = (reportSelected===name) ? null : name;
+  renderReports();
+}
+
+function renderReports() {
+  if(!isAdmin) {
+    document.getElementById('report-panel').innerHTML = '<div style="color:var(--dim);font-size:12px;">Acces restrictionat.</div>';
+    return;
+  }
+  const sess = ALL_SESSIONS.filter(s=>s.streamer!=='Catalin' && sessMonth(s));
+  const panel = document.getElementById('report-panel');
+  if(reportTab==='providers') {
+    const PROVIDERS = ['Pragmatic','Greentube','Amusnet'];
+    const cards = PROVIDERS.map(name => {
+      const matches = sess.filter(s => (s.provider||'').toLowerCase().includes(name.toLowerCase()));
+      return reportCardHTML(name, matches, reportSelected===name);
+    }).join('');
+    let detail = '';
+    if(reportSelected) {
+      const list = sess.filter(s => (s.provider||'').toLowerCase().includes(reportSelected.toLowerCase()));
+      detail = reportDetailHTML(reportSelected+' — Sesiuni', list);
+    }
+    panel.innerHTML = `<div class="breakdown-4" style="margin-bottom:18px;">${cards}</div>${detail}`;
+  } else {
+    // Operators — list all distinct casinos
+    const cmap = {};
+    sess.forEach(s => { const c=(s.casino||'').trim(); if(c) cmap[c]=(cmap[c]||0)+1; });
+    const ops = Object.entries(cmap).sort((a,b)=>b[1]-a[1]);
+    if(!ops.length) { panel.innerHTML = '<div style="color:var(--dim);font-size:12px;">Niciun operator in luna curenta.</div>'; return; }
+    const cards = ops.map(([name,cnt]) => {
+      const matches = sess.filter(s => (s.casino||'').toLowerCase()===name.toLowerCase());
+      return reportCardHTML(name, matches, reportSelected===name);
+    }).join('');
+    let detail = '';
+    if(reportSelected) {
+      const list = sess.filter(s => (s.casino||'').toLowerCase()===reportSelected.toLowerCase());
+      detail = reportDetailHTML(reportSelected+' — Sesiuni', list);
+    }
+    panel.innerHTML = `<div class="breakdown-4" style="margin-bottom:18px;">${cards}</div>${detail}`;
+  }
+}
+
+function reportCardHTML(name, matches, active) {
+  const n = matches.length;
+  const tv = matches.reduce((a,s)=>a+(s.views||0),0);
+  const av = n ? Math.round(tv/n) : 0;
+  const mp = n ? Math.max(...matches.map(s=>s.peak_concurrent||0)) : 0;
+  const safeName = name.replace(/'/g,"\\'");
+  return `<div class="bd-card" style="cursor:pointer;${active?'outline:2px solid var(--purple2);':''}" onclick="reportPick('${safeName}')">
+    <div class="bd-head">${name}</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:20px;font-weight:900;color:var(--text);">${n} <span style="font-size:10px;color:var(--dim);font-weight:600;">sesiuni</span></div>
+      <div style="font-size:11px;color:var(--dim);">Total Views: <strong style="color:var(--gold);">${fmt(tv)}</strong></div>
+      <div style="font-size:11px;color:var(--dim);">Medie: <strong style="color:var(--text2);">${fmt(av)}</strong></div>
+      <div style="font-size:11px;color:var(--dim);">Peak max: <strong style="color:var(--cyan);">${fmt(mp)}</strong></div>
+    </div>
+  </div>`;
+}
+
+function reportDetailHTML(title, list) {
+  if(!list.length) return '<div style="color:var(--dim);font-size:12px;">Fara sesiuni.</div>';
+  const rows = [...list].sort((a,b)=>a.date.localeCompare(b.date)).reverse().map(s=>sessRow(s,true)).join('');
+  return `<div class="sh"><div class="dot"></div>${title}<div class="ln"></div></div>
+    <div class="tw"><table><thead><tr>
+      <th>Data</th><th>Streamer</th><th>Titlu</th><th>Link</th><th>Views</th><th>Unici</th><th>D.Medie</th><th>Peak</th><th>Likes</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 // ═══════════════════════════════
@@ -2227,10 +2302,21 @@ function renderStatsFooter(streamer, totalViews, totalMin, targets) {
   const sid = streamer.replace(/\s+/g,'_');
   const vTarget = targets.views || 0;
   const hTarget = targets.hours || 0;
+  const defaultDays = streamer==='Seven' ? 26 : streamer==='El Profesor' ? 23 : 0;
+  const dTarget = targets.days || defaultDays;
   const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
   const today = new Date();
   const curDay = (today.getFullYear()===curYear && today.getMonth()===curMonth) ? today.getDate() : daysInMonth;
   const totalHours = Math.round(totalMin/60*10)/10;
+
+  // Days realized = unique session dates this month for this streamer
+  const sessDays = new Set();
+  ALL_SESSIONS.filter(s=>s.streamer===streamer && sessMonth(s)).forEach(s => sessDays.add(s.date));
+  const daysDone = sessDays.size;
+  const dPct = dTarget > 0 ? Math.min(100, Math.round(daysDone/dTarget*100)) : 0;
+  const dBarColor = dPct >= 100 ? '#22c55e' : dPct >= 50 ? '#f5c518' : '#ef4444';
+  const dRemain = Math.max(0, dTarget - daysDone);
+  const dComplete = dTarget > 0 && daysDone >= dTarget;
 
   // Hours target widget
   let htWidget = '';
@@ -2291,7 +2377,33 @@ function renderStatsFooter(streamer, totalViews, totalMin, targets) {
   const vPct = vTarget > 0 ? Math.min(100, Math.round(totalViews/vTarget*100)) : 0;
   const vBarColor = vPct >= 100 ? 'var(--green)' : vPct >= 50 ? 'var(--gold)' : 'var(--red)';
 
-  return htWidget + `
+  // Days target widget
+  const daysWidget = `
+    <div class="target-widget" style="margin-top:12px;">
+      <div class="tw-hdr">
+        <span>&#128197; TARGET ZILE LIVE &mdash; LUNA CURENTA</span>
+        <div class="tw-inputs">
+          <label>TARGET (ZILE)</label>
+          <input type="number" id="dt-${sid}" value="${targets.days||''}" placeholder="${defaultDays||0}" style="width:70px;" ${isAdmin?'':'disabled'}>
+          ${isAdmin?`<button onclick="saveTarget('${streamer}','${sid}')">&#128190;</button>`:''}
+        </div>
+      </div>
+      <div class="tw-stats">
+        <div class="tw-stat"><div class="tw-stat-val" style="color:var(--green);">${daysDone}</div><div class="tw-stat-lbl">ZILE REALIZATE</div></div>
+        <div class="tw-stat"><div class="tw-stat-val">${dTarget}</div><div class="tw-stat-lbl">TARGET ZILE<br><span style="color:var(--gold);font-size:10px;">${targets.days?'manual':'default'}</span></div></div>
+        <div class="tw-stat"><div class="tw-stat-val" style="color:${dComplete?'var(--green)':'var(--gold)'};">${dComplete?'&#10003; Complet':dRemain}</div><div class="tw-stat-lbl">RAMAS<br><span style="font-size:10px;">zile de live</span></div></div>
+      </div>
+      <div class="tw-bar-wrap">
+        <div class="tw-bar"><div class="tw-bar-fill" style="width:${dPct}%;background:${dBarColor};"></div></div>
+        <div class="tw-bar-labels">
+          <span>0</span>
+          <span style="color:${dBarColor};font-weight:700;">${dPct}%</span>
+          <span>${dTarget} zile target</span>
+        </div>
+      </div>
+    </div>`;
+
+  return htWidget + daysWidget + `
     <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-top:12px;">
       <div class="sf-item">&#9654; <strong>Total Views:</strong> ${fmt(totalViews)}</div>
       <div class="sf-target">
@@ -2307,10 +2419,12 @@ async function saveTarget(streamer, sid) {
   if(!sid) sid = streamer.replace(/\s+/g,'_');
   const hInp = document.getElementById('ht-'+sid);
   const vInp = document.getElementById('vt-'+sid);
+  const dInp = document.getElementById('dt-'+sid);
   const hVal = hInp ? (parseInt(hInp.value) || 0) : 0;
   const vVal = vInp ? (parseInt(vInp.value) || 0) : 0;
+  const dVal = dInp ? (parseInt(dInp.value) || 0) : 0;
   await fetch('/api/targets', {method:'POST', body:new URLSearchParams({
-    streamer, year:curYear, month:curMonth+1, views_target:vVal, hours_target:hVal
+    streamer, year:curYear, month:curMonth+1, views_target:vVal, hours_target:hVal, days_target:dVal
   })});
   toast('Target salvat!','ok');
   refreshPage();

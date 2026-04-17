@@ -987,12 +987,12 @@ ADMIN_USERS = {"costi", "paul", "catalin"}
 @app.post("/api/targets")
 async def api_set_target(request: Request, streamer: str = Form(...), year: int = Form(...),
                           month: int = Form(...), views_target: int = Form(0),
-                          hours_target: int = Form(0)):
+                          hours_target: int = Form(0), days_target: int = Form(0)):
     user = _get_user(request)
     if user not in ADMIN_USERS:
         return JSONResponse({"error": "unauthorized"}, status_code=403)
-    db.set_target(streamer, year, month, views_target, hours_target)
-    db.log_activity(user, "Target modificat", f"{streamer} — {month}/{year} — views:{views_target} ore:{hours_target}")
+    db.set_target(streamer, year, month, views_target, hours_target, days_target)
+    db.log_activity(user, "Target modificat", f"{streamer} — {month}/{year} — views:{views_target} ore:{hours_target} zile:{days_target}")
     return {"ok": True}
 
 
